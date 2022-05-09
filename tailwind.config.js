@@ -6,6 +6,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        "primary-color": "var(--primary)"
+            },
       backgroundImage:{
         "ust-pattern": "url('../../public/Icons/topbgtext.svg')",
       
