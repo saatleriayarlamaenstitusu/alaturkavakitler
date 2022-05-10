@@ -16,7 +16,7 @@ jobs:
         run: npm install
 
       - name: Build 🏗️
-        run: CI=false echo alaturkavakitler.abdullahog.uk > ./build/CNAME && npm run build
+        run: CI=false npm run build && echo alaturkavakitler.abdullahog.uk > ./build/CNAME 
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@releases/v3
