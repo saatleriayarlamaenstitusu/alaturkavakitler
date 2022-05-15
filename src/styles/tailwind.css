@@ -36,6 +36,28 @@
     .city .city__placeholder, .city .city__single-value{
       @apply text-white;
     }
+    .dropdown  {
+      @apply relative p-3 rounded-lg;
+      background: #00000033;
+    }
+
+    .dropdown > svg {
+      @apply w-5 h-5;
+    }
+
+   .dropdown .dropdownContent {
+    @apply flex flex-col absolute right-0 top-12 p-3 rounded-lg whitespace-nowrap;
+      backdrop-filter:blur(9px);
+      background: #ffffff33;
+  }
+
+  .dropdown .dropdownContent > * {
+    @apply px-3 py-1 text-white rounded-md font-semibold;
+  }
+
+  .dropdown .dropdownContent > *:hover {
+    @apply  bg-white text-primary-color;
+  }
 
 
     .bottomNav{
@@ -60,29 +82,29 @@
       @apply fill-white
   }
   .bottomNav  .nav-link .nav-button{
-      @apply flex items-center justify-center relative
+      @apply flex items-center justify-center relative;
+      height: 4rem;
+      width: 100%;
+
   }
 
     .bottomNav .nav-link.active .nav-button, .bottomNav .nav-link:hover .nav-button {
       @apply  flex items-center justify-center ;
       background: #00000066;
-      width: 100%;
-      height: 4rem;
   }
 
 
     .bottomNav .nav-link .nav-button:before{
-      @apply   w-0 h-0 ;
       content:"";
       -webkit-filter: blur(9px);
       filter: blur(9px);
-      transition: all 250ms ease-in-out;
+      transition: all 250ms ease-in;
       
   } 
   
   .bottomNav .nav-link.active .nav-button:before {
       @apply   absolute bg-white z-0;
-      width:30%;
+      width:30px;
       height:30%;
       left:50%;
       top:50%;
@@ -99,10 +121,10 @@
       transform: translate(-50%, -50%);
       left:50%;
       border-radius: 50px;
-      bottom: -8px;
-      filter: blur(4px);
-      height: 8px;
-      width: 30%;
+      bottom: -2px;
+      filter: blur(1px);
+      height: 4px;
+      width: 10px;
   }
 
 
