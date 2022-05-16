@@ -21,7 +21,7 @@ const TopNav =()=>{
         return(
             <div className='topNav'> 
 <SVG id="logoGenis" src={`${process.env.PUBLIC_URL}/Icons/logo-wide.svg`} ></SVG>    
-<div class="flex row items-center">
+<div className="flex row items-center">
 <Select className="city mr-5" placeholder="Şehir Seç" classNamePrefix="city" value={{ value: city.plate, label: city.name }} options={citiesOptions}  onChange={changeCity}/>
 <DropdownMenu svgIcon={`${process.env.PUBLIC_URL}/Icons/kababmenu.svg`}>
 <NavLink to="/ayarlar" className="nav-link location">Ayarlar</NavLink>

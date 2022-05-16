@@ -1,6 +1,8 @@
 import './App.css';
+import React, {useContext,useEffect, useState} from 'react'
 import { AppContext } from './Components/Context'
 import { useLocalstorageState } from "rooks";
+import useFetch from 'use-http'
 import { BrowserRouter, Routes, Route, useLocation, NavLink, useNavigate } from 'react-router-dom'
 
 import TopNav from './Components/TopNav'
@@ -19,12 +21,24 @@ import NotFound from './Pages/NotFound'
 
 function App() {
   const [city, setCity] = useLocalstorageState("city", "sehirsec");
+  const [vakitler, setVakitler] = useLocalstorageState("vakitler", "vakityok");
+
+  const { get,response,loading, error, data: vakitResponse = [] } = useFetch(`${process.env.REACT_APP_VAKIT_BASE_URL+city.plate}.json`)
+  useEffect(() => { fetchVakitler() }, [city]) 
+  async function fetchVakitler() {
+    const data = await get()
+    if (response.ok) setVakitler(data)
+  }
+ 
 
   return (
-    <AppContext.Provider value={{ city, setCity }}>
+    <AppContext.Provider value={{ city, setCity, vakitler }}>
       <div className="app">
         <TopNav />
         <div className='appContent'>
+        {error && 'Error!'}
+      {loading && 'Loading...'}
+
           <Routes>
             <Route path='/giris' element={<Intro />} />
             <Route path='/' element={<HomePage />} />
