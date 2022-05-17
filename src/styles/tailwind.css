@@ -21,7 +21,7 @@
     }
 
     .topNav{
-      @apply py-3 px-2 flex justify-between;
+      @apply pb-5 pt-6 px-2 flex justify-between;
     }
 
     #logoGenis{
@@ -58,7 +58,7 @@
     }
 
     .dropdown > svg {
-      @apply w-5 h-5;
+      @apply w-3 h-3;
     }
 
    .dropdown .dropdownContent {
@@ -144,6 +144,16 @@
       filter: blur(1px);
       height: 4px;
       width: 10px;
+  }
+
+  .clock .primaryClock{
+    @apply  text-7xl font-black text-white;
+    font-family:"overpass";
+  }
+
+  .clock .secondaryClock{
+    @apply  text-3xl font-thin text-white;
+    font-family:"overpass";
   }
 
 
