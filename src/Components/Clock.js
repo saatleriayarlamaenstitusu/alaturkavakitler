@@ -30,7 +30,9 @@ function getDateKey(date){return date.toISOString().split("T")[0]}
 //TODO 
 function calculateAlaturka(){
     //normal saat akşam vakti ile gece yarısı arasınnda ise o günün akşam vakti
+    //    ns-av
     //normal saat akşam vaktinden önceyse önceki günün akşam vakti
+    //    bgy-av+ns                  
 
 
 }
