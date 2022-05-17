@@ -15,27 +15,43 @@
    height: 100%; 
   }
     body {
-      @apply p-0 bg-ust-pattern ;
+      @apply p-0 bg-ust-pattern;
       height: 100%;
 
     }
 
     .topNav{
-      @apply p-5 flex justify-between;
+      @apply py-3 px-2 flex justify-between;
     }
 
     #logoGenis{
-      height: 34px;
+      height: 36px;
     width: auto;
+    margin:10px;
     }
 
     .city .city__control{
-      @apply bg-transparent;
+      @apply bg-transparent text-sm;
+      min-height:10px;
     }
 
     .city .city__placeholder, .city .city__single-value{
       @apply text-white;
     }
+
+    .city .city__indicator-separator{
+      @apply hidden;
+    }
+
+    .city .city__dropdown-indicator{
+      padding: 0 5px 0 0;
+  }
+
+  .city .city__value-container{
+    @apply text-xs;
+
+  }
+
     .dropdown  {
       @apply relative p-3 rounded-lg;
       background: #00000033;
@@ -61,13 +77,16 @@
 
 
     .bottomNav{
-      @apply flex justify-center  absolute bottom-0 w-full bg-primary-color;
+      @apply flex justify-center  absolute bottom-0 w-full bg-transparent;
       backdrop-filter: blur(9px);
   }
   .bottomNav .nav-link{
       @apply flex items-center grow justify-center   opacity-50 
-      
   }
+
+  .bottomNav .nav-link svg{
+    @apply h-7
+}
   
   .bottomNav .nav-link.active , .bottomNav .nav-link:hover{
     @apply  opacity-100 ;

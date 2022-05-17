@@ -9,22 +9,22 @@ const BottomNav =()=>{
                    <div className="bottomNav">
                 <NavLink to="/" className="nav-link">
                     <div className="nav-button">
-                    <SVG id="logoGenis" src={`${process.env.PUBLIC_URL}/Icons/Nav/home.svg`} ></SVG>    
+                    <SVG src={`${process.env.PUBLIC_URL}/Icons/Nav/home.svg`} ></SVG>    
 
                     </div>
                 </NavLink>
-                <NavLink to="/kesfet" className="nav-link">
+                <NavLink to="/saat" className="nav-link">
                     <div className="nav-button ">
-                    <SVG id="logoGenis" src={`${process.env.PUBLIC_URL}/Icons/Nav/clock.svg`} ></SVG>    
+                    <SVG src={`${process.env.PUBLIC_URL}/Icons/Nav/clock.svg`} ></SVG>    
                     </div>
                 </NavLink>
-                <NavLink to="/kategoriler-sirala" className="nav-link location">
+                <NavLink to="/vakitler" className="nav-link ">
                     <div className="nav-button">
-                    <SVG id="logoGenis" src={`${process.env.PUBLIC_URL}/Icons/Nav/mosque.svg`} ></SVG>    
+                    <SVG src={`${process.env.PUBLIC_URL}/Icons/Nav/mosque.svg`} ></SVG>    
                     </div>
                 </NavLink>
                 
-                <NavLink to="/kaydedilenler" className="nav-link location">
+                <NavLink to="/takvim" className="nav-link">
                     <div className="nav-button">
                     <SVG id="logoGenis" src={`${process.env.PUBLIC_URL}/Icons/Nav/calendar.svg`} ></SVG>    
 
