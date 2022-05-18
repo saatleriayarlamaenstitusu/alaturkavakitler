@@ -52,6 +52,16 @@
 
   }
 
+  .city .city__menu{
+    @apply text-xs rounded-md text-white;
+    width: calc(100% + 42px);
+    background: rgba(35,35,35,0.14);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    overflow-x:hidden;
+
+}
+
     .dropdown  {
       @apply relative p-3 rounded-lg;
       background: #00000033;
@@ -85,7 +95,7 @@
   }
 
   .bottomNav .nav-link svg{
-    @apply h-7
+    @apply h-6
 }
   
   .bottomNav .nav-link.active , .bottomNav .nav-link:hover{
@@ -123,7 +133,7 @@
   
   .bottomNav .nav-link.active .nav-button:before {
       @apply   absolute bg-white z-0;
-      width:30px;
+      width:18px;
       height:30%;
       left:50%;
       top:50%;
