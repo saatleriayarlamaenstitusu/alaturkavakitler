@@ -16,10 +16,10 @@ function Clock(props){
     /* TODO: Ayarlardan gelen varsayılan ve gösterilecek saate göre düzenlenecek */
     return(
         <div className="clock">
-            <div className="normalClock primaryClock">{date.setLocale('tr').toLocaleString(DateTime.TIME_SIMPLE)}</div>
-            <div className="alaturkaClock secondaryClock">
+            <div className="alaturkaClock primaryClock ">
             {calculateAlaturka(date,vakitler)}
             </div>
+            <div className="normalClock secondaryClock ">{date.setLocale('tr').toLocaleString(DateTime.TIME_SIMPLE)}</div>
             Akşam: { vakitler[date.toISODate()] && vakitler[ date.toISODate()].aksam}
         </div>
     )
@@ -27,7 +27,7 @@ function Clock(props){
 
 
 
-//TODO 
+//TODO cleanup
 function calculateAlaturka(date, vakitler){
 var aksam=DateTime.fromSQL( date.toISODate() +" " + vakitler[ date.toISODate()].aksam)
 

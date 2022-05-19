@@ -26,7 +26,7 @@ const BottomNav =()=>{
                 
                 <NavLink to="/takvim" className="nav-link">
                     <div className="nav-button">
-                    <SVG id="logoGenis" src={`${process.env.PUBLIC_URL}/Icons/Nav/calendar.svg`} ></SVG>    
+                    <SVG src={`${process.env.PUBLIC_URL}/Icons/Nav/calendar.svg`} ></SVG>    
 
                     </div>
                 </NavLink>
