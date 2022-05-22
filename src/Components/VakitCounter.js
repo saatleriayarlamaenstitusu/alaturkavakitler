@@ -26,31 +26,25 @@ if(currentVakit!=="vakityok"){
 
     /* TODO: Kerahat vaktine göre ekleme yapılacak */
 
+    /* TODO: Vakit timeline componenti  bu componentte çağrılacak ve bilgiler prop olarak gönderilecek */
 
     
 
     return (!loading&&!error&&currentVakit!=="vakityok") ? (
     
         <div className="vakitCounter text-white">
-        {
-        /*
-            <div className="vakit">
+        
+        <div className="vakit">
                 <span className="current">{!(vakit=="vakityok") ? vakit[currentVakit].name : ""}</span>
                 <span className="next">{ !(vakit=="vakityok")? vakit[vakit[currentVakit].next].name : "" }</span>
             </div>
-        */
-        }
-        <span className="vakit">
-        <span className="current">{currentVakit}</span>
-        <span className="next"></span>
 
      
         
-        </span>
 
             <span className="counterlabel">vaktin çıkmasına</span>
             <div className="counter ">
-            {counter.hours + ":" + counter.minutes + ":"+ Number(counter.seconds).toFixed() }
+            {counter.hours.toString().padStart(2, 0) + ":" + counter.minutes.toString().padStart(2, 0) + ":"+ Number(counter.seconds).toFixed().toString().padStart(2, 0) }
             </div>
             <span className="kerahat">Kerahat</span>
         </div>
@@ -63,8 +57,5 @@ if(currentVakit!=="vakityok"){
 
     )
 }
-
-
-
 
 export default VakitCounter

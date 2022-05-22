@@ -98,13 +98,8 @@ function createVakitObj(vakitler){
             minDifference = difference;
             currentVakit = vakit;
         }
-
         //TODO alturka vakit sırasına göre düzenleme (akşam yatsı imsak gunes ogle ikindi)
-        
-
     }
-    console.log(currentVakit,difference)
-
    return currentVakit;  
   }
 

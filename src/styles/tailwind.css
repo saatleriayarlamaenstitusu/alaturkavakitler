@@ -166,7 +166,43 @@
     font-family:"overpass";
   }
 
+  .vakitCounter .vakit {
+    @apply flex content-between items-center;
+  }
 
+  .vakitCounter .vakit span {
+    @apply text-sm font-light px-3 py-1 rounded-md border border-white lowercase;
+  }
+
+  .vakitCounter .vakit span.current {
+    @apply bg-green-800 border-green-800;
+  }
+  .vakitCounter .vakit span.next {
+    order:2;
+  }
+  .vakitCounter .vakit:before {
+    @apply block w-full mx-3;
+    content:"";
+     height: 5px;
+     order: 1;
+     background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0);
+     background-size: 12px 10px;
+  }
+
+  .vakitCounter .counterlabel {
+    @apply text-xl font-extralight my-3 block;
+  }
+
+  .vakitCounter .counter {
+    @apply text-5xl font-extrabold mt-2 block;
+    font-family:"overpass";
+
+  }
+
+  .vakitCounter .kerahat {
+    @apply bg-red-800 text-xs py-1 px-2 inline-block rounded-full leading-none;
+
+  }
 
 
 
