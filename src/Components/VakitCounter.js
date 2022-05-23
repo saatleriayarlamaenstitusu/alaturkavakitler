@@ -6,7 +6,7 @@ import {findVakit} from "../utils"
 
 function VakitCounter(props){
     var {vakitler,vakit,currentVakit, setCurrentVakit,loading,error} = useContext(AppContext)
-    const [counter, setCounter] = useState(DateTime.now());
+    const [counter, setCounter] = useState({'hours':"0", 'minutes':0, 'seconds':0});
     useEffect(() => {
         if(currentVakit=="vakityok" ||  !(findVakit(vakit)==currentVakit) ){  setCurrentVakit(findVakit(vakit)) }
 if(currentVakit!=="vakityok"){
@@ -29,7 +29,6 @@ if(currentVakit!=="vakityok"){
     /* TODO: Vakit timeline componenti  bu componentte çağrılacak ve bilgiler prop olarak gönderilecek */
 
     
-
     return (!loading&&!error&&currentVakit!=="vakityok") ? (
     
         <div className="vakitCounter text-white">
