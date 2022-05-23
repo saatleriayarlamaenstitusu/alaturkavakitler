@@ -55,7 +55,7 @@ function createVakitObj(vakitler){
         valueDateObj2: "",
         icon: "",
         next: "yatsi",
-        nextRamazan: "imsak2"
+        nextRamazan: "imsak"
       },
       "yatsi": {
         name: "Yatsı",
@@ -65,8 +65,8 @@ function createVakitObj(vakitler){
         value2: "",
         valueDateObj2: "",
         icon: "",
-        next: "imsak2",
-        nextRamazan: "imsak2"
+        next: "imsak",
+        nextRamazan: "imsak"
       }
     }
     var bugunISO = DateTime.now().toISODate()
@@ -91,23 +91,19 @@ function createVakitObj(vakitler){
     var now = DateTime.now();
     var minDifference = -Infinity;
     var currentVakit = "yatsi";
+    var difference;
     for (var vakit in vakitObj) {
-        let difference = vakitObj[vakit].valueDateObj - now;
+        difference = vakitObj[vakit].valueDateObj-now;
          if (difference > minDifference && difference < 0) {
             minDifference = difference;
             currentVakit = vakit;
         }
 
         //TODO alturka vakit sırasına göre düzenleme (akşam yatsı imsak gunes ogle ikindi)
-        /*
-        difference = vakitObj[vakit].valueDateObj2 - now;
-        if (difference > minDifference && difference < 0) {
-            minDifference = difference;
-            currentVakit = vakit+"2";
-        }
-        */
+        
 
     }
+    console.log(currentVakit,difference)
 
    return currentVakit;  
   }

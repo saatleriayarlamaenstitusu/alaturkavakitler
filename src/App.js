@@ -4,7 +4,7 @@ import { AppContext } from './Components/Context'
 import { useLocalstorageState } from "rooks";
 import useFetch from 'use-http'
 import { BrowserRouter, Routes, Route, useLocation, NavLink, useNavigate } from 'react-router-dom'
-
+import {createVakitObj,findVakit} from "./utils"
 import TopNav from './Components/TopNav'
 import BottomNav from './Components/BottomNav'
 
@@ -22,17 +22,33 @@ import NotFound from './Pages/NotFound'
 function App() {
   const [city, setCity] = useLocalstorageState("city", "sehirsec");
   const [vakitler, setVakitler] = useLocalstorageState("vakitler", "vakityok");
+  const [vakit, setVakit] = useState("vakityok");
+  const [currentVakit, setCurrentVakit] = useState("vakityok");
 
   const { get,response,loading, error, data: vakitResponse = [] } = useFetch(`${process.env.REACT_APP_VAKIT_BASE_URL+city.plate}.json`)
-  useEffect(() => { fetchVakitler() }, [city]) 
-  async function fetchVakitler() {
-    const data = await get()
-    if (response.ok) setVakitler(data)
-  }
+  useEffect(() => { 
+        /* TODO: saat 12yi geçince vakitleri yeniden çek */
+
+    fetchVakitler() 
+  
+    async function fetchVakitler() {
+      const data = await get()
+      if (response.ok) {
+        setVakitler(data);
+      }
+    }
+  console.log("fetchVakitler")
+  }, [city,get,response]) 
  
+  useEffect(() => { 
+    setVakit(createVakitObj(vakitler))
+    console.log("setVakit")
+
+  }, [vakitler]) 
+  
 
   return (
-    <AppContext.Provider value={{ city, setCity, vakitler }}>
+    <AppContext.Provider value={{ city, setCity, vakitler, vakit ,currentVakit,setCurrentVakit,loading,error}}>
       <div className="app">
         <TopNav />
         <div className='appContent'>
@@ -56,5 +72,10 @@ function App() {
         </AppContext.Provider>  
   );
 }
+
+
+
+
+
 
 export default App;
