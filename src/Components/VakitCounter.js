@@ -33,13 +33,10 @@ if(currentVakit!=="vakityok"){
     
         <div className="vakitCounter text-white">
         
-        <div className="vakit">
+            <div className="vakit">
                 <span className="current">{!(vakit=="vakityok") ? vakit[currentVakit].name : ""}</span>
                 <span className="next">{ !(vakit=="vakityok")? vakit[vakit[currentVakit].next].name : "" }</span>
             </div>
-
-     
-        
 
             <span className="counterlabel">vaktin çıkmasına</span>
             <div className="counter ">

@@ -5,7 +5,6 @@ import SVG from 'react-inlinesvg';
 
 const BottomNav =()=>{
         return(
-            <div className=''>
                    <div className="bottomNav">
                 <NavLink to="/" className="nav-link">
                     <div className="nav-button">
@@ -30,7 +29,6 @@ const BottomNav =()=>{
 
                     </div>
                 </NavLink>
-            </div>
             </div>
         )
 }

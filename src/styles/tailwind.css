@@ -156,6 +156,11 @@
       width: 10px;
   }
 
+  .appContent{
+    @apply overflow-auto;
+    height: calc(100vh - 164px);
+  }
+
   .clock .primaryClock{
     @apply  text-7xl font-black text-white;
     font-family:"overpass";
@@ -204,6 +209,30 @@
 
   }
 
+  .vakitList{
+    @apply px-5 py-3 w-full text-white flex justify-between bg-white bg-opacity-10;
+  }
+  .vakitList .vakit{
+    @apply text-gray-500 flex flex-col py-2  px-2 ;
+  }
+
+  .vakitList .vakit.active{
+    @apply text-green-600 border-green-600 border rounded-md;
+  }
+
+  .vakitList .vakit.active+.vakit{
+    @apply text-white;
+  }
+
+
+  .vakitList .vakit .label{
+    @apply text-xs block font-light leading-none;
+  }
+
+  .vakitList .vakit .value{
+    @apply text-sm block font-extrabold leading-none;
+  }
+  
 
 
 

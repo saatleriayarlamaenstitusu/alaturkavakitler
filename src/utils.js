@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 function createVakitObj(vakitler){
     var vakit = {
       "imsak": {
+        "key":"imsak",
         name: "İmsak",
         label: "İmsak'a",
         value: "",
@@ -14,6 +15,7 @@ function createVakitObj(vakitler){
         nextRamazan: "aksam"
       },
       "gunes": {
+        "key":"gunes",
         name: "Güneş",
         label: "Güneş'e",
         value: "",
@@ -25,6 +27,7 @@ function createVakitObj(vakitler){
         nextRamazan: "aksam"
       },
       "ogle": {
+        "key":"ogle",
         name: "Öğle",
         label: "Öğle'ye",
         value: "",
@@ -36,6 +39,7 @@ function createVakitObj(vakitler){
         nextRamazan: "aksam"
       },
       "ikindi": {
+        "key":"ikindi",
         name: "İkindi",
         label: "İkindi'ye",
         value: "",
@@ -47,6 +51,7 @@ function createVakitObj(vakitler){
         nextRamazan: "aksam"
       },
       "aksam": {
+        "key":"aksam",
         name: "Akşam",
         label: "Akşam'a",
         value: "",
@@ -58,6 +63,7 @@ function createVakitObj(vakitler){
         nextRamazan: "imsak"
       },
       "yatsi": {
+        "key":"yatsi",
         name: "Yatsı",
         label: "Yatsı'ya",
         value: "",
