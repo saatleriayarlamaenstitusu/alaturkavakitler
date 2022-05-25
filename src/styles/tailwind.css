@@ -5,6 +5,8 @@
 :root{
   --primary:#ae002e;
   --black:black;
+  --font1:"Inter";
+  --font2:"Overpass";
 }
 
 
@@ -163,12 +165,12 @@
 
   .clock .primaryClock{
     @apply  text-7xl font-black text-white;
-    font-family:"overpass";
+    font-family:var(--font2);
   }
 
   .clock .secondaryClock{
     @apply  text-3xl font-thin text-white;
-    font-family:"overpass";
+    font-family:var(--font2);
   }
 
   .vakitCounter .vakit {
@@ -200,7 +202,7 @@
 
   .vakitCounter .counter {
     @apply text-5xl font-extrabold mt-2 block;
-    font-family:"overpass";
+    font-family:var(--font2);
 
   }
 
@@ -213,7 +215,7 @@
     @apply px-5 py-3 w-full text-white flex justify-between bg-white bg-opacity-10;
   }
   .vakitList .vakit{
-    @apply text-gray-500 flex flex-col py-2  px-2 ;
+    @apply text-gray-500 flex flex-col py-1  px-2 ;
   }
 
   .vakitList .vakit.active{
@@ -226,11 +228,12 @@
 
 
   .vakitList .vakit .label{
-    @apply text-xs block font-light leading-none;
+    @apply text-xs block font-light leading-normal;
   }
 
   .vakitList .vakit .value{
-    @apply text-sm block font-extrabold leading-none;
+    @apply text-base block font-extrabold leading-none;
+    font-family:var(--font2);
   }
   
 
