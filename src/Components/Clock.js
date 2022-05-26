@@ -20,7 +20,6 @@ function Clock(props){
             {calculateAlaturka(date,vakitler)}
             </div>
             <div className="normalClock secondaryClock ">{date.setLocale('tr').toLocaleString(DateTime.TIME_SIMPLE)}</div>
-            Akşam: { vakitler[date.toISODate()] && vakitler[ date.toISODate()].aksam}
         </div>
     )
 }

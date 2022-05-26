@@ -1,4 +1,7 @@
 import { DateTime } from "luxon";
+import 'hijri-date';
+
+const hijriMonths= ['Muharrem', 'Safer', 'Rebiülevvel', 'Rebiülahir', 'Cemaziyelevvel', 'Cemaziyelahir', 'Recep', 'Şaban', 'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce'];
 
 function createVakitObj(vakitler){
     var vakit = {
@@ -111,8 +114,21 @@ function createVakitObj(vakitler){
 
   //TODO find alaturka fonksiyonunu buraya geçir
 
+  //todo akşam vaktinden sonra gün değiştir
+function nowHijri(format){
+  var hDate= new Date().toHijri();
+  if (format=="object"){
+    return {date:hDate._date, month:hDate._month,monthName:hijriMonths[hDate._month-1], year:hDate._year}
+  }
+
+  else{
+    return `${hDate._date} ${hijriMonths[hDate._month-1]} ${hDate._year} `
+  }
+
+return ``
+
+}
 
 
 
-
-  export { createVakitObj,findVakit}
+  export { createVakitObj,findVakit,nowHijri}
