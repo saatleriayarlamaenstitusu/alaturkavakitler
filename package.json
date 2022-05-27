@@ -30,7 +30,7 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "deploy2": "echo alaturkavakitler.abdullahog.uk > ./build/CNAME && gh-pages -d build"
+    "deploy2": "echo alaturkavakitler.com > ./build/CNAME && gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [

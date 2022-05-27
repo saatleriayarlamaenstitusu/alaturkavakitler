@@ -14,7 +14,7 @@ function Clock(props){
       }, []);
 
     /* TODO: Ayarlardan gelen varsayılan ve gösterilecek saate göre düzenlenecek */
-    return(
+    return vakitler=="vakityok"?"Loading":(
         <div className="clock">
             <div className="alaturkaClock primaryClock ">
             {calculateAlaturka(date,vakitler)}
@@ -28,6 +28,7 @@ function Clock(props){
 
 //TODO cleanup
 function calculateAlaturka(date, vakitler){
+
 var aksam=DateTime.fromSQL( date.toISODate() +" " + vakitler[ date.toISODate()].aksam)
 
 //normal saat akşam vaktinden önceyse önceki günün akşam vakti

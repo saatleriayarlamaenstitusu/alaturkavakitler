@@ -20,7 +20,7 @@ import BlogDetails from './Pages/BlogDetails'
 import NotFound from './Pages/NotFound'
 
 function App() {
-  const [city, setCity] = useLocalstorageState("city", "sehirsec");
+  const [city, setCity] = useLocalstorageState("city", {"plate":"34", "name":"İSTANBUL"});
   const [vakitler, setVakitler] = useLocalstorageState("vakitler", "vakityok");
   const [vakit, setVakit] = useState("vakityok");
   const [currentVakit, setCurrentVakit] = useState("vakityok");
