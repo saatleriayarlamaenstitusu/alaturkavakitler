@@ -24,9 +24,10 @@ const TopNav =()=>{
 <div className="flex row items-center">
 <Select className="city mr-2" placeholder="Şehir Seç" classNamePrefix="city" value={{ value: city.plate, label: city.name }} options={citiesOptions}  onChange={changeCity}/>
 <DropdownMenu svgIcon={`${process.env.PUBLIC_URL}/Icons/kababmenu.svg`}>
-<NavLink to="/ayarlar" className="nav-link location">Ayarlar</NavLink>
-<NavLink to="/saatuzerine" className="nav-link location">Saat Üzerine</NavLink>
-<NavLink to="/hakkinda" className="nav-link location">Hakkında</NavLink>
+<NavLink to="/ayarlar" className="nav-link">Ayarlar</NavLink>
+<NavLink to="/saatuzerine" className="nav-link">Saat Üzerine</NavLink>
+<NavLink to="/yenilikler" className="nav-link">Yenilikler</NavLink>
+<NavLink to="/hakkinda" className="nav-link">Hakkında</NavLink>
 </DropdownMenu>
 </div>
 

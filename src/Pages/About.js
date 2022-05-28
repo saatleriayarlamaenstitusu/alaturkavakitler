@@ -1,10 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-const About =()=>{
+const About =(props)=>{
         return(
             <div className=''>
-                About
+                <h1 className='topTitle'>{props.topTitle}. </h1> 
+
             </div>
         )
 }

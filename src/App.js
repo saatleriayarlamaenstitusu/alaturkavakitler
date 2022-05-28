@@ -58,12 +58,13 @@ function App() {
           <Routes>
             <Route path='/giris' element={<Intro />} />
             <Route path='/' element={<HomePage />} />
-            <Route path='/saat' element={<ClockPage />} />
-            <Route path='/vakitler' element={<PrayerTimesPage />} />
-            <Route path='/takvim' element={<CalendarPage />} />
-            <Route path='/hakkinda' element={<About />} />
-            <Route path='/saat-uzerine' element={<Blog />} />
-            <Route path='/yazi/:id' element={<BlogDetails />} />
+            <Route path='/saat' element={<ClockPage topTitle="saat"/>} />
+            <Route path='/vakitler' element={<PrayerTimesPage topTitle="vakitler"/>} />
+            <Route path='/takvim' element={<CalendarPage topTitle="takvim"/>} />
+            <Route path='/hakkinda' element={<About topTitle="hakkında"/>} />
+            <Route path='/saatuzerine' element={<Blog key="saatuzerine" page="saatuzerine" topTitle="saat üzerine"/>} />
+            <Route path='/yenilikler' element={<Blog key="yenilikler" page="yenilikler" topTitle="yenilikler"/>} />
+            <Route path='detay/:page/:id' element={<BlogDetails />} />
             <Route path='*' element={<NotFound />} />
           </Routes>
           </div>
