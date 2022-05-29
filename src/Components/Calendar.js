@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { nowHijri } from "../utils";
 import { DateTime } from "luxon";
 
-function Takvim(props) {
+function Calendar(props) {
 	const [hijriDate, setHijriDate] = useState(nowHijri("object"));
     const [date, setDate] = useState(DateTime.now());
 
@@ -11,16 +11,16 @@ function Takvim(props) {
 		<div className="anasayfaCalendar">
 			<div className="calendars">
 				<div className="primaryCalendar">
-                    <div className="day">{hijriDate.date}</div>
+                    <div className="day">{hijriDate.date.toString().padStart(2,"0")}</div>
                     <div className="monthandyear"><span>{hijriDate.monthName}</span><span>{hijriDate.year}</span></div>
-                    <div className="dayName">{date.setLocale('tr').weekdayLong}</div>
                 </div>
 
                 <div className="secondaryCalendar"><b>{date.setLocale('tr').day}</b>{date.setLocale('tr').monthLong} {date.setLocale('tr').year}</div>
+                    <div className="dayName">{date.setLocale('tr').weekdayLong}</div>
 			</div>
 			<div className="moon"></div>
 		</div>
 	);
 }
 
-export default Takvim;
+export default Calendar;
