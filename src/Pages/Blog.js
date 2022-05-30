@@ -16,7 +16,6 @@ const Blog = (props)=>{
         fetchData()
       }, []);
 
-      console.log(data)
 
         return (
             <div className={`blogList ${props.page}`}>

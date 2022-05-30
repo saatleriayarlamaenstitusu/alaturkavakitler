@@ -1,7 +1,7 @@
 import React, {useContext,useEffect, useState} from 'react'
 import { AppContext } from './Context'
 import { DateTime } from "luxon";
-import {findVakit} from "../utils"
+import {findVakit,isKerahat} from "../utils"
 
 
 function VakitCounter(props){
@@ -42,7 +42,7 @@ if(currentVakit!=="vakityok"){
             <div className="counter ">
             {counter.hours.toString().padStart(2, 0) + ":" + counter.minutes.toString().padStart(2, 0) + ":"+ Number(counter.seconds).toFixed().toString().padStart(2, 0) }
             </div>
-            <span className="kerahat">Kerahat</span>
+            {(currentVakit=="gunes" || currentVakit=="ikindi") && isKerahat(counter,currentVakit,vakit) ? ( <span className="kerahat">Kerahat</span>):""}
         </div>
     ):(
 

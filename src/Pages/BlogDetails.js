@@ -19,7 +19,6 @@ const BlogDetails =(props)=>{
         fetchData()
       }, [id]);
 
-      console.log(data,page,id)
 
         return data!="icerikyok"?(
             <div className={`blogDetails ${page}`}>

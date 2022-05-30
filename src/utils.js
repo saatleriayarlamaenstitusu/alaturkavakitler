@@ -112,6 +112,20 @@ function createVakitObj(vakitler){
    return currentVakit;  
   }
 
+  //todo iskerahat
+function isKerahat(counter,currentVakit,vakit){
+if(currentVakit=="ikindi"){
+  return counter.hours==0&&counter.minutes<45
+}
+else if(currentVakit=="gunes"){
+  return (counter.hours==0&&counter.minutes<45) || (vakit["gunes"].valueDateObj.plus({ minutes: 45 })> DateTime.now())
+}
+
+
+return false;
+}
+
+
   //TODO find alaturka fonksiyonunu buraya geçir
 
   //todo akşam vaktinden sonra gün değiştir
@@ -131,4 +145,4 @@ return ``
 
 
 
-  export { createVakitObj,findVakit,nowHijri}
+  export { createVakitObj,findVakit,nowHijri,isKerahat}

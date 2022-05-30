@@ -182,7 +182,7 @@
   }
 
   .clock .secondaryClock{
-    @apply  text-3xl font-thin text-white;
+    @apply  text-2xl font-thin text-white;
     font-family:var(--font2);
   }
 
@@ -210,7 +210,8 @@
   }
 
   .vakitCounter .counterlabel {
-    @apply text-xl font-extralight my-3 block;
+    @apply text-lg font-extralight mt-5 block;
+    line-height:1;
   }
 
   .vakitCounter .counter {

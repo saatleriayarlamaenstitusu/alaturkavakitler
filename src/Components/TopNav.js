@@ -20,7 +20,7 @@ const TopNav =()=>{
         }
         return(
             <div className='topNav'> 
-<SVG id="logoGenis" src={`${process.env.PUBLIC_URL}/Icons/logo-wide.svg`} ></SVG>    
+<NavLink to="/" className="nav-link"><SVG id="logoGenis" src={`${process.env.PUBLIC_URL}/Icons/logo-wide.svg`} ></SVG></NavLink>    
 <div className="flex row items-center">
 <Select className="city mr-2" placeholder="Şehir Seç" classNamePrefix="city" value={{ value: city.plate, label: city.name }} options={citiesOptions}  onChange={changeCity}/>
 <DropdownMenu svgIcon={`${process.env.PUBLIC_URL}/Icons/kababmenu.svg`}>
