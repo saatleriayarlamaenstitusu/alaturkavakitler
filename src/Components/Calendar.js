@@ -15,8 +15,12 @@ function Calendar(props) {
                     <div className="monthandyear"><span>{hijriDate.monthName}</span><span>{hijriDate.year}</span></div>
                 </div>
 
-                <div className="secondaryCalendar"><b>{date.setLocale('tr').day}</b>{date.setLocale('tr').monthLong} {date.setLocale('tr').year}</div>
+                <div className="secondaryCalendar">
+				<b>{date.setLocale('tr').day}</b>
+				{date.setLocale('tr').monthLong} {date.setLocale('tr').year}
                     <div className="dayName">{date.setLocale('tr').weekdayLong}</div>
+				
+				</div>
 			</div>
 			<div className="moon"></div>
 		</div>
