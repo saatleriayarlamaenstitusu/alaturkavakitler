@@ -9,6 +9,32 @@
   --font2:"Overpass";
 }
 
+:root[data-vakit="imsak"]{
+  --primary:#00b7ff;
+}
+
+:root[data-vakit="gunes"]{
+  --primary:#ffbd33;
+}
+
+:root[data-vakit="ogle"]{
+  --primary:#ffd733;
+}
+
+:root[data-vakit="ikindi"]{
+  --primary:#ff8c33;
+}
+
+:root[data-vakit="aksam"]{
+  --primary:#0491fb;
+}
+
+:root[data-vakit="yatsi"]{
+  --primary:#2e3b83;
+}
+
+
+
 
 @layer components {
 
@@ -312,7 +338,7 @@ z-index: -1;
 }
 
 .dayName {
-  color: #aa252c;
+  color: var(--primary);
   flex: 1 1 100%;
   font-weight: 400;
   letter-spacing: 3px;

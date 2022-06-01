@@ -8,7 +8,11 @@ function VakitCounter(props){
     var {vakitler,vakit,currentVakit, setCurrentVakit,loading,error} = useContext(AppContext)
     const [counter, setCounter] = useState({'hours':"0", 'minutes':0, 'seconds':0});
     useEffect(() => {
-        if(currentVakit=="vakityok" ||  !(findVakit(vakit)==currentVakit) ){  setCurrentVakit(findVakit(vakit)) }
+        var foundVakit=findVakit(vakit);
+        if(currentVakit=="vakityok" ||  !(foundVakit==currentVakit) ){ 
+            setCurrentVakit(foundVakit) 
+            document.documentElement.dataset.vakit=foundVakit;
+        }
 if(currentVakit!=="vakityok"){
     var now=DateTime.now()
     const vakitInterval = setInterval(()=>{
