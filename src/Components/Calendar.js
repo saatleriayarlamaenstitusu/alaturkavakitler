@@ -16,7 +16,7 @@ function Calendar(props) {
                 </div>
 
                 <div className="secondaryCalendar">
-				<b>{date.setLocale('tr').day}</b>
+				<b>{date.setLocale('tr').day.toString().padStart(2,"0")}</b>
 				{date.setLocale('tr').monthLong} {date.setLocale('tr').year}
                     <div className="dayName">{date.setLocale('tr').weekdayLong}</div>
 				
