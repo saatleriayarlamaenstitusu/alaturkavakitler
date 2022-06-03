@@ -12,6 +12,8 @@ function VakitCounter(props){
         if(currentVakit=="vakityok" ||  !(foundVakit==currentVakit) ){ 
             setCurrentVakit(foundVakit) 
             document.documentElement.dataset.vakit=foundVakit;
+            console.log(vakit)
+            if(currentVakit!="vakityok"){ document.querySelector("[name=theme-color]").content=vakit[foundVakit].color};
         }
 if(currentVakit!=="vakityok"){
     var now=DateTime.now()

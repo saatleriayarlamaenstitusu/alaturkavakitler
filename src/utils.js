@@ -15,7 +15,8 @@ function createVakitObj(vakitler){
         valueDateObj2: "",
         icon: "",
         next: "gunes",
-        nextRamazan: "aksam"
+        nextRamazan: "aksam",
+        color:"#00b7ff"
       },
       "gunes": {
         "key":"gunes",
@@ -27,7 +28,8 @@ function createVakitObj(vakitler){
         valueDateObj2: "",
         icon: "",
         next: "ogle",
-        nextRamazan: "aksam"
+        nextRamazan: "aksam",
+        color:"#ffbd33"
       },
       "ogle": {
         "key":"ogle",
@@ -39,7 +41,8 @@ function createVakitObj(vakitler){
         valueDateObj2: "",
         icon: "",
         next: "ikindi",
-        nextRamazan: "aksam"
+        nextRamazan: "aksam",
+        color:"#ffd733"
       },
       "ikindi": {
         "key":"ikindi",
@@ -51,7 +54,8 @@ function createVakitObj(vakitler){
         valueDateObj2: "",
         icon: "",
         next: "aksam",
-        nextRamazan: "aksam"
+        nextRamazan: "aksam",
+        color:"#ff8c33"
       },
       "aksam": {
         "key":"aksam",
@@ -63,7 +67,8 @@ function createVakitObj(vakitler){
         valueDateObj2: "",
         icon: "",
         next: "yatsi",
-        nextRamazan: "imsak"
+        nextRamazan: "imsak",
+        color:"#0491fb"
       },
       "yatsi": {
         "key":"yatsi",
@@ -75,7 +80,8 @@ function createVakitObj(vakitler){
         valueDateObj2: "",
         icon: "",
         next: "imsak",
-        nextRamazan: "imsak"
+        nextRamazan: "imsak",
+        color:"#2e3b83"
       }
     }
     var bugunISO = DateTime.now().toISODate()
