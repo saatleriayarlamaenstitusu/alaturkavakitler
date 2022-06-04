@@ -41,9 +41,8 @@ function App() {
 
   useEffect(() => { 
         /* TODO: saat 12yi geçince vakitleri yeniden çek */
-        console.log(city);
         var lastAvailable = vakitler=="vakityok" ? DateTime.now() :  DateTime.fromISO(Object.keys(vakitler)[Object.keys(vakitler).length-1])
-        if(vakitler=="vakityok" || lastAvailable.diffNow("days") < 5 ||  (prevCity && city.plate !==  prevCity.plate )){
+        if(vakitler=="vakityok" || lastAvailable.diffNow("days").days < 5 ||  ( prevCity && city.plate !==  prevCity.plate )){
           fetchVakitler() 
         }
         
