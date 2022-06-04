@@ -1,3 +1,4 @@
+import  {useEffect,useRef} from 'react'
 import { DateTime } from "luxon";
 import 'hijri-date';
 
@@ -118,7 +119,6 @@ function createVakitObj(vakitler){
    return currentVakit;  
   }
 
-  //todo iskerahat
 function isKerahat(counter,currentVakit,vakit){
 if(currentVakit=="ikindi"){
   return counter.hours==0&&counter.minutes<45
@@ -126,7 +126,6 @@ if(currentVakit=="ikindi"){
 else if(currentVakit=="gunes"){
   return (counter.hours==0&&counter.minutes<45) || (vakit["gunes"].valueDateObj.plus({ minutes: 45 })> DateTime.now())
 }
-
 
 return false;
 }
@@ -150,5 +149,14 @@ return ``
 }
 
 
+function usePrevious(value) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value; //assign the value of ref to the argument
+  },[value]); //this code will run when the value of 'value' changes
+  return ref.current; //in the end, return the current ref value.
+}
 
-  export { createVakitObj,findVakit,nowHijri,isKerahat}
+
+
+  export { createVakitObj,findVakit,nowHijri,isKerahat,usePrevious}

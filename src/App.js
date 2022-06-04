@@ -1,10 +1,10 @@
 import './App.css';
-import React, {useContext,useEffect, useState} from 'react'
+import React, {useContext,useEffect, useState,useRef} from 'react'
 import { AppContext } from './Components/Context'
 import { useLocalstorageState } from "rooks";
 import useFetch from 'use-http'
 import { BrowserRouter, Routes, Route, useLocation, NavLink, useNavigate } from 'react-router-dom'
-import {createVakitObj,findVakit} from "./utils"
+import {createVakitObj,findVakit,usePrevious} from "./utils"
 import TopNav from './Components/TopNav'
 import BottomNav from './Components/BottomNav'
 
@@ -18,28 +18,40 @@ import About from './Pages/About'
 import Blog from './Pages/Blog'
 import BlogDetails from './Pages/BlogDetails'
 import NotFound from './Pages/NotFound'
+import { DateTime } from 'luxon';
 
 function App() {
   const [city, setCity] = useLocalstorageState("city", {"plate":"34", "name":"İSTANBUL"});
+  const prevCity = usePrevious(city);
+
   const [vakitler, setVakitler] = useLocalstorageState("vakitler", "vakityok");
   const [vakit, setVakit] = useState("vakityok");
   const [currentVakit, setCurrentVakit] = useState("vakityok");
 
   const { get,response,loading, error, data: vakitResponse = [] } = useFetch(`${process.env.REACT_APP_VAKIT_BASE_URL+city.plate}.json`)
+  async function fetchVakitler() {
+    console.log("fetchVakitler")
+    const data = await get()
+    if (response.ok) {
+      setVakitler(data);
+    }
+  }
+
+
+
   useEffect(() => { 
         /* TODO: saat 12yi geçince vakitleri yeniden çek */
-
-    fetchVakitler() 
-  
-    async function fetchVakitler() {
-      const data = await get()
-      if (response.ok) {
-        setVakitler(data);
-      }
-    }
-  console.log("fetchVakitler")
-  }, [city,get,response]) 
- 
+        console.log(city);
+        var lastAvailable = vakitler=="vakityok" ? DateTime.now() :  DateTime.fromISO(Object.keys(vakitler)[Object.keys(vakitler).length-1])
+        if(vakitler=="vakityok" || lastAvailable.diffNow("days") < 5 ||  (prevCity && city.plate !==  prevCity.plate )){
+          fetchVakitler() 
+        }
+        
+      }, [city,get,response]) 
+      
+      
+      
+    
   useEffect(() => { 
     setVakit(createVakitObj(vakitler))
     console.log("setVakit")

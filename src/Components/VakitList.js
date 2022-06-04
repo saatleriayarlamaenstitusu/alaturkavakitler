@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 function VakitList(props){
     var {vakit,currentVakit, setCurrentVakit,loading,error} = useContext(AppContext)
 
-
+//todo normal saat 12den sonra dünün vakiterini göster
 return vakit=="vakityok"?"Loading":(
 <div className='vakitList '>
 {Object.values(vakit).map(item=>{return(
