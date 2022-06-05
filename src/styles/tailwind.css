@@ -508,4 +508,101 @@ z-index: -1;
   font-weight: 800;
 }
 
+.aboutContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.aboutContent #hilal {
+  margin-bottom: 2em;
+  margin-top: 1em;
+  width: 1.5em;
+  height: auto;
+}
+
+.aboutContent #makili {
+  width: 7.5em;
+  height: auto;
+}
+
+.aboutContent .beyit{
+  color: white;
+  font-family: var(--font2);
+  white-space: nowrap;
+  font-size: .8em;
+  margin: 2em 0;
+  display: block;
+  z-index: 1;
+  font-weight: 200;
+ 
+}
+
+.aboutContent .beyit::before{
+  bottom: -100%;
+  color: var(--primary);
+  content: "\201C";
+  display: block;
+  font-family: var(--font2);
+  font-size: 100px;
+  left: -12px;
+  line-height: 0;
+  opacity: .5;
+  position: absolute;
+  z-index: -1;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.aboutDetails .creditsItem {
+  color: white;
+  padding: 1em 0;
+  font-size: 0.7em;
+  display: flex;
+  border-radius: .5em;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font2);
+}
+
+.aboutDetails b {
+  opacity: 1;
+  width: 100%;
+  text-align: center;
+  font-weight: 800;
+  color: var(--primary);
+  font-size: .9em;
+  margin-bottom: 0;
+}
+
+.aboutDetails .name {
+  font-size: 1em;
+  width: 100%;
+  text-align: center;
+  line-height: 2;
+  font-weight: 200;
+}
+
+.aboutDetails .links a {
+  margin: 0 .5em;
+  background: var(--primary);
+  padding: 5px;
+  border-radius: 3px;
+}
+
+.aboutDetails .links svg {
+  width: 1em;
+  height: 1em;
+}
+
+
+.aboutContent  #sae {
+  width: 150px;
+  margin-top:1em;
+}
+
+
+
 }
