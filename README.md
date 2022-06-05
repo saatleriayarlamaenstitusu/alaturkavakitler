@@ -1,6 +1,6 @@
 # Alaturka Vakitler
 
-https://alaturkavakitler.abdullahog.uk/
+https://alaturkavakitler.com/
 
 - Alaturka Saat
 - Rumi Hicri takvim
