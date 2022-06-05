@@ -120,11 +120,11 @@
       backdrop-filter: blur(9px);
   }
   .bottomNav .nav-link{
-      @apply flex items-center grow justify-center   opacity-50;
+      @apply flex items-center grow justify-center   opacity-25;
   }
 
   .bottomNav .nav-link svg{
-    @apply h-6 z-10
+    @apply h-5 z-10
 }
   
   .bottomNav .nav-link.active , .bottomNav .nav-link:hover{
@@ -141,7 +141,7 @@
   }
   .bottomNav  .nav-link .nav-button{
       @apply flex items-center justify-center relative;
-      height: 4rem;
+      height: 3rem;
       width: 100%;
 
   }
@@ -156,14 +156,13 @@
 .bottomNav  .nav-link.active:before{
     content: "";
     position: absolute;
-    bottom: 5px;
-    left: 50%;
-    width:5px;
-    height: 5px;
-    background: var(--primary);
+    bottom: 3px;
+    left: 50%; 
+    width:3px;
+    height: 3px;
+    background: white;
     transform: translate(-50%,-50%);
     border-radius: 50px;
-    filter: blur(1px);
     z-index: 2
     
 }
@@ -178,10 +177,10 @@
   
   .bottomNav .nav-link.active .nav-button:before {
       @apply   absolute z-0 bg-primary-color;
-      width:3em;
-      height:36%;
+      width:2.5em;
+      height:50%;
       left:50%;
-      bottom:-12px;
+      bottom:-4px;
       content:"";
       transform: translate(-50%, -50%);
       filter: blur(18px);
@@ -196,9 +195,9 @@
       transform: translate(-50%, -50%);
       left:50%;
       border-radius: 50px;
-      filter: blur(4px);
-      height: 4px;
-      bottom: 0;
+      filter: blur(6px) brightness(3.5);
+      height: 8px;
+      bottom: -8px;
       width: 1.25em;
     
   }
@@ -219,7 +218,7 @@
 
   .appContent{
     @apply overflow-auto;
-    height: calc(100vh - 164px);
+    height: calc(100vh - 148px);
   }
 
   .homePage{
