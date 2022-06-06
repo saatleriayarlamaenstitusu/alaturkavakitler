@@ -557,8 +557,8 @@ z-index: -1;
 
 .aboutDetails .creditsItem {
   color: white;
-  padding: 1em 0;
-  font-size: 0.7em;
+  padding: 1.5em 0;
+    font-size: 0.7em;
   display: flex;
   border-radius: .5em;
   flex-wrap: wrap;
@@ -583,6 +583,7 @@ z-index: -1;
   text-align: center;
   line-height: 2;
   font-weight: 200;
+  margin-bottom: 0.5em;
 }
 
 .aboutDetails .links a {
@@ -600,7 +601,7 @@ z-index: -1;
 
 .aboutContent  #sae {
   width: 150px;
-  margin-top:1em;
+  margin-top:3em;
 }
 
 
