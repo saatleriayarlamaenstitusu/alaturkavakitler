@@ -272,10 +272,30 @@
   }
 
   .vakitCounter .kerahat {
-    @apply bg-red-800 text-xs py-1 px-2 inline-block rounded-full leading-none;
-
+    @apply bg-red-800 text-xs py-1 px-2 inline-block leading-none;
+    position: relative;
+    overflow: hidden;
+    padding-left: 2em;
+    font-weight: 400;
+    text-transform: uppercase;
+    border-radius:5px;
   }
-
+  .vakitCounter .kerahat:before {
+    color: rgb(153 27 27/var(--tw-bg-opacity));
+   content: "!";
+    display: block;
+    position: absolute;
+    left: -2px;
+    top: -2px;
+    font-size: 2em;
+    font-weight: 900;
+    line-height:.5;
+    background : white;
+  padding: 3px 6px;
+    z-index: 3;
+    border-radius: 10px;
+    letter-spacing: 0;
+}
   .vakitList{
     @apply px-5 py-3 w-full text-white flex justify-between;
     background:rgb(26 26 26);
@@ -523,7 +543,7 @@ z-index: -1;
 }
 
 .aboutContent #makili {
-  width: 7.5em;
+  width: 9.5em;
   height: auto;
 }
 
