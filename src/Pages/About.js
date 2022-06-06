@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { NavLink} from 'react-router-dom'
 
 const About =(props)=>{
         return(
@@ -7,7 +8,9 @@ const About =(props)=>{
                 <h1 className='topTitle'>{props.topTitle}. </h1> 
                 <div className='aboutContent'>
                 <svg xmlns="http://www.w3.org/2000/svg" id="hilal" width="34.836" height="30.879" viewBox="0 0 9.217 8.17" > <g fill="#f9f1f2"> <path d="M547.8 468.173c-28.93.027-56.165 7.537-81.81 20.927 1.325-.063-1.327.016-.001-.015 94.406.714 163.81 71.267 163.81 159.958-.013 88.443-71.234 159.29-159.676 159.63 20.156 13.02 50.204 19.625 77.41 19.703 99.331 3.57 181.909-81.016 181.908-180.348 0-99.331-81.3-181.622-181.64-179.855z" style={{ isolation: "auto", mixBlendMode: "normal", solidColor: "#000", solidOpacity: "1", }} strokeWidth="17.013" color="#000" enableBackground="accumulate" overflow="visible" transform="translate(-7.322 -10.614) scale(.02267)" ></path> <path fillRule="evenodd" strokeWidth="1" d="M375.923 618.152l17.604-52.392 31.759 45.691 55.926.442-33.966 44.889 16.54 52.654-52.59-18.246-45.123 32.074 1.181-55.876-44.333-32.885" transform="translate(-7.322 -10.614) scale(.02267)" ></path> </g> </svg>                <svg xmlns="http://www.w3.org/2000/svg" id="makili" width="158.858" height="102.283" viewBox="0 0 42.031 27.063" > <path fill="#f9f1f2" fillRule="evenodd" strokeWidth="0.259" d="M-93.01 550.771h3.114v10.596h-3.114v-7.603h2.996v-2.873h-2.996zm5.989 0h.119v10.479h5.986v.117h-6.105zm2.994 0h3.111v7.604h-3.111v-4.611h2.994v-2.873h-2.994zm5.986 0h.12v2.993h2.991v.12h-2.992v7.366h2.875v-4.492h.117v4.61h-3.111zm2.994 0h3.113v.12h-3.113zm5.986 0h.122v10.596h-3.114v-7.603h.12v7.486h2.872zm2.995 0h3.113v4.61h-.12v-4.49h-2.874v13.47h-.12zm5.986 0h.121v2.993h2.873v-2.993h.12v3.114h-2.993v2.873h2.992v4.61h-.119v-4.491h-2.873v4.49h-.121zm5.988 0h3.113v10.596h-3.113v-7.603h2.992v-2.873h-2.992zm-38.799 3.114v7.365h2.877v-7.365zm8.98 0v4.369h2.878v-4.37zm29.938 0v7.365h2.873v-7.365zm-9.1 4.369h.12v16.467h5.986v.117h-6.105zm-29.937 5.99h3.114v10.477h2.875v-10.477h.119v10.594h-3.112V564.36h-2.996zm8.983 0h3.111v10.594h-3.111v-7.602h2.994v-2.875h-2.994zm5.986 0h.12v2.992h2.874v-2.992h.117v3.111h-2.992v2.875h2.992v4.608h-.117v-4.49h-2.875v4.49h-.119zm5.988 0h.12v.117h-.12zm2.992 0h.122v2.992h2.992v.12h-2.992v7.365h2.873v-4.49h.119v4.607h-3.114zm8.98 0h3.114v4.608h-2.992v2.875h2.992v.119h-3.113zm5.99 0h3.112v.117h-2.994v10.477h-.119zm-5.868.117v4.373h2.873v-4.373zm-33.05 2.875h.118v10.479H-51.1v-10.479h.121v10.598h-42.03zm20.956 0h.12v7.602h-.12zm-11.857.12v7.365h2.877v-7.366z" transform="translate(93.01 -550.771)" ></path> </svg>               
+                <NavLink to="/amentu#hakkinda" className="nav-link">
                 <span className='relative beyit'>bilmezdim neden bazı saatler alaturka vakitlere ayarlı</span>
+                </NavLink>
                 <div className='aboutDetails'>
 
 

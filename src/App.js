@@ -17,6 +17,8 @@ import CalendarPage from './Pages/CalendarPage'
 import About from './Pages/About'
 import Blog from './Pages/Blog'
 import BlogDetails from './Pages/BlogDetails'
+import Amentu from './Pages/Amentu'
+
 import NotFound from './Pages/NotFound'
 import { DateTime } from 'luxon';
 
@@ -76,6 +78,8 @@ function App() {
             <Route path='/saatuzerine' element={<Blog key="saatuzerine" page="saatuzerine" topTitle="saat üzerine"/>} />
             <Route path='/yenilikler' element={<Blog key="yenilikler" page="yenilikler" topTitle="yenilikler"/>} />
             <Route path='detay/:page/:id' element={<BlogDetails />} />
+            <Route path='/amentu' element={<Amentu key="amentu" page="amentu" topTitle="Amentü"/>} />
+
             <Route path='*' element={<NotFound />} />
           </Routes>
           </div>
