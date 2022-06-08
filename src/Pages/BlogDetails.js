@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import {    useParams  } from "react-router-dom";
 import * as prismic from "@prismicio/client";
 import { RichText } from 'prismic-reactjs';
-
+import Share from "../Components/Share"
 const BlogDetails =(props)=>{
     let { page,id } = useParams();
     const client = prismic.createClient("alaturkavakitler");
@@ -37,8 +37,10 @@ const BlogDetails =(props)=>{
 </svg>
                             {data.data.source[0].text}</span>:""}
 
-                            {data.data.source ? <div className='detail'><RichText  render={data.data.text} /></div>:""}
-
+                            {data.data.source ? <div className='detail'><RichText  render={data.data.text} />
+                            
+<Share label="Paylaş" />
+                            </div>:""}
             </div>
         ):""
 }

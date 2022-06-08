@@ -531,6 +531,21 @@ z-index: -1;
   font-weight: 800;
 }
 
+.sharer-button{
+  @apply bg-primary-color flex text-white items-end font-bold py-1 px-2 rounded-full;
+  line-height:1;
+  font-size:.8em;
+}
+
+.sharer-button-text{
+  @apply ml-2;
+}
+
+.sharer-button svg {
+  width: .8em;
+}
+
+
 .aboutContent {
   display: flex;
   flex-direction: column;

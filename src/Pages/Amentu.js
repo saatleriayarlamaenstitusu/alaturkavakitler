@@ -1,5 +1,6 @@
 import { React, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import Share from "../Components/Share"
 
 const Amentu = (props) => {
 	useEffect(() => {
@@ -254,7 +255,9 @@ const Amentu = (props) => {
 				<p>varoldum kayrasıyla Varedenin&nbsp;</p>
 				<p>eşref-i mahl&ucirc;kat&nbsp;</p>
 				<p>nedir bildim.</p>
+			<div className="mt-5"><Share  label="Paylaş" /></div>
 			</div>
+
 		</div>
 	);
 };
