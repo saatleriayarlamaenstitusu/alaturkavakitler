@@ -5,8 +5,8 @@ const Amentu = (props) => {
 	useEffect(() => {
 		if (window.location.hash) {
 			setTimeout(() => {
-				document.querySelector(window.location.hash).scrollIntoView();
-			}, 1000);
+				document.querySelector(window.location.hash).scrollIntoView({behavior: "smooth"});
+			}, 500);
 		}
 	});
 
@@ -16,16 +16,19 @@ const Amentu = (props) => {
 				src={`${process.env.PUBLIC_URL}/img/ismetozel.jpg`}
 				alt="ismet özel"
 			></img>
-			<h1 className="topTitle">{props.topTitle} </h1>
+			<h1 className="topTitle"
+			style={{ fontSize:"4em",lineHeight: "0", fontWeight: 800, margin: "1.5em 0 .75em 0" }}
 
+			>{props.topTitle} </h1>
 			<h2
 				className="block"
-				style={{ fontSize: "18px", fontWeight: 800, marginBottom: "1em" }}
+				style={{ fontSize: "18px", fontWeight: 800}}
 			>
 				İsmet Özel
 			</h2>
+			<span style={{marginBottom: "1em",fontStyle:"italic",opacity:".5",fontSize:".8em" }}>1974</span>
 
-			<div className="detail">
+			<div className="detail"  style={{marginTop: "4em",fontSize:".9em"}}>
 				<p>İnsan&nbsp;</p>
 				<p>eşref-i mahl&ucirc;kattır derdi babam&nbsp;</p>
 				<p>bu s&ouml;z&uuml;n s&ouml;zler i&ccedil;inde bir yeri vardı&nbsp;</p>

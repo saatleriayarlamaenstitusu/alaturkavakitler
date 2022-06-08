@@ -297,11 +297,11 @@
     letter-spacing: 0;
 }
   .vakitList{
-    @apply px-5 py-3 w-full text-white flex justify-between;
+    @apply px-2 py-3 rounded-md w-full text-white flex justify-between;
     background:rgb(26 26 26);
   }
   .vakitList .vakit{
-    @apply text-gray-500 flex flex-col p-1;
+    @apply text-gray-500 text-base flex flex-col p-1;
   }
 
   .vakitList .vakit.active{
@@ -309,16 +309,17 @@
   }
 
   .vakitList .vakit.active+.vakit{
-    @apply text-white;
+    @apply text-white ;
   }
 
 
   .vakitList .vakit .label{
-    @apply text-xs block font-light leading-normal;
+    @apply block font-light  leading-normal;
+    font-size:10px;
   }
 
   .vakitList .vakit .value{
-    @apply text-base block font-extrabold leading-none;
+    @apply block font-extrabold leading-none;
     font-family:var(--font2);
   }
 
@@ -367,9 +368,9 @@ z-index: -1;
   display: flex;
   flex-direction: column;
   flex: 1 1 6em;
-  font-size: 1.3em;
   font-weight: 300;
   letter-spacing: 1px;
+  margin-left: 0.5em;
 }
 
 
@@ -395,6 +396,7 @@ z-index: -1;
   line-height: 1;
   padding-top: 1rem;
   text-align: center;
+  border-radius:5px
 }
 
 .secondaryCalendar {
@@ -413,6 +415,7 @@ z-index: -1;
   font-weight: 800;
   margin-right: .5em;
   padding: 10px 5px;
+  border-radius:5px;
 }
 
 .anasayfaCalendar .moon {
