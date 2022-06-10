@@ -545,6 +545,13 @@ z-index: -1;
   width: .8em;
 }
 
+.fallback-share{
+  @apply flex gap-2
+}
+
+.fallback-share button{
+}
+
 
 .aboutContent {
   display: flex;
