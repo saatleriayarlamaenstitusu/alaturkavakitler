@@ -297,7 +297,7 @@
     letter-spacing: 0;
 }
   .vakitList{
-    @apply px-2 py-3 rounded-md w-full text-white flex justify-between;
+    @apply px-2 py-3 rounded-xl w-full text-white flex justify-between;
     background:rgb(26 26 26);
   }
   .vakitList .vakit{
@@ -420,6 +420,18 @@ z-index: -1;
 
 .anasayfaCalendar .moon {
   flex: 0 1 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+}
+
+.anasayfaCalendar .moon svg {
+  width: 85px;
+  height: 85px;
+  background: #3e3e3e;
+  border-radius: 75%;
+  border: 1px solid gray;
 }
 
 .blogList{

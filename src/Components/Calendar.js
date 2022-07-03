@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { nowHijri } from "../utils";
 import { DateTime } from "luxon";
+import SVG from 'react-inlinesvg';
 
 function Calendar(props) {
 	const [hijriDate, setHijriDate] = useState(nowHijri("object"));
@@ -22,7 +23,10 @@ function Calendar(props) {
 				
 				</div>
 			</div>
-			<div className="moon"></div>
+			<div className="moon">
+			<SVG src={`${process.env.PUBLIC_URL}/Icons/moon/${hijriDate.date.toString()}.svg`} ></SVG> 
+
+			</div>
 		</div>
 	);
 }
