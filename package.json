@@ -16,6 +16,7 @@
     "react-helmet": "^6.1.0",
     "react-inlinesvg": "^3.0.0",
     "react-router-dom": "^6.3.0",
+    "react-router-sitemap-maker": "^1.1.0",
     "react-scripts": "5.0.0",
     "react-select": "^5.3.2",
     "react-share": "^4.4.0",
@@ -56,6 +57,10 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.2",
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-register": "^6.26.0",
     "gh-pages": "^3.2.3",
     "postcss": "^8.4.8",
     "tailwindcss": "^3.0.23"
