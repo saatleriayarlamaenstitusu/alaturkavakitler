@@ -1,4 +1,6 @@
 import './App.css';
+import ReactGA from 'react-ga';
+
 import React, {useContext,useEffect, useState,useRef} from 'react'
 import { AppContext } from './Components/Context'
 import { useLocalstorageState } from "rooks";
@@ -21,6 +23,9 @@ import Amentu from './Pages/Amentu'
 
 import NotFound from './Pages/NotFound'
 import { DateTime } from 'luxon';
+
+const TRACKING_ID = "UA-111583366-3"; 
+ReactGA.initialize(TRACKING_ID);
 
 function App() {
   const [city, setCity] = useLocalstorageState("city", {"plate":"34", "name":"İSTANBUL"});
@@ -59,6 +64,10 @@ function App() {
 
   }, [vakitler]) 
   
+
+  useEffect(() => {
+    ReactGA.pageview(window.location.pathname + window.location.search);
+  }, []);
 
   return (
     <AppContext.Provider value={{ city, setCity, vakitler, vakit ,currentVakit,setCurrentVakit,loading,error}}>

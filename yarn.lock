@@ -8832,6 +8832,11 @@
   "resolved" "https://registry.npmjs.org/react-from-dom/-/react-from-dom-0.6.2.tgz"
   "version" "0.6.2"
 
+"react-ga@^3.3.1":
+  "integrity" "sha512-4Vc0W5EvXAXUN/wWyxvsAKDLLgtJ3oLmhYYssx+YzphJpejtOst6cbIHCIyF50Fdxuf5DDKqRYny24yJ2y7GFQ=="
+  "resolved" "https://registry.npmjs.org/react-ga/-/react-ga-3.3.1.tgz"
+  "version" "3.3.1"
+
 "react-helmet@^6.1.0":
   "integrity" "sha512-4uMzEY9nlDlgxr61NL3XbKRy1hEkXmKNXhjbAIOVw5vcFrsdYbH2FEwcNyWvWinl103nXgzYNlns9ca+8kFiWw=="
   "resolved" "https://registry.npmjs.org/react-helmet/-/react-helmet-6.1.0.tgz"
@@ -8981,7 +8986,7 @@
     "loose-envify" "^1.4.0"
     "prop-types" "^15.6.2"
 
-"react@*", "react@^16.13.1 || ^17.0.0", "react@^16.3.0 || ^17", "react@^16.3.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0  || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^17.0.2", "react@>= 16", "react@>=16.0.0", "react@>=16.3.0", "react@>=16.6.0", "react@>=16.8", "react@>=16.8.0", "react@17.0.2":
+"react@*", "react@^15.6.2 || ^16.0 || ^17 || ^18", "react@^16.13.1 || ^17.0.0", "react@^16.3.0 || ^17", "react@^16.3.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0  || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^17.0.2", "react@>= 16", "react@>=16.0.0", "react@>=16.3.0", "react@>=16.6.0", "react@>=16.8", "react@>=16.8.0", "react@17.0.2":
   "integrity" "sha512-gnhPt75i/dq/z3/6q/0asP78D0u592D5L1pd7M8P+dck6Fu/jJeL6iVVK23fptSUZj8Vjf++7wXA8UNclGQcbA=="
   "resolved" "https://registry.npmjs.org/react/-/react-17.0.2.tgz"
   "version" "17.0.2"
