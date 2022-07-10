@@ -1,10 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { NavLink} from 'react-router-dom'
+import Seo from "../Components/Seo"
 
 const About =(props)=>{
         return(
             <div className='px-8'>
+            
+            <Seo title="Hakkında" />
                 <h1 className='topTitle'>{props.topTitle}. </h1> 
                 <div className='aboutContent'>
                 <svg xmlns="http://www.w3.org/2000/svg" id="hilal" width="34.836" height="30.879" viewBox="0 0 9.217 8.17" > <g fill="#f9f1f2"> <path d="M547.8 468.173c-28.93.027-56.165 7.537-81.81 20.927 1.325-.063-1.327.016-.001-.015 94.406.714 163.81 71.267 163.81 159.958-.013 88.443-71.234 159.29-159.676 159.63 20.156 13.02 50.204 19.625 77.41 19.703 99.331 3.57 181.909-81.016 181.908-180.348 0-99.331-81.3-181.622-181.64-179.855z" style={{ isolation: "auto", mixBlendMode: "normal", solidColor: "#000", solidOpacity: "1", }} strokeWidth="17.013" color="#000" enableBackground="accumulate" overflow="visible" transform="translate(-7.322 -10.614) scale(.02267)" ></path> <path fillRule="evenodd" strokeWidth="1" d="M375.923 618.152l17.604-52.392 31.759 45.691 55.926.442-33.966 44.889 16.54 52.654-52.59-18.246-45.123 32.074 1.181-55.876-44.333-32.885" transform="translate(-7.322 -10.614) scale(.02267)" ></path> </g> </svg> 

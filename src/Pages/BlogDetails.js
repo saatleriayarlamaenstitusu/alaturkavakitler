@@ -4,6 +4,8 @@ import {    useParams  } from "react-router-dom";
 import * as prismic from "@prismicio/client";
 import { RichText } from 'prismic-reactjs';
 import Share from "../Components/Share"
+import Seo from "../Components/Seo"
+
 const BlogDetails =(props)=>{
     let { page,id } = useParams();
     const client = prismic.createClient("alaturkavakitler");
@@ -22,6 +24,8 @@ const BlogDetails =(props)=>{
 
         return data!="icerikyok"?(
             <div className={`blogDetails ${page}`}>
+                   <Seo title={`${data.data.title[0].text} ${data.data.author ?  " - "+data.data.author[0].text:""} `} />
+
                 {data.data.image ?  <img src={data.data.image.url} alt="resim"></img>:""}
                             <span className='title'>{data.data.title[0].text}</span>
                             {data.data.author ? 

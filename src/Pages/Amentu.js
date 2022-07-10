@@ -1,6 +1,8 @@
 import { React, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Share from "../Components/Share"
+import Seo from "../Components/Seo"
+
 
 const Amentu = (props) => {
 	useEffect(() => {
@@ -12,7 +14,14 @@ const Amentu = (props) => {
 	});
 
 	return (
+
+		
 		<div className={`blogDetails amentu`}>
+			<Seo 
+				title="Amentü - İsmet Özel"
+				image={`${process.env.PUBLIC_URL}/img/ismetozel.jpg`}
+			/>
+
 			<img
 				src={`${process.env.PUBLIC_URL}/img/ismetozel.jpg`}
 				alt="ismet özel"

@@ -2,6 +2,7 @@ import {React,useEffect,useState} from 'react'
 import ReactDOM from 'react-dom'
 import {Link , NavLink} from 'react-router-dom'
 import * as prismic from "@prismicio/client";
+import Seo from "../Components/Seo"
 
 
 const Blog = (props)=>{
@@ -19,6 +20,8 @@ const Blog = (props)=>{
 
         return (
             <div className={`blogList ${props.page}`}>
+                        <Seo title={`${props.topTitle}`} />
+
                <h1 className='topTitle'>{props.topTitle}. </h1> 
 
                 {data!="icerikyok" && data.map(item=>{
