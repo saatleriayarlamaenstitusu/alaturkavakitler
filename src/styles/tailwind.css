@@ -216,6 +216,11 @@
     font-family: var(--font2);
 }
 
+.big.topTitle {
+  font-size: 4em;
+  padding-left:1rem;
+}
+
   .appContent{
     @apply overflow-auto;
     height: calc(100vh - 148px);
@@ -268,7 +273,10 @@
   .vakitCounter .counter {
     @apply text-5xl font-extrabold mt-2 block;
     font-family:var(--font2);
+  }
 
+  .PrayerTimesPage .vakitCounter .counter {
+   font-size:4em;
   }
 
   .vakitCounter .kerahat {
