@@ -14,7 +14,8 @@ import {
 
 function Share({ label, text, title }) {
     const canonical = document.querySelector("link[rel=canonical]");
-    let url = canonical ? canonical.href : document.location.href;
+    //let url = canonical ? canonical.href : document.location.href;
+    let url = document.location.href;
     const shareDetails = { url, title, text };
   
     const handleSharing = async () => {
