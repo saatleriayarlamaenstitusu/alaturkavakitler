@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import Seo from "../Components/Seo"
 import VakitCounter from "../Components/VakitCounter"
 import VakitList from "../Components/VakitList"
+import VakitRangeView from "../Components/VakitRangeView"
 
 const PrayerTimesPage =(props)=>{
         return(
@@ -10,6 +11,7 @@ const PrayerTimesPage =(props)=>{
                         <Seo title="Namaz Vakitleri" />
                 <h1 className='topTitle big mb-0 mt-5'>{props.topTitle}. </h1> 
                <div className=" px-5"><VakitCounter/></div>
+            <div className="mt-3 mx-5 mb-5 "><VakitRangeView/></div>
             <div className="mt-3 mx-5 mb-5 "><VakitList/></div>
             </div>
         )

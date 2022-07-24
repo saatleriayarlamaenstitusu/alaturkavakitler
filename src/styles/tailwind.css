@@ -331,10 +331,84 @@
     font-family:var(--font2);
   }
 
+  /*Vakit Range View*/
+  .VakitRangeView {
+    display: flex;
+       color: white;
+   }
+   
+   .VakitRangeView .vakit{
+       display: block;
+      background: var(--primary);
+       height: 75px;
+       position: relative;
+       margin-top: 75px;
+       opacity: .35;
+   }
+   
+   .VakitRangeView .vakit:last-child{
+   width: 0!important;
+   }
+   
+   .VakitRangeView .vakit:before{
+       content: "";
+       position: absolute;
+       display: block;
+       width: 1px;
+       height: 130%;
+       left: 0;
+       bottom: 0;
+       background: white;
+       opacity: .5;
+   }
+   
+   .VakitRangeView .vakit .label{
+       position: absolute;
+       top: -40%;
+       left: -.5em;
+       transform: rotate(270deg);
+       transform-origin: 0 0;
+       font-size: .75em;
+       font-weight:300;
+   }
+   
+   .VakitRangeView .vakit.active, 
+   .VakitRangeView .vakit.active:before,
+   .VakitRangeView .vakit.active + .vakit:before,
+   .VakitRangeView .vakit.active + .vakit .label
+   {
+       opacity: 1;
+        font-weight: 600;
+   }
+   
+   .VakitRangeView .vakit.active .label{
+       color: rgb(22 163 74);
+       font-weight: 600;
+   }
+   
+   .VakitRangeView .vakit .kerahat{
+    @apply bg-red-800;
+       position: absolute;
+       bottom: 0;
+       height: 10px;
+       z-index: 10;
+       /*TODO Think about it*/
+       width:calc((100vw - 2.5rem)/100 * 3.125 )!important;
+       opacity: .5;
+   }
+   
+   .VakitRangeView .vakit .kerahat1{
+       left: 0;
+   }
+   
+   .VakitRangeView .vakit .kerahat2,.VakitRangeView .vakit .kerahat3{
+       right: 0;
+   }   
+
+
   .anasayfaCalendar {
     display: flex;
     color:white;
-
 }
   
 .anasayfaCalendar .calendars {
