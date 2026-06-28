@@ -21,24 +21,25 @@ Alaturka saat: son akşam (güneş batımı) ezanından geçen süre.
 - BEM benzeri class isimlendirme.
 
 ### CMS / İçerik
-- Mevcut: Prismic (`@prismicio/client`)
-- Hedef: **Directus** (self-hosted, API-first) — geçiş v2'nin orta fazında
-- Blog, yenilikler, dini günler, makale içerikleri buradan gelecek
+- **Karar:** Local Directus (Docker, port 8055) → `scripts/export-content.js` → `src/content/*.json` → git push → Cloudflare otomatik deploy
+- Sunucu maliyeti sıfır. Directus sadece içerik girerken açık olur.
+- Koleksiyonlar: blog yazıları, yenilikler, dini günler, makaleler
 
 ### PWA
-- `vite-plugin-pwa` (Workbox tabanlı)
-- Service worker: offline desteği, önbellek stratejileri
-- LocalStorage: vakitler, ayarlar, şablonlar
+- `vite-plugin-pwa` kurulu — `registerType: 'autoUpdate'`, `manifest: false` (public/manifest.json kullanılır)
+- Workbox runtime cache: vakitler JSON → `NetworkFirst` 7 gün 5sn timeout; Google Fonts → `CacheFirst` 1 yıl
+- LocalStorage: vakitler, ayarlar
 
 ### Deployment
-- **Vercel** (GitHub Pages'ten geçiş)
-- CI: GitHub Actions veya Vercel otomatik deploy
+- **Cloudflare Pages** — production branch: `v2`, build: `npm install && npm run build`, output: `dist`
+- Her `git push origin v2`'de otomatik deploy. `VITE_VAKIT_BASE_URL` Cloudflare dashboard'da env var olarak tanımlı.
+- `yarn.lock` repo'da olmamalı — Cloudflare yarn.lock varsa Yarn kullanır, build bozulur.
 
 ### Analytics & SEO
-- Google Analytics 4 (mevcut UA-111583366-3 GA4'e geçirilecek)
-- `vue-meta` veya `@unhead/vue` (head/SEO yönetimi)
-- JSON-LD: breadcrumb, article, structured data
-- Sitemap, robots.txt
+- Google Analytics 4 (VITE_GA_ID ile) — henüz eklenmedi
+- `@unhead/vue` (head/SEO yönetimi) — henüz eklenmedi
+- JSON-LD: WebSite, BreadcrumbList yapısal verisi — henüz eklenmedi
+- Sitemap, robots.txt — robots.txt public'te var, sitemap üretimi bekleniyor
 
 ---
 
@@ -150,13 +151,22 @@ darkMode          // 'auto' | 'dark' | 'light'
 ```css
 --primary: #ae002e;
 --bg: #000;
+--gradient-start: var(--primary);   /* açık modda color-mix ile override edilir */
+--text: #fff;
+--text-muted: rgba(255,255,255,0.5);
+--surface: rgb(26 26 26);           /* VakitList, kart arka planları */
 --font1: 'Inter', sans-serif;
 --font2: 'Overpass', sans-serif;
 --radius: 12px;
---spacing-unit: 8px;
 ```
 
-### Vakit renkleri (korunur)
+### Tema sistemi
+- `html` elementine `data-theme="dark"|"light"` eklenir — `App.vue` içinde `settings.darkMode` izlenerek set edilir.
+- Açık mod gradient: `color-mix(in srgb, var(--primary) 18%, var(--bg))` — subtle tint.
+- Açık mod vakit renkleri ayrı set (daha koyu/mat tonlar).
+- Sistem tercihi: `@media (prefers-color-scheme: light)` + `data-theme` yoksa devreye girer.
+
+### Vakit renkleri — koyu mod (default)
 ```css
 :root[data-vakit="imsak"]  { --primary: #00b7ff; }
 :root[data-vakit="gunes"]  { --primary: #ffbd33; }
@@ -166,9 +176,14 @@ darkMode          // 'auto' | 'dark' | 'light'
 :root[data-vakit="yatsi"]  { --primary: #2e3b83; }
 ```
 
+### SVG / İkon kuralları
+- `<img>` ile yüklenen beyaz SVG: `filter: brightness(0) invert(1)` (koyu), `brightness(0)` (açık mod).
+- **Renk değiştirilebilir SVG için `<img>` yetersiz** — inline Vue bileşeni gerekir (bkz. `src/components/ui/LogoWide.vue`).
+- Inline SVG'de `fill:currentColor` kullan, parent'a `color: var(--primary)` ver.
+
 ### Kural
 - Her component `<style scoped>` kullanır.
-- Global stiller `src/assets/css/` altında.
+- Global stiller `src/assets/css/` altında; açık mod override'ları `base.css`'te.
 - Utility class yok — anlamlı class isimleri.
 
 ---
@@ -207,33 +222,45 @@ Veri formatı (ham JSON):
 
 ---
 
-## Bilinen Sorunlar (Mevcut v1'den)
+## Bilinen Sorunlar
 
-- `100vh` chrome mobil scroll sorunu → `100dvh` ile çözülür
-- Dropdown dışına tıklayınca kapanmıyor → `clickOutside` directive eklenecek
-- Gece yarısından sonra dünün vakitlerini gösteriyor
-- Akşam ezanı geçince günü güncellemesi gerekiyor (saat değişimi)
-- Paylaş link sorunu (canonical URL) — düzeltildi ancak test edilecek
-- Hicri takvim doğruluğu — lib değişimi araştırılacak
-- Şule Gürbüz yazısı render hatası (Prismic RichText)
+- ~~`100vh` chrome mobil scroll sorunu~~ → `100dvh` ile düzeltildi ✅
+- Dropdown dışına tıklayınca kapanmıyor → `clickOutside` directive eklenecek (Faz 2)
+- Gece yarısından sonra dünün vakitlerini gösteriyor (Faz 2)
+- Akşam ezanı geçince günü güncellemesi gerekiyor (Faz 2)
+- Hicri takvim doğruluğu — `hijri-date` lib değişimi araştırılacak
 
 ---
 
 ## Ortam Değişkenleri
 
 ```
-VITE_VAKIT_BASE_URL=
-VITE_PRISMIC_REPO=alaturkavakitler
-VITE_DIRECTUS_URL=          # Directus geçişi sonrası
-VITE_GA_ID=                 # GA4 measurement ID
+VITE_VAKIT_BASE_URL=https://raw.githubusercontent.com/saatleriayarlamaenstitusu/data-diyanet-namaz-vakitleri/main/data/namaz/
+VITE_DIRECTUS_URL=          # Directus geçişi sonrası (Faz 7)
+VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 ```
 
 ---
 
-## Notlar
+## Mevcut Bileşenler (v2'de tamamlanan)
 
-- `routes.jsx` (sitemapbuilder için) artık gerekli değil — Vite + Vue Router sitemap plugin ile yönetilir.
-- `react-inlinesvg` yerine Vue'da SVG'ler `<component :is>` veya `vite-plugin-svg` ile import edilir.
-- `react-select` yerine `vue-select` veya custom component.
-- `use-http` yerine `fetch` + composable veya `@tanstack/vue-query`.
-- Prismic → Directus geçişi blog içeriklerini migrate etmeyi gerektirir.
+| Bileşen | Konum | Not |
+|---|---|---|
+| `LogoWide.vue` | `components/ui/` | Inline SVG, fill:currentColor |
+| `AnalogClock.vue` | `components/clock/` | SVG, alaturka vakti, currentColor |
+| `AlaturkaClock.vue` | `components/clock/` | Dijital alaturka + normal saat |
+| `CalendarWidget.vue` | `components/calendar/` | Hicri+miladi+ay fazı (/Icons/moon/N.svg) |
+| `VakitCounter.vue` | `components/vakit/` | Countdown, kerahat badge |
+| `VakitList.vue` | `components/vakit/` | 6 vakit yatay liste |
+| `VakitRangeView.vue` | `components/vakit/` | Timeline + kırmızı now-line |
+| `SettingsPage.vue` | `pages/` | Tema seçici (sistem/açık/koyu) |
+
+## Geliştirme Notları
+
+- `git commit` GPG imzası gerektirir — Claude doğrudan commit atamaz, kullanıcı atar.
+- `npm ci` yerine `npm install` kullan (package-lock.json değişiyor).
+- Cloudflare Pages'te `yarn.lock` varsa Yarn kullanır — repo'da olmamalı.
+- `vite-plugin-pwa` ile `manifest: false` → `public/manifest.json` olduğu gibi kullanılır.
+- Ay fazı SVGleri: `/public/Icons/moon/1.svg` → `29.svg` (hicri gün numarasıyla).
+- `nowPercent` VakitRangeView'da: `(now - imsak_bugün) / (imsak_yarın - imsak_bugün) * 100`.
+- v1 React kodu `_v1/` klasöründe arşivlendi — referans için okunabilir.

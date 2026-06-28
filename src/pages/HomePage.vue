@@ -2,7 +2,7 @@
 import AlaturkaClock from '@/components/clock/AlaturkaClock.vue'
 import VakitCounter from '@/components/vakit/VakitCounter.vue'
 import VakitList from '@/components/vakit/VakitList.vue'
-import VakitRangeView from '@/components/vakit/VakitRangeView.vue'
+import CalendarWidget from '@/components/calendar/CalendarWidget.vue'
 </script>
 
 <template>
@@ -16,8 +16,8 @@ import VakitRangeView from '@/components/vakit/VakitRangeView.vue'
     <div class="list-section">
       <VakitList />
     </div>
-    <div class="range-section">
-      <VakitRangeView />
+    <div class="calendar-section">
+      <CalendarWidget />
     </div>
   </div>
 </template>
@@ -32,17 +32,19 @@ import VakitRangeView from '@/components/vakit/VakitRangeView.vue'
 
 .clock-section {
   padding: 2.5rem 1.25rem 0;
+  flex: 1;
 }
 
 .counter-section {
-  padding: 2.5rem 1.25rem 0;
+  padding: 0 1.25rem 0;
 }
 
 .list-section {
   padding: 0.75rem 1.25rem 1.25rem;
 }
 
-.range-section {
-  margin-top: auto;
+.calendar-section {
+  padding: 0 0 0.5rem;
 }
+
 </style>

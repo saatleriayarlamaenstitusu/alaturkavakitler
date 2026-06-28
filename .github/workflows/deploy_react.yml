@@ -1,24 +1,26 @@
-name: Deploy GH Pages
+name: Deploy v1 (React)
 
-on: push
+on:
+  push:
+    branches: [main]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           persist-credentials: false
 
-      - name: Install 🔧
+      - name: Install
         run: npm install
 
-      - name: Build 🏗️
-        run: CI=false npm run build && echo alaturkavakitler.com > ./build/CNAME 
+      - name: Build
+        run: CI=false npm run build && echo alaturkavakitler.com > ./build/CNAME
 
-      - name: Deploy 🚀
+      - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
