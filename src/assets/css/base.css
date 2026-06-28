@@ -1,0 +1,140 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Koyu mod (default) ── */
+:root {
+  --primary: #ae002e;
+  --bg: #000;
+  --gradient-start: var(--primary);
+  --text: #fff;
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --text-dim: #6b7280;
+  --surface: rgb(26 26 26);
+  --font1: 'Inter', sans-serif;
+  --font2: 'Overpass', sans-serif;
+  --radius: 12px;
+  --top-nav-height: 68px;
+  --bottom-nav-height: 48px;
+}
+
+/* ── Vakit renkleri — koyu mod ── */
+:root[data-vakit="imsak"]  { --primary: #00b7ff; }
+:root[data-vakit="gunes"]  { --primary: #ffbd33; }
+:root[data-vakit="ogle"]   { --primary: #ffd733; }
+:root[data-vakit="ikindi"] { --primary: #ff8c33; }
+:root[data-vakit="aksam"]  { --primary: #0491fb; }
+:root[data-vakit="yatsi"]  { --primary: #2e3b83; }
+
+/* ── Açık mod ── */
+:root[data-theme="light"] {
+  --bg: #f5f0eb;
+  --gradient-start: color-mix(in srgb, var(--primary) 18%, var(--bg));
+  --text: #111;
+  --text-muted: rgba(0, 0, 0, 0.45);
+  --text-dim: #666;
+  --surface: #e8e4df;
+  color-scheme: light;
+}
+
+/* Vakit renkleri — açık mod */
+:root[data-theme="light"][data-vakit="imsak"]  { --primary: #2288bb; }
+:root[data-theme="light"][data-vakit="gunes"]  { --primary: #b07800; }
+:root[data-theme="light"][data-vakit="ogle"]   { --primary: #a07200; }
+:root[data-theme="light"][data-vakit="ikindi"] { --primary: #b04800; }
+:root[data-theme="light"][data-vakit="aksam"]  { --primary: #1a5faa; }
+:root[data-theme="light"][data-vakit="yatsi"]  { --primary: #2b3880; }
+
+/* Sistem tercihi — açık mod (data-theme="dark" değilse) */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]):not([data-theme="light"]) {
+    --bg: #f5f0eb;
+    --gradient-start: color-mix(in srgb, var(--primary) 18%, var(--bg));
+    --text: #111;
+    --text-muted: rgba(0, 0, 0, 0.45);
+    --text-dim: #666;
+    --surface: #e8e4df;
+    color-scheme: light;
+  }
+
+  :root:not([data-theme="dark"]):not([data-theme="light"])[data-vakit="imsak"]  { --primary: #2288bb; }
+  :root:not([data-theme="dark"]):not([data-theme="light"])[data-vakit="gunes"]  { --primary: #b07800; }
+  :root:not([data-theme="dark"]):not([data-theme="light"])[data-vakit="ogle"]   { --primary: #a07200; }
+  :root:not([data-theme="dark"]):not([data-theme="light"])[data-vakit="ikindi"] { --primary: #b04800; }
+  :root:not([data-theme="dark"]):not([data-theme="light"])[data-vakit="aksam"]  { --primary: #1a5faa; }
+  :root:not([data-theme="dark"]):not([data-theme="light"])[data-vakit="yatsi"]  { --primary: #2b3880; }
+}
+
+html {
+  height: 100%;
+  background: linear-gradient(180deg, var(--gradient-start) 0%, var(--bg) 38%) fixed;
+  transition: background 0.4s ease;
+}
+
+body {
+  height: 100%;
+  font-family: var(--font1);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+}
+
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* ── Açık mod bileşen geçersizlemeleri ── */
+
+/* ── Açık mod renk geçersizlemeleri ── */
+
+/* Nav ikonları */
+:root[data-theme="light"] .bottom-nav img {
+  filter: brightness(0) !important;
+}
+
+/* Logo vaktin rengi */
+:root[data-theme="light"] .logo-link {
+  color: var(--primary) !important;
+}
+
+/* Büyük saatler ve sayaç vaktin rengi */
+:root[data-theme="light"] .primary-clock,
+:root[data-theme="light"] .alaturka-time,
+:root[data-theme="light"] .counter {
+  color: var(--primary) !important;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]):not([data-theme="light"]) .bottom-nav img {
+    filter: brightness(0) !important;
+  }
+
+  :root:not([data-theme="dark"]):not([data-theme="light"]) .logo-link {
+    color: var(--primary) !important;
+  }
+
+  :root:not([data-theme="dark"]):not([data-theme="light"]) .primary-clock,
+  :root:not([data-theme="dark"]):not([data-theme="light"]) .alaturka-time,
+  :root:not([data-theme="dark"]):not([data-theme="light"]) .counter {
+    color: var(--primary) !important;
+  }
+}
