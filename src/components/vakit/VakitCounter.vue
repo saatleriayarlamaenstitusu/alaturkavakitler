@@ -78,7 +78,7 @@ onUnmounted(() => {
       <span class="badge">{{ appStore.vakit[appStore.vakit[appStore.currentVakit].next].name }}</span>
     </div>
 
-    <span class="counter-label">vaktin çıkmasına</span>
+    <span class="counter-label">Vaktin çıkmasına</span>
     <div class="counter">{{ counterDisplay }}</div>
 
     <span v-if="kerahat" class="kerahat">Kerahat</span>
@@ -96,33 +96,38 @@ onUnmounted(() => {
 }
 
 .badge {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 300;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   padding: 0.25rem 0.75rem;
   border-radius: 0.375rem;
-  border: 1px solid var(--text);
-  text-transform: lowercase;
-  color: var(--text);
+  border: 1px solid var(--text-muted);
+  color: var(--text-muted);
 }
 
 .badge--current {
-  background: #166534;
-  border-color: #166534;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  opacity: 1;
 }
 
 .badge-separator {
   flex: 1;
   margin: 0 0.75rem;
-  height: 5px;
-  background-image: radial-gradient(circle at 1px 1px, var(--text) 1px, transparent 0);
-  background-size: 12px 10px;
-  opacity: 0.4;
+  height: 1px;
+  background: var(--text);
+  opacity: 0.2;
 }
 
 .counter-label {
   display: block;
-  font-size: 1.125rem;
-  font-weight: 200;
+  font-size: 0.6rem;
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
   margin-top: 1.25rem;
   line-height: 1;
 }
@@ -130,9 +135,10 @@ onUnmounted(() => {
 .counter {
   display: block;
   font-size: 3rem;
-  font-weight: 800;
-  margin-top: 0.5rem;
+  font-weight: 700;
+  margin-top: 0.4rem;
   font-family: var(--font2);
+  font-variant-numeric: tabular-nums;
 }
 
 .kerahat {
@@ -143,6 +149,7 @@ onUnmounted(() => {
   border-radius: 5px;
   font-weight: 400;
   text-transform: uppercase;
+  letter-spacing: 0.08em;
   position: relative;
   overflow: hidden;
 }

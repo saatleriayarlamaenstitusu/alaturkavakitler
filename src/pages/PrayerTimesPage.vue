@@ -24,10 +24,14 @@ import VakitRangeView from '@/components/vakit/VakitRangeView.vue'
 
 .counter-section {
   margin-top: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .list-section {
-  margin-top: 0.75rem;
-  margin-bottom: 1.25rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
 }
 </style>

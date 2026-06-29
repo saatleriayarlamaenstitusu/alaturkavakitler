@@ -47,6 +47,8 @@ const selectedPlate = computed({
   align-items: center;
   padding: 1.5rem 0.5rem 1.25rem;
   flex-shrink: 0;
+  position: relative;
+  z-index: 5;
 }
 
 .logo-link {

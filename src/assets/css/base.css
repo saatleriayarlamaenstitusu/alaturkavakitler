@@ -13,9 +13,12 @@
   --text-muted: rgba(255, 255, 255, 0.5);
   --text-dim: #6b7280;
   --surface: rgb(26 26 26);
-  --font1: 'Inter', sans-serif;
-  --font2: 'Overpass', sans-serif;
+  --font1: 'Inter Tight', sans-serif;
+  --font2: 'Inter Tight', sans-serif;
   --radius: 12px;
+  --border: rgba(255, 255, 255, 0.07);
+  --watermark-opacity: 0.05;
+  --watermark-filter: invert(1);
   --top-nav-height: 68px;
   --bottom-nav-height: 48px;
 }
@@ -33,9 +36,12 @@
   --bg: #f5f0eb;
   --gradient-start: color-mix(in srgb, var(--primary) 18%, var(--bg));
   --text: #111;
-  --text-muted: rgba(0, 0, 0, 0.45);
-  --text-dim: #666;
+  --text-muted: rgba(0, 0, 0, 0.6);
+  --text-dim: #555;
   --surface: #e8e4df;
+  --border: rgba(0, 0, 0, 0.09);
+  --watermark-opacity: 0.04;
+  --watermark-filter: none;
   color-scheme: light;
 }
 
@@ -53,9 +59,12 @@
     --bg: #f5f0eb;
     --gradient-start: color-mix(in srgb, var(--primary) 18%, var(--bg));
     --text: #111;
-    --text-muted: rgba(0, 0, 0, 0.45);
-    --text-dim: #666;
+    --text-muted: rgba(0, 0, 0, 0.6);
+    --text-dim: #555;
     --surface: #e8e4df;
+    --border: rgba(0, 0, 0, 0.09);
+    --watermark-opacity: 0.04;
+    --watermark-filter: none;
     color-scheme: light;
   }
 

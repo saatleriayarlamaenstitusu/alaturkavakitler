@@ -21,13 +21,16 @@ onUnmounted(() => clearInterval(intervalId))
 
 <template>
   <div class="clock-page">
-    <div class="analog-section">
-      <AnalogClock />
-    </div>
+    <h1 class="page-title">Saat</h1>
+    <div class="clock-content">
+      <div class="analog-section">
+        <AnalogClock />
+      </div>
 
-    <div class="digital-section">
-      <div class="alaturka-time">{{ alaturkaTime }}</div>
-      <div class="normal-time">{{ normalTime }}</div>
+      <div class="digital-section">
+        <div class="alaturka-time">{{ alaturkaTime }}</div>
+        <div class="normal-time">{{ normalTime }}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -36,9 +39,15 @@ onUnmounted(() => clearInterval(intervalId))
 .clock-page {
   display: flex;
   flex-direction: column;
+  min-height: 100%;
+}
+
+.clock-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100%;
   padding: 2rem 2rem 3rem;
   gap: 2.5rem;
 }
@@ -57,7 +66,7 @@ onUnmounted(() => clearInterval(intervalId))
 
 .alaturka-time {
   font-size: 3.5rem;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--text);
   font-family: var(--font2);
   line-height: 1;
@@ -66,7 +75,7 @@ onUnmounted(() => clearInterval(intervalId))
 
 .normal-time {
   font-size: 1.25rem;
-  font-weight: 200;
+  font-weight: 300;
   color: var(--text-muted);
   font-family: var(--font2);
 }

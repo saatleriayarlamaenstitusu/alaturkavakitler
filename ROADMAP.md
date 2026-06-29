@@ -9,36 +9,45 @@
 - [x] Pinia store (city, vakitler, vakit, currentVakit)
 - [x] Custom CSS mimarisi (base.css, typography.css, component scoped)
 - [x] Vakit renk teması (CSS custom properties + data-vakit)
+- [x] Açık/koyu/sistem tema desteği
 - [x] Vakitler veri çekme + localStorage cache
 - [x] `createVakitObj` / `findVakit` / `isKerahat` utils
-- [x] TopNav (logo + şehir seçici + dropdown menü)
-- [x] BottomNav (4 nav item, active state)
+- [x] TopNav (logo inline SVG + şehir seçici + dropdown menü)
+- [x] BottomNav (4 nav item, active state + glow)
 - [x] VakitCounter (countdown + kerahat)
 - [x] VakitList (vakitler listesi)
-- [x] VakitRangeView (timeline bar)
-- [x] AlaturkaClock + normal saat
-- [ ] Calendar widget (hicri + miladi + ay resmi)
-- [ ] SEO (@unhead/vue)
-- [ ] Cloudflare Pages deploy + CI
-- [ ] PWA (vite-plugin-pwa, offline destek)
+- [x] VakitRangeView (timeline bar + now-line)
+- [x] AlaturkaClock + normal saat (dijital)
+- [x] AnalogClock (SVG, alaturka vakti gösterir)
+- [x] Calendar widget (hicri + miladi + ay fazı SVG)
+- [x] PWA (vite-plugin-pwa, offline destek, Workbox)
+- [x] Cloudflare Pages deploy (v2 branch, otomatik CI)
+- [x] OG/Twitter meta, favicon, manifest, apple-touch-icon
+- [ ] SEO (@unhead/vue — sayfa bazlı dinamik meta)
 
 ---
 
 ## Faz 2: Hata Düzeltme &amp; Temel İyileştirmeler
 
-- [ ] `100dvh` ile chrome mobil scroll sorunu
+- [x] `100dvh` ile chrome mobil scroll sorunu
+- [x] Açık/koyu/sistem tema (CSS + ayardan)
+- [x] OG/Twitter paylaşım görselleri (statik, index.html'de)
 - [ ] Dropdown dışına tıklanırsa kapanma (clickOutside directive)
 - [ ] Gece yarısından sonra dünün vakitlerini gösterme sorunu
 - [ ] Akşam ezanı geçince günü güncelleme (reactive date watch)
-- [ ] Açık/koyu tema (CSS + ayardan)
 - [ ] Loading placeholder'lar (skeleton)
-- [ ] Paylaş butonu + URL sorunu
-- [ ] Hicri takvim doğruluğu araştırma (lib değişimi gerekirse)
-- [ ] SEO: robots.txt, sitemap.xml, canonical
-- [ ] OG/Twitter paylaşım görselleri sayfa bazlı
-- [ ] Breadcrumb + article JSON-LD
-- [ ] Google Analytics 4
-- [ ] Yandex Webmaster
+- [ ] Hicri takvim doğruluğu araştırma (hijri-date lib değişimi gerekebilir)
+
+### SEO
+
+- [ ] `@unhead/vue` kurulumu — sayfa bazlı dinamik `<title>`, `<meta description>`, `<canonical>`
+- [ ] Her sayfa için ayrı OG meta (og:title, og:description, og:image)
+- [ ] JSON-LD: `WebSite` yapısal verisi (ana sayfa)
+- [ ] JSON-LD: `BreadcrumbList` (blog/detay sayfaları)
+- [ ] sitemap.xml otomatik üretimi (`vite-plugin-sitemap` veya build script)
+- [ ] robots.txt güncelleme (mevcut dosya var, sitemap URL ekle)
+- [ ] Google Analytics 4 (`VITE_GA_ID` env var ile)
+- [ ] Yandex Webmaster doğrulama meta etiketi
 
 ---
 

@@ -31,20 +31,21 @@ import CalendarWidget from '@/components/calendar/CalendarWidget.vue'
 }
 
 .clock-section {
-  padding: 2.5rem 1.25rem 0;
+  padding: 0.5rem 1.25rem 0;
   flex: 1;
 }
 
 .counter-section {
-  padding: 0 1.25rem 0;
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-top: 1px solid var(--border);
 }
 
 .list-section {
-  padding: 0.75rem 1.25rem 1.25rem;
+  padding: 0 1.25rem 0.75rem;
 }
 
 .calendar-section {
-  padding: 0 0 0.5rem;
+  padding: 0.75rem 0 0.5rem;
+  border-top: 1px solid var(--border);
 }
-
 </style>

@@ -24,6 +24,7 @@ function formatTime(dateObj) {
       class="vakit-item"
       :class="{ active: appStore.currentVakit === item.key }"
     >
+      <span class="dot"></span>
       <span class="label">{{ item.name }}</span>
       <span class="value">{{ formatTime(item.valueDateObj) }}</span>
     </div>
@@ -32,44 +33,58 @@ function formatTime(dateObj) {
 
 <style scoped>
 .vakit-list {
-  padding: 0.75rem 0.5rem;
-  border-radius: var(--radius);
   width: 100%;
-  color: var(--text);
   display: flex;
   justify-content: space-between;
-  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-top: 0.5rem;
 }
 
 .vakit-item {
   display: flex;
   flex-direction: column;
-  padding: 0.25rem;
-  color: #6b7280;
-  font-size: 1rem;
+  align-items: center;
+  flex: 1;
+  padding: 0.25rem 0;
+  color: var(--text-muted);
 }
 
 .vakit-item.active {
-  color: #16a34a;
-  border: 1px solid #16a34a;
-  border-radius: 0.375rem;
+  color: var(--text);
 }
 
 .vakit-item.active + .vakit-item {
-  color: white;
+  color: var(--text-dim);
+}
+
+.dot {
+  display: block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  margin-bottom: 0.4rem;
+  background: transparent;
+}
+
+.vakit-item.active .dot {
+  background: var(--primary);
 }
 
 .label {
   display: block;
   font-weight: 300;
-  line-height: 1.2;
-  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  font-size: 9px;
 }
 
 .value {
   display: block;
-  font-weight: 800;
-  line-height: 1;
-  font-family: var(--font2);
+  font-weight: 600;
+  line-height: 1.2;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.15rem;
 }
 </style>

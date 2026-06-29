@@ -40,6 +40,7 @@ watch(() => settings.darkMode, applyTheme)
 
 <template>
   <div class="app">
+    <div class="hat-watermark" aria-hidden="true"></div>
     <TopNav />
     <div class="app-content">
       <router-view />
@@ -54,11 +55,30 @@ watch(() => settings.darkMode, applyTheme)
   flex-direction: column;
   height: 100dvh;
   overflow: hidden;
+  position: relative;
+}
+
+.hat-watermark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  background-image: url('/Icons/topbgtext.svg');
+  background-size: 90%;
+  background-repeat: no-repeat;
+  background-position: center 20%;
+  filter: var(--watermark-filter);
+  opacity: var(--watermark-opacity);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .app-content {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;
+  z-index: 1;
 }
 </style>

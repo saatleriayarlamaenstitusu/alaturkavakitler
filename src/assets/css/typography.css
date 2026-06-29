@@ -1,16 +1,28 @@
 .page-title {
-  color: white;
+  color: transparent;
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke-width: 1px;
-  -webkit-text-stroke-color: #ffffff5c;
-  font-size: 3em;
+  -webkit-text-stroke-color: rgba(255, 255, 255, 0.22);
+  font-size: 4em;
   font-weight: 900;
-  margin-bottom: 1rem;
-  margin-top: 2rem;
   font-family: var(--font2);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  padding: 0 1.25rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .page-title.big {
-  font-size: 4em;
-  padding-left: 1rem;
+  font-size: 5em;
+}
+
+:root[data-theme="light"] .page-title {
+  -webkit-text-stroke-color: rgba(0, 0, 0, 0.14);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]):not([data-theme="light"]) .page-title {
+    -webkit-text-stroke-color: rgba(0, 0, 0, 0.14);
+  }
 }
