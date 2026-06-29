@@ -1,0 +1,1 @@
+import{_ as t,b as o,c,d as r,t as e,h as s,s as _}from"./index-CwkAuyQ9.js";const l={class:"blog-detail-page"},p={class:"placeholder"},n={__name:"BlogDetailPage",setup(d){const a=_();return(i,g)=>(o(),c("div",l,[r("p",p,"İçerik yakında. ("+e(s(a).params.page)+" / "+e(s(a).params.id)+")",1)]))}},m=t(n,[["__scopeId","data-v-86b40a44"]]);export{m as default};
