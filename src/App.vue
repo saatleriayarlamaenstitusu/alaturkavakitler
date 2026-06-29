@@ -11,19 +11,20 @@ const settings = useSettingsStore()
 let systemMediaQuery = null
 
 function applyTheme(mode) {
-  const html = document.documentElement
-  if (mode === 'dark') {
-    html.dataset.theme = 'dark'
-  } else if (mode === 'light') {
-    html.dataset.theme = 'light'
-  } else {
-    delete html.dataset.theme
-  }
+  const resolved = mode === 'auto'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : mode
+  document.documentElement.dataset.theme = resolved
+}
+
+function applyPalette(style) {
+  document.documentElement.dataset.palette = style || 'klasik'
 }
 
 onMounted(() => {
   appStore.init()
   applyTheme(settings.darkMode)
+  applyPalette(settings.colorStyle)
 
   systemMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
   systemMediaQuery.addEventListener('change', () => {
@@ -36,6 +37,7 @@ onUnmounted(() => {
 })
 
 watch(() => settings.darkMode, applyTheme)
+watch(() => settings.colorStyle, applyPalette)
 </script>
 
 <template>

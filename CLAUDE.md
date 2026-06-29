@@ -141,6 +141,7 @@ firstPage         // route path
 themePerVakit     // boolean — vakite göre renk değişimi
 notificationsEnabled // boolean
 darkMode          // 'auto' | 'dark' | 'light'
+colorStyle        // 'klasik' | 'pastel' | 'canli' | 'mesh' — renk stili (src/data/colorStyles.js)
 ```
 
 ---
@@ -161,10 +162,17 @@ darkMode          // 'auto' | 'dark' | 'light'
 ```
 
 ### Tema sistemi
-- `html` elementine `data-theme="dark"|"light"` eklenir — `App.vue` içinde `settings.darkMode` izlenerek set edilir.
+- `html`'e üç eksen attribute eklenir: `data-theme="dark|light"` × `data-palette="klasik|pastel|canli|mesh"` × `data-vakit`.
+- `data-theme` **her zaman explicit** set edilir — `App.vue` `auto` modda `matchMedia` ile sistem tercihini çözüp `light`/`dark` yazar. Bu yüzden CSS'te `@media (prefers-color-scheme)` **kullanılmaz**; sadece default(dark) + `[data-theme="light"]` blokları var.
+- `data-palette` `App.vue` içinde `settings.colorStyle` izlenerek set edilir (default `klasik`).
 - Açık mod gradient: `color-mix(in srgb, var(--primary) 18%, var(--bg))` — subtle tint.
-- Açık mod vakit renkleri ayrı set (daha koyu/mat tonlar).
-- Sistem tercihi: `@media (prefers-color-scheme: light)` + `data-theme` yoksa devreye girer.
+- `html` arka planı `--gradient-end` değişkeniyle parametrik: klasik 38%, pastel 52%, canlı 65% (vakit rengi ne kadar alan kaplıyor).
+
+### Renk stilleri (genişletilebilir)
+- Stil tanımları `src/data/colorStyles.js` içinde (`COLOR_STYLES` listesi: `id`, `label`, 3 renklik `swatch`). SettingsPage ve App.vue bu listeyi kullanır.
+- Her stil 6 vakti yeniden renklendirir + kendi yüzeyini (bg/surface/text/gradient) tanımlar; light+dark varyantı var.
+- **Yeni stil eklemek:** (1) `colorStyles.js`'e bir obje ekle, (2) `base.css`'e `[data-palette="<id>"]` bloklarını kopyala — koyu base + 6 vakit, açık base + 6 vakit. Başka kod gerekmez.
+- CSS seçici zinciri (specificity sırası): `[data-palette]` < `[data-palette][data-vakit]` < `[data-palette][data-theme=light]` < `[data-palette][data-theme=light][data-vakit]`.
 
 ### Vakit renkleri — koyu mod (default)
 ```css

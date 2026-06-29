@@ -1,5 +1,6 @@
 <script setup>
 import { useSettingsStore } from '@/stores/settings'
+import { COLOR_STYLES } from '@/data/colorStyles'
 
 const settings = useSettingsStore()
 
@@ -31,6 +32,30 @@ const themeOptions = [
             <span>{{ opt.label }}</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h2 class="section-title">Renk Stili</h2>
+
+      <div class="style-grid">
+        <button
+          v-for="style in COLOR_STYLES"
+          :key="style.id"
+          class="style-card"
+          :class="{ active: settings.colorStyle === style.id }"
+          @click="settings.colorStyle = style.id"
+        >
+          <span class="style-swatch">
+            <span
+              v-for="(c, i) in style.swatch"
+              :key="i"
+              class="swatch-dot"
+              :style="{ background: c }"
+            ></span>
+          </span>
+          <span class="style-label">{{ style.label }}</span>
+        </button>
       </div>
     </div>
   </div>
@@ -97,5 +122,46 @@ const themeOptions = [
 .theme-icon {
   font-size: 0.9rem;
   line-height: 1;
+}
+
+/* Renk stili kartları */
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.style-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 0.5rem;
+  background: var(--surface);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  transition: border-color 0.15s ease;
+}
+
+.style-card.active {
+  border-color: var(--primary);
+}
+
+.style-swatch {
+  display: flex;
+  gap: 3px;
+}
+
+.swatch-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.style-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
 }
 </style>
