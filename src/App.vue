@@ -1,5 +1,6 @@
 <script setup>
 import { watch, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useSettingsStore } from '@/stores/settings'
 import TopNav from '@/components/nav/TopNav.vue'
@@ -7,6 +8,8 @@ import BottomNav from '@/components/nav/BottomNav.vue'
 
 const appStore = useAppStore()
 const settings = useSettingsStore()
+const router = useRouter()
+const route = useRoute()
 
 let systemMediaQuery = null
 
@@ -21,10 +24,16 @@ function applyPalette(style) {
   document.documentElement.dataset.palette = style || 'klasik'
 }
 
-onMounted(() => {
+onMounted(async () => {
   appStore.init()
   applyTheme(settings.darkMode)
   applyPalette(settings.colorStyle)
+
+  await router.isReady()
+
+  if (route.path === '/' && settings.firstPage !== '/') {
+    router.replace(settings.firstPage)
+  }
 
   systemMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
   systemMediaQuery.addEventListener('change', () => {

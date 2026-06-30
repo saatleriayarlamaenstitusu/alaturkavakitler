@@ -14,6 +14,13 @@ const homeClockOptions = [
   { value: 'led',    label: 'LED' },
   { value: 'normal', label: 'Normal' },
 ]
+
+const firstPageOptions = [
+  { value: '/',         label: 'Ana Sayfa',    desc: 'Ana sayfa' },
+  { value: '/saat',     label: 'Saat',         desc: 'Alaturka saat' },
+  { value: '/vakitler', label: 'Vakitler',     desc: 'Namaz vakitleri' },
+  { value: '/takvim',   label: 'Takvim',       desc: 'Hicri / Rumi takvim' },
+]
 </script>
 
 <template>
@@ -51,6 +58,24 @@ const homeClockOptions = [
           class="theme-btn"
           :class="{ active: settings.homeClock === opt.value }"
           @click="settings.homeClock = opt.value"
+        >
+          <span>{{ opt.label }}</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="setting-block">
+      <div class="setting-head">
+        <h2 class="setting-name">Açılış Sayfası</h2>
+        <p class="setting-desc">Uygulama açılınca hangi sayfa</p>
+      </div>
+      <div class="theme-selector">
+        <button
+          v-for="opt in firstPageOptions"
+          :key="opt.value"
+          class="theme-btn"
+          :class="{ active: settings.firstPage === opt.value }"
+          @click="settings.firstPage = opt.value"
         >
           <span>{{ opt.label }}</span>
         </button>
