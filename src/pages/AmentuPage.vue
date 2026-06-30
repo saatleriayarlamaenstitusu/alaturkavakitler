@@ -2,9 +2,39 @@
   <div class="amentu-page blog-details">
     <img src="/img/ismetozel.jpg" alt="İsmet Özel" />
 
-    <h1 class="page-title" style="line-height:0;margin:1.5em 0 .75em 0">amentü</h1>
+    <h1 class="page-title">amentü</h1>
     <h2>İsmet Özel</h2>
     <span class="year">1974</span>
+
+    <div class="audio-player" :class="{ playing }">
+      <audio ref="audioEl" @timeupdate="onTime" @loadedmetadata="onMeta" @play="onPlay" @pause="onPause" preload="metadata" src="https://cdn.alaturkavakitler.com/amentu.mp3"></audio>
+      <button class="play-btn" @click="toggle" :aria-label="playing ? 'Duraklat' : 'Oynat'">
+        <svg v-if="!playing" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg>
+        <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
+      <div class="player-body">
+        <div class="track-row">
+          <div class="track-info">
+            <span class="track-title">Amentü</span>
+            <span class="artist">İsmet Özel</span>
+          </div>
+          <a href="https://www.youtube.com/watch?v=DacHvLiUcck" target="_blank" rel="noopener" class="source-side" aria-label="YouTube'da aç">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z"/>
+            </svg>
+            <span class="source-label">Deus ex Machina</span>
+          </a>
+        </div>
+        <div class="progress-track" ref="progressTrack" @click="seek">
+          <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+          <div class="progress-thumb" :style="{ left: progress + '%' }"></div>
+        </div>
+        <div class="time-info">
+          <span>{{ formatTime(current) }}</span>
+          <span>{{ formatTime(total) }}</span>
+        </div>
+      </div>
+    </div>
 
     <div class="detail">
       <p>İnsan </p>
@@ -179,6 +209,53 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const audioEl = ref(null)
+const progressTrack = ref(null)
+const playing = ref(false)
+const current = ref(0)
+const total = ref(0)
+const progress = ref(0)
+
+function toggle() {
+  const a = audioEl.value
+  if (!a) return
+  if (a.paused) { a.play() } else { a.pause() }
+}
+
+function onPlay() { playing.value = true }
+function onPause() { playing.value = false }
+
+function seek(e) {
+  const a = audioEl.value
+  if (!a || !progressTrack.value) return
+  const rect = progressTrack.value.getBoundingClientRect()
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+  a.currentTime = pct * a.duration
+}
+
+function onTime() {
+  const a = audioEl.value
+  if (!a) return
+  current.value = a.currentTime
+  progress.value = a.duration > 0 ? (a.currentTime / a.duration) * 100 : 0
+}
+
+function onMeta() {
+  const a = audioEl.value
+  if (a) total.value = a.duration
+}
+
+function formatTime(t) {
+  if (!t || !isFinite(t)) return '0:00'
+  const m = Math.floor(t / 60)
+  const s = Math.floor(t % 60)
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+</script>
+
 <style scoped>
 .amentu-page {
   padding: 1em;
@@ -197,6 +274,25 @@ h2 {
   font-size: 18px;
   font-weight: 800;
   display: block;
+}
+
+.year {
+  display: block;
+  margin-bottom: 1em;
+  font-style: italic;
+  opacity: 0.5;
+  font-size: 0.8em;
+}
+
+.page-title {
+  margin: 1.5em 0 0.75em;
+  line-height: 0;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 800;
+  display: block;
   margin-top: 0.5em;
 }
 
@@ -208,8 +304,143 @@ h2 {
   font-size: 0.8em;
 }
 
+.audio-player {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  max-width: 480px;
+  margin: 1.5em auto;
+  padding: 0.65em 0.75em;
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.06);
+  border-radius: 0.5em;
+  transition: background 0.2s;
+}
+
+.audio-player.playing {
+  background: rgb(255 255 255 / 0.07);
+}
+
+.play-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.play-btn:hover {
+  background: rgb(255 255 255 / 0.1);
+  border-color: rgb(255 255 255 / 0.3);
+}
+
+.player-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.track-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+}
+
+.track-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75em;
+}
+
+.track-title {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #fff;
+}
+
+.artist {
+  font-size: 0.7em;
+  opacity: 0.45;
+}
+
+.progress-track {
+  position: relative;
+  height: 3px;
+  background: rgb(255 255 255 / 0.1);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: height 0.15s;
+}
+
+.progress-track:hover {
+  height: 5px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary, #ae002e);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+.progress-thumb {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary, #ae002e);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.progress-track:hover .progress-thumb {
+  opacity: 1;
+}
+
+.time-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6em;
+  opacity: 0.35;
+  letter-spacing: 0.02em;
+}
+
+.source-side {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  text-decoration: none;
+  color: inherit;
+  opacity: 0.35;
+  transition: opacity 0.15s;
+}
+
+.source-side:hover {
+  opacity: 0.75;
+}
+
+.source-label {
+  font-size: 0.6em;
+  opacity: 0.3;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
 .detail {
-  margin-top: 4em;
+  margin-top: 2em;
   font-size: 0.9em;
   padding-bottom: 100px;
   line-height: 1.3;
