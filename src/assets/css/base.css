@@ -108,46 +108,36 @@
 
 /* ════════════ CANLI ════════════ */
 
-/* Koyu */
+/* Canlı = düz, keskin renk bloğu. Gradient/gri yok; tüm arka plan vakit rengi,
+   metin yüksek kontrastlı on-color (--ink). Tema fark etmez: aynı keskin görünüm. */
 :root[data-palette="canli"] {
-  --bg: #050507;
+  --ink: #0a0a0a;
+  --bg: var(--primary);
   --gradient-start: var(--primary);
-  --text: #fff;
-  --text-muted: rgba(255, 255, 255, 0.55);
-  --text-dim: #707078;
-  --surface: #161618;
-  --border: rgba(255, 255, 255, 0.08);
-  --watermark-opacity: 0.05;
-  --watermark-filter: invert(1);
-  --gradient-end: 65%;
-}
-:root[data-palette="canli"][data-vakit="imsak"]  { --primary: #00aaff; }
-:root[data-palette="canli"][data-vakit="gunes"]  { --primary: #ffae00; }
-:root[data-palette="canli"][data-vakit="ogle"]   { --primary: #ffd500; }
-:root[data-palette="canli"][data-vakit="ikindi"] { --primary: #ff6d00; }
-:root[data-palette="canli"][data-vakit="aksam"]  { --primary: #0088ff; }
-:root[data-palette="canli"][data-vakit="yatsi"]  { --primary: #5a3dff; }
-
-/* Açık */
-:root[data-palette="canli"][data-theme="light"] {
-  --bg: #fafafa;
-  --gradient-start: color-mix(in srgb, var(--primary) 50%, var(--bg));
-  --text: #0a0a0a;
-  --text-muted: rgba(0, 0, 0, 0.6);
-  --text-dim: #555;
-  --surface: #efefef;
-  --border: rgba(0, 0, 0, 0.09);
-  --watermark-opacity: 0.04;
+  --gradient-end: 100%;
+  /* --ink: arka plan üstündeki yüksek kontrastlı metin/eleman rengi (vakite göre) */
+  --text: var(--ink);
+  --text-muted: color-mix(in srgb, var(--ink) 62%, transparent);
+  --text-dim: color-mix(in srgb, var(--ink) 42%, transparent);
+  --surface: color-mix(in srgb, var(--ink) 8%, transparent);
+  --border: color-mix(in srgb, var(--ink) 18%, transparent);
+  --watermark-opacity: 0.06;
   --watermark-filter: none;
-  --gradient-end: 60%;
+  --grain-opacity: 0;
+}
+/* Sıcak/parlak vakitler → siyah mürekkep; mavi/mor vakitler → beyaz mürekkep */
+:root[data-palette="canli"][data-vakit="imsak"]  { --primary: #00aaff; --ink: #fff; }
+:root[data-palette="canli"][data-vakit="gunes"]  { --primary: #ffb300; --ink: #0a0a0a; }
+:root[data-palette="canli"][data-vakit="ogle"]   { --primary: #ffd500; --ink: #0a0a0a; }
+:root[data-palette="canli"][data-vakit="ikindi"] { --primary: #ff6d00; --ink: #0a0a0a; }
+:root[data-palette="canli"][data-vakit="aksam"]  { --primary: #0088ff; --ink: #fff; }
+:root[data-palette="canli"][data-vakit="yatsi"]  { --primary: #5a3dff; --ink: #fff; }
+
+/* Açık mod: aynı keskin blok; yalnızca color-scheme + watermark farkı */
+:root[data-palette="canli"][data-theme="light"] {
+  --watermark-opacity: 0.05;
   color-scheme: light;
 }
-:root[data-palette="canli"][data-theme="light"][data-vakit="imsak"]  { --primary: #0095e0; }
-:root[data-palette="canli"][data-theme="light"][data-vakit="gunes"]  { --primary: #e09400; }
-:root[data-palette="canli"][data-theme="light"][data-vakit="ogle"]   { --primary: #d4ad00; }
-:root[data-palette="canli"][data-theme="light"][data-vakit="ikindi"] { --primary: #e85d00; }
-:root[data-palette="canli"][data-theme="light"][data-vakit="aksam"]  { --primary: #0070e0; }
-:root[data-palette="canli"][data-theme="light"][data-vakit="yatsi"]  { --primary: #4a2de0; }
 
 /* ════════════ MESH (grenli mesh gradyan) ════════════ */
 
@@ -196,6 +186,12 @@ html {
   height: 100%;
   background: linear-gradient(180deg, var(--gradient-start) 0%, var(--bg) var(--gradient-end)) fixed;
   transition: background 0.4s ease;
+}
+
+/* Canlı paletinde düz, keskin renk bloğu — gradient yok */
+html[data-palette="canli"] {
+  background: var(--primary);
+  background-attachment: fixed;
 }
 
 /* Mesh paletinde çok-katmanlı radial mesh gradyan (koyu) */
@@ -280,4 +276,32 @@ select {
 :root[data-theme="light"] .alaturka-time,
 :root[data-theme="light"] .counter {
   color: var(--primary) !important;
+}
+
+/* Canlı: arka plan zaten vakit rengi → vurgular var(--primary) yerine
+   yüksek kontrastlı mürekkep (--text) olmalı, yoksa zeminle aynı renk kalır */
+:root[data-palette="canli"] .logo-link,
+:root[data-palette="canli"] .primary-clock,
+:root[data-palette="canli"] .alaturka-time,
+:root[data-palette="canli"] .counter,
+:root[data-palette="canli"] .beyit::before,
+:root[data-palette="canli"] .credits-item b {
+  color: var(--text) !important;
+}
+
+/* Hicri gün kutusu: zemin vakit rengi olduğu için kenar+metin mürekkep olmalı */
+:root[data-palette="canli"] .hijri-day {
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* Sosyal link butonları: zemin vakit rengi → mürekkep zemin, ters ikon */
+:root[data-palette="canli"] .links a {
+  background: var(--text) !important;
+  color: var(--bg) !important;
+}
+
+/* Analog saat akrebi: zemin vakit rengi → akrep mürekkep renginde görünür */
+:root[data-palette="canli"] .hand-hour {
+  stroke: var(--text) !important;
 }

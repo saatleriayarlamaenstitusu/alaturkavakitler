@@ -36,8 +36,6 @@ function formatTime(dateObj) {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  border-top: 1px solid var(--border);
-  padding-top: 0.5rem;
 }
 
 .vakit-item {

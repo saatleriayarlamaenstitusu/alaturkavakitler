@@ -1,8 +1,10 @@
+/* Dolu hayalet başlık — düşük opaklıkta dolgulu büyük başlık.
+   Kontur (-webkit-text-stroke) kullanılmıyor: Inter Tight değişken fontunun
+   üst üste binen alt-konturları stroke'ta 't' gibi harflerde iç inşa çizgisi
+   gösteriyordu; dolguda (nonzero) bu binişmeler tamamen gizleniyor. */
 .page-title {
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke-width: 1px;
-  -webkit-text-stroke-color: rgba(255, 255, 255, 0.22);
+  color: var(--text);
+  opacity: 0.14;
   font-size: 4em;
   font-weight: 900;
   font-family: var(--font2);
@@ -18,11 +20,11 @@
 }
 
 :root[data-theme="light"] .page-title {
-  -webkit-text-stroke-color: rgba(0, 0, 0, 0.14);
+  opacity: 0.1;
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]):not([data-theme="light"]) .page-title {
-    -webkit-text-stroke-color: rgba(0, 0, 0, 0.14);
+    opacity: 0.1;
   }
 }

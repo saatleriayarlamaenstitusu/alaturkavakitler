@@ -57,9 +57,9 @@ onUnmounted(() => clearInterval(intervalId))
 
     <!-- Akrep (saat) — kısa, vakit renginde -->
     <line
+      class="hand-hour"
       x1="100" y1="100"
       x2="100" y2="58"
-      stroke="var(--primary)"
       stroke-width="5"
       stroke-linecap="butt"
       :transform="`rotate(${hands.hour}, 100, 100)`"
@@ -78,5 +78,10 @@ onUnmounted(() => clearInterval(intervalId))
   display: block;
   margin: 0 auto;
   color: var(--text);
+}
+
+/* Akrep vakit renginde (yelkovan currentColor/--text kalır) */
+.hand-hour {
+  stroke: var(--primary);
 }
 </style>

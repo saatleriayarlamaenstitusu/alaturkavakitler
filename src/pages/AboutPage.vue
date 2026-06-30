@@ -4,11 +4,7 @@ import { RouterLink } from 'vue-router'
 
 <template>
   <div class="about-page">
-    <h1 class="page-title">hakkında.</h1>
-
-    <div class="about-content">
-      <img src="/Icons/hilal.svg" alt="Hilal" id="hilal" />
-
+    <section class="about-intro">
       <RouterLink to="/amentu" class="logo-link">
         <img src="/Icons/makili.svg" alt="Alaturka Vakitler" id="makili" />
       </RouterLink>
@@ -16,8 +12,9 @@ import { RouterLink } from 'vue-router'
       <RouterLink to="/amentu" class="beyit-link">
         <span class="beyit">bilmezdim neden bazı saatler alaturka vakitlere ayarlı</span>
       </RouterLink>
+    </section>
 
-      <div class="about-details">
+    <div class="about-details">
 
         <div class="credits-item">
           <b>Katkıda Bulun · Sorun Bildir · Takip Et</b>
@@ -56,35 +53,22 @@ import { RouterLink } from 'vue-router'
 
       </div>
 
+    <section class="about-footer">
       <a href="https://github.com/saatleriayarlamaenstitusu/" title="Saatleri Ayarlama Enstitüsü" target="_blank" rel="noopener">
         <img src="/Icons/sae.svg" alt="Saatleri Ayarlama Enstitüsü" id="sae" />
       </a>
-    </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
 .about-page {
-  padding: 0 2rem 4rem;
+  padding-bottom: 4rem;
 }
 
-.about-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-}
-
-#hilal {
-  margin-bottom: 2em;
-  margin-top: 1em;
-  width: 1.5em;
-  height: auto;
-}
-
-#makili {
-  width: 9.5em;
-  height: auto;
+/* Giriş: sola yaslı logo + beyit */
+.about-intro {
+  padding: 3.5rem 1.25rem 3rem;
 }
 
 .logo-link,
@@ -92,14 +76,19 @@ import { RouterLink } from 'vue-router'
   display: block;
 }
 
+#makili {
+  width: 11em;
+  height: auto;
+}
+
 .beyit {
-  color: white;
+  color: var(--text);
   font-family: var(--font2);
-  white-space: nowrap;
-  font-size: 0.8em;
-  margin: 2em 0;
+  font-size: 1.5rem;
+  margin: 1.25em 0 0;
   display: block;
-  z-index: 1;
+  max-width: 18ch;
+  line-height: 1.4;
   font-weight: 200;
   position: relative;
 }
@@ -107,13 +96,13 @@ import { RouterLink } from 'vue-router'
 .beyit::before {
   content: "\201C";
   position: absolute;
-  bottom: -100%;
-  left: -12px;
+  top: -0.5em;
+  left: -0.4em;
   color: var(--primary);
   font-family: var(--font2);
   font-size: 100px;
   line-height: 0;
-  opacity: 0.5;
+  opacity: 0.18;
   z-index: -1;
   font-weight: 400;
 }
@@ -122,35 +111,30 @@ import { RouterLink } from 'vue-router'
   width: 100%;
 }
 
+/* Çizgiyle ayrılmış, sola yaslı kredi blokları */
 .credits-item {
-  color: white;
-  padding: 1.5em 0;
-  font-size: 0.7em;
+  color: var(--text);
+  padding: 2.25rem 1.25rem;
   display: flex;
-  border-radius: 0.5em;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: flex-start;
+  border-top: 1px solid var(--border);
   font-family: var(--font2);
 }
 
 .credits-item b {
-  opacity: 1;
-  width: 100%;
-  text-align: center;
-  font-weight: 800;
-  color: var(--primary);
-  font-size: 0.9em;
-  margin-bottom: 0;
+  font-weight: 600;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .name {
-  font-size: 1em;
-  width: 100%;
-  text-align: center;
-  line-height: 2;
-  font-weight: 200;
-  margin-bottom: 0.5em;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  font-weight: 400;
+  margin: 0.6rem 0 1.25rem;
 }
 
 .links {
@@ -160,9 +144,10 @@ import { RouterLink } from 'vue-router'
 
 .links a {
   background: var(--primary);
-  padding: 5px;
-  border-radius: 3px;
+  padding: 6px;
+  border-radius: 4px;
   display: flex;
+  color: #fff;
 }
 
 .links svg {
@@ -170,8 +155,13 @@ import { RouterLink } from 'vue-router'
   height: 1em;
 }
 
+.about-footer {
+  padding: 3rem 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
 #sae {
-  width: 150px;
-  margin-top: 3em;
+  width: 130px;
+  height: auto;
 }
 </style>

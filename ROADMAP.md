@@ -61,6 +61,8 @@
 - [ ] Vakit kaynağı (Diyanet / Türkiye Takvimi)
 - [ ] İlk açılacak sayfa seçimi
 - [ ] Vakite göre tema rengi kullan/ma
+- [ ] Renk stili seçimi (klasik / pastel / canlı / mesh — `data-palette`)
+- [ ] AI görsel stili: her vakit için AI ile üretilmiş blurlu long-exposure minimal arka plan görselleri (ayrı bir `data-palette` stili olarak)
 - [ ] Bildirimler (vakit değişimi)
 - [ ] İlk açılış sayfası ayarı
 - [ ] Tüm ayarlar localStorage'a
@@ -133,7 +135,9 @@
 - [ ] Saat ağırlıklı post şablonu (1:1 ve 9:16)
 - [ ] Takvim ağırlıklı post şablonu (1:1 ve 9:16)
 - [ ] Kullanıcı özelleştirme (başlık, yazı, saat, tarih pozisyonları)
+- [ ] Kullanıcı kendi resmini seçip üzerine tarih / saat / not / mesaj yazsın (overlay tasarımları **swiss style**)
 - [ ] Unsplash entegrasyonu (vakite göre önerilen görseller)
+- [ ] AI ile üretilmiş blurlu long-exposure minimal görseller (paylaşım arka planı olarak)
 - [ ] Görsel indirme + doğrudan paylaşım (Web Share API)
 - [ ] Şablonu lokal kaydetme
 - [ ] Şablonu QR ile paylaşma
@@ -157,7 +161,18 @@
 
 - [ ] Chrome yeni sekme eklentisi
 - [ ] PWA mağazalarına yükleme (Samsung Galaxy Store, Microsoft Store)
+- [ ] Basit mobil uygulama (vakit/saat widget özelliği ile)
 - [ ] Twitter botu (önemli dini günler)
+
+---
+
+## Faz 11: Dini Araçlar &amp; İçerik
+
+- [ ] Kıble pusulası (cihaz sensörüyle minimal kıble yönü gösterimi)
+- [ ] Dini radyo / Kuran dinleme bölümü (plak tarzı arayüz, YouTube listesi üzerinden)
+- [ ] Kuran kayıtlarını indirip içerik yönetiminde ayrı kategori olarak girme (Directus)
+- [ ] Kuran okuma bölümü
+- [ ] Ana ekranda seçili ayetlerden gösterim
 
 ---
 
@@ -180,5 +195,5 @@
 5. **Faz 5** — Vakitler iyileştirme
 6. **Faz 6** — Takvim
 7. **Faz 7** — İçerik/Directus
-8. **Faz 8+** — Paylaş, Oluşturucu, Platform
+8. **Faz 8+** — Paylaş, Oluşturucu, Platform, Dini Araçlar (kıble/Kuran)
 

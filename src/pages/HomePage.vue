@@ -10,10 +10,8 @@ import CalendarWidget from '@/components/calendar/CalendarWidget.vue'
     <div class="clock-section">
       <AlaturkaClock />
     </div>
-    <div class="counter-section">
+    <div class="vakit-block">
       <VakitCounter />
-    </div>
-    <div class="list-section">
       <VakitList />
     </div>
     <div class="calendar-section">
@@ -35,13 +33,13 @@ import CalendarWidget from '@/components/calendar/CalendarWidget.vue'
   flex: 1;
 }
 
-.counter-section {
+/* Kalan vakit sayacı + vakit listesi tek bir bütün blok */
+.vakit-block {
   padding: 1.25rem 1.25rem 0.75rem;
   border-top: 1px solid var(--border);
-}
-
-.list-section {
-  padding: 0 1.25rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .calendar-section {

@@ -15,29 +15,30 @@ const themeOptions = [
   <div class="settings-page">
     <h1 class="page-title">ayarlar</h1>
 
-    <div class="settings-section">
-      <h2 class="section-title">Görünüm</h2>
-
-      <div class="setting-row">
-        <span class="setting-label">Tema</span>
-        <div class="theme-selector">
-          <button
-            v-for="opt in themeOptions"
-            :key="opt.value"
-            class="theme-btn"
-            :class="{ active: settings.darkMode === opt.value }"
-            @click="settings.darkMode = opt.value"
-          >
-            <span class="theme-icon">{{ opt.icon }}</span>
-            <span>{{ opt.label }}</span>
-          </button>
-        </div>
+    <section class="setting-block">
+      <div class="setting-head">
+        <h2 class="setting-name">Tema</h2>
+        <p class="setting-desc">Görünüm modu</p>
       </div>
-    </div>
+      <div class="theme-selector">
+        <button
+          v-for="opt in themeOptions"
+          :key="opt.value"
+          class="theme-btn"
+          :class="{ active: settings.darkMode === opt.value }"
+          @click="settings.darkMode = opt.value"
+        >
+          <span class="theme-icon">{{ opt.icon }}</span>
+          <span>{{ opt.label }}</span>
+        </button>
+      </div>
+    </section>
 
-    <div class="settings-section">
-      <h2 class="section-title">Renk Stili</h2>
-
+    <section class="setting-block">
+      <div class="setting-head">
+        <h2 class="setting-name">Renk Stili</h2>
+        <p class="setting-desc">Palet seçimi</p>
+      </div>
       <div class="style-grid">
         <button
           v-for="style in COLOR_STYLES"
@@ -57,66 +58,73 @@ const themeOptions = [
           <span class="style-label">{{ style.label }}</span>
         </button>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
 .settings-page {
-  padding: 0 1.25rem 2rem;
+  padding-bottom: 2rem;
 }
 
-.settings-section {
-  margin-top: 2rem;
+/* Çizgiyle ayrılmış, sola yaslı section */
+.setting-block {
+  padding: 1.5rem 1.25rem;
+  border-top: 1px solid var(--border);
 }
 
-.section-title {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+.setting-block:first-of-type {
+  margin-top: 0.5rem;
+}
+
+.setting-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 1.1rem;
+}
+
+.setting-name {
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.setting-desc {
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 0.75rem;
-  padding-left: 0.25rem;
+  margin-top: 0.4rem;
 }
 
-.setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.875rem 1rem;
-  background: var(--surface);
-  border-radius: var(--radius);
-}
-
-.setting-label {
-  font-size: 0.95rem;
-  color: var(--text);
-}
-
+/* Tema seçici — sola yaslı segment kontrol */
 .theme-selector {
-  display: flex;
-  gap: 0.25rem;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0.2rem;
-  border-radius: 8px;
+  display: inline-flex;
+  gap: 0.4rem;
 }
 
 .theme-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 0.8rem;
   color: var(--text-muted);
-  transition: background 0.15s ease, color 0.15s ease;
+  background: transparent;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   cursor: pointer;
 }
 
 .theme-btn.active {
-  background: var(--primary);
-  color: white;
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
 }
 
 .theme-icon {
@@ -128,28 +136,29 @@ const themeOptions = [
 .style-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .style-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 1rem 0.5rem;
-  background: var(--surface);
-  border: 1.5px solid transparent;
-  border-radius: var(--radius);
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
   transition: border-color 0.15s ease;
 }
 
 .style-card.active {
-  border-color: var(--primary);
+  border-color: var(--text);
 }
 
 .style-swatch {
   display: flex;
-  gap: 3px;
+  gap: 4px;
 }
 
 .swatch-dot {
@@ -161,7 +170,7 @@ const themeOptions = [
 .style-label {
   font-size: 0.8rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   color: var(--text);
 }
 </style>
