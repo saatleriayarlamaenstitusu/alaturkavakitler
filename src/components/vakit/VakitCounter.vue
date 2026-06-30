@@ -144,6 +144,7 @@ onUnmounted(() => {
 .kerahat {
   display: inline-block;
   background: #991b1b;
+  color: #fff;
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem 0.25rem 2em;
   border-radius: 5px;
