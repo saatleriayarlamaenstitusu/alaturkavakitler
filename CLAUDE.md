@@ -141,7 +141,8 @@ firstPage         // route path
 themePerVakit     // boolean — vakite göre renk değişimi
 notificationsEnabled // boolean
 darkMode          // 'auto' | 'dark' | 'light'
-colorStyle        // 'klasik' | 'pastel' | 'canli' | 'mesh' — renk stili (src/data/colorStyles.js)
+colorStyle        // 'klasik' | 'pastel' | 'canli' | 'mesh' | 'mono' — renk stili (src/data/colorStyles.js)
+homeClock         // 'led' | 'normal' — ana sayfa saat görünümü (LedClock / AlaturkaClock)
 ```
 
 ---
@@ -162,16 +163,17 @@ colorStyle        // 'klasik' | 'pastel' | 'canli' | 'mesh' — renk stili (src/
 ```
 
 ### Tema sistemi
-- `html`'e üç eksen attribute eklenir: `data-theme="dark|light"` × `data-palette="klasik|pastel|canli|mesh"` × `data-vakit`.
+- `html`'e üç eksen attribute eklenir: `data-theme="dark|light"` × `data-palette="klasik|pastel|canli|mesh|mono"` × `data-vakit`.
 - `data-theme` **her zaman explicit** set edilir — `App.vue` `auto` modda `matchMedia` ile sistem tercihini çözüp `light`/`dark` yazar. Bu yüzden CSS'te `@media (prefers-color-scheme)` **kullanılmaz**; sadece default(dark) + `[data-theme="light"]` blokları var.
 - `data-palette` `App.vue` içinde `settings.colorStyle` izlenerek set edilir (default `klasik`).
 - Açık mod gradient: `color-mix(in srgb, var(--primary) 18%, var(--bg))` — subtle tint.
 - `html` arka planı `--gradient-end` değişkeniyle parametrik: klasik 38%, pastel 52%, canlı 65% (vakit rengi ne kadar alan kaplıyor).
 
 ### Renk stilleri (genişletilebilir)
-- Stil tanımları `src/data/colorStyles.js` içinde (`COLOR_STYLES` listesi: `id`, `label`, 3 renklik `swatch`). SettingsPage ve App.vue bu listeyi kullanır.
+- Stil tanımları `src/data/colorStyles.js` içinde (`COLOR_STYLES` listesi: `id`, `label`, `bg`/`fg` (ayarlardaki önizleme karesinin zemin+yazı rengi), 3 renklik `swatch`). SettingsPage ve App.vue bu listeyi kullanır.
+- Ayarlarda stil seçici **yatay kaydırılabilir** kare önizlemeler: kare zemini `bg`, içindeki ad `fg` renginde, alt köşede `swatch` aksan noktaları; aktif stil `--text` ring ile.
 - Her stil 6 vakti yeniden renklendirir + kendi yüzeyini (bg/surface/text/gradient) tanımlar; light+dark varyantı var.
-- **Yeni stil eklemek:** (1) `colorStyles.js`'e bir obje ekle, (2) `base.css`'e `[data-palette="<id>"]` bloklarını kopyala — koyu base + 6 vakit, açık base + 6 vakit. Başka kod gerekmez.
+- **Yeni stil eklemek:** (1) `colorStyles.js`'e bir obje ekle (`id`, `label`, `bg`, `fg`, `swatch`), (2) `base.css`'e `[data-palette="<id>"]` bloklarını kopyala — koyu base + 6 vakit, açık base + 6 vakit. Başka kod gerekmez (önizleme karesi `bg`/`fg`'den otomatik).
 - CSS seçici zinciri (specificity sırası): `[data-palette]` < `[data-palette][data-vakit]` < `[data-palette][data-theme=light]` < `[data-palette][data-theme=light][data-vakit]`.
 
 ### Vakit renkleri — koyu mod (default)

@@ -9,6 +9,11 @@ const themeOptions = [
   { value: 'light', label: 'Açık',   icon: '☀' },
   { value: 'dark',  label: 'Koyu',   icon: '☽' },
 ]
+
+const homeClockOptions = [
+  { value: 'led',    label: 'LED' },
+  { value: 'normal', label: 'Normal' },
+]
 </script>
 
 <template>
@@ -36,10 +41,28 @@ const themeOptions = [
 
     <section class="setting-block">
       <div class="setting-head">
+        <h2 class="setting-name">Ana Sayfa Saati</h2>
+        <p class="setting-desc">Saat görünümü</p>
+      </div>
+      <div class="theme-selector">
+        <button
+          v-for="opt in homeClockOptions"
+          :key="opt.value"
+          class="theme-btn"
+          :class="{ active: settings.homeClock === opt.value }"
+          @click="settings.homeClock = opt.value"
+        >
+          <span>{{ opt.label }}</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="setting-block">
+      <div class="setting-head">
         <h2 class="setting-name">Renk Stili</h2>
         <p class="setting-desc">Palet seçimi</p>
       </div>
-      <div class="style-grid">
+      <div class="style-scroller">
         <button
           v-for="style in COLOR_STYLES"
           :key="style.id"
@@ -47,15 +70,17 @@ const themeOptions = [
           :class="{ active: settings.colorStyle === style.id }"
           @click="settings.colorStyle = style.id"
         >
-          <span class="style-swatch">
-            <span
-              v-for="(c, i) in style.swatch"
-              :key="i"
-              class="swatch-dot"
-              :style="{ background: c }"
-            ></span>
+          <span class="style-square" :style="{ background: style.bg, color: style.fg }">
+            <span class="square-label">{{ style.label }}</span>
+            <span class="square-dots">
+              <span
+                v-for="(c, i) in style.swatch"
+                :key="i"
+                class="dot"
+                :style="{ background: c }"
+              ></span>
+            </span>
           </span>
-          <span class="style-label">{{ style.label }}</span>
         </button>
       </div>
     </section>
@@ -132,45 +157,65 @@ const themeOptions = [
   line-height: 1;
 }
 
-/* Renk stili kartları */
-.style-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.6rem;
+/* Renk stili — yatay kaydırılabilir kare önizlemeler */
+.style-scroller {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  /* ekran kenarlarına taşır, içerik 1.25rem hizada başlar */
+  margin: 0 -1.25rem;
+  padding: 0.25rem 1.25rem 0.5rem;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.style-scroller::-webkit-scrollbar {
+  display: none;
 }
 
 .style-card {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+/* Kare: arka plan = palet rengi, içinde stil adı + aksan noktaları */
+.style-square {
+  width: 96px;
+  height: 96px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.7rem;
-  padding: 0.9rem;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
+  justify-content: space-between;
+  padding: 0.7rem;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.style-card.active {
+.style-card.active .style-square {
   border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--text);
 }
 
-.style-swatch {
+.square-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.square-dots {
   display: flex;
   gap: 4px;
 }
 
-.swatch-dot {
-  width: 14px;
-  height: 14px;
+.square-dots .dot {
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-}
-
-.style-label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: var(--text);
 }
 </style>

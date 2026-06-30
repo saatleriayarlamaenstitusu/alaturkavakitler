@@ -18,8 +18,9 @@ export const useSettingsStore = defineStore('settings', () => {
   const notificationsEnabled = ref(load('notificationsEnabled', false))
   const darkMode = ref(load('darkMode', 'auto'))
   const colorStyle = ref(load('colorStyle', 'klasik'))
+  const homeClock = ref(load('homeClock', 'led')) // 'led' | 'normal'
 
-  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, darkMode, colorStyle }
+  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, darkMode, colorStyle, homeClock }
 
   for (const [key, r] of Object.entries(all)) {
     watch(r, (val) => localStorage.setItem(`settings_${key}`, JSON.stringify(val)))

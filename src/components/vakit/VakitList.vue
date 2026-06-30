@@ -44,15 +44,27 @@ function formatTime(dateObj) {
   align-items: center;
   flex: 1;
   padding: 0.25rem 0;
+  /* Geçmiş vakitler (aktiften önce) — en soluk */
+  color: var(--text-dim);
+}
+
+/* Gelecek vakitler (aktiften sonra) — muted */
+.vakit-item.active ~ .vakit-item {
   color: var(--text-muted);
 }
 
+/* Sonraki vakit — beyaz/tam metin */
+.vakit-item.active + .vakit-item {
+  color: var(--text);
+}
+
+/* Aktif vakit — en öne çıkan */
 .vakit-item.active {
   color: var(--text);
 }
 
-.vakit-item.active + .vakit-item {
-  color: var(--text-dim);
+.vakit-item.active .value {
+  font-weight: 700;
 }
 
 .dot {

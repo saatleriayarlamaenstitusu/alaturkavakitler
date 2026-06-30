@@ -1,14 +1,19 @@
 <script setup>
 import AlaturkaClock from '@/components/clock/AlaturkaClock.vue'
+import LedClock from '@/components/clock/LedClock.vue'
 import VakitCounter from '@/components/vakit/VakitCounter.vue'
 import VakitList from '@/components/vakit/VakitList.vue'
 import CalendarWidget from '@/components/calendar/CalendarWidget.vue'
+import { useSettingsStore } from '@/stores/settings'
+
+const settings = useSettingsStore()
 </script>
 
 <template>
   <div class="home-page">
     <div class="clock-section">
-      <AlaturkaClock />
+      <LedClock v-if="settings.homeClock === 'led'" />
+      <AlaturkaClock v-else />
     </div>
     <div class="vakit-block">
       <VakitCounter />

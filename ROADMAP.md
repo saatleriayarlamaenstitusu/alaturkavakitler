@@ -63,6 +63,7 @@
 - [ ] Vakite göre tema rengi kullan/ma
 - [ ] Renk stili seçimi (klasik / pastel / canlı / mesh — `data-palette`)
 - [ ] AI görsel stili: her vakit için AI ile üretilmiş blurlu long-exposure minimal arka plan görselleri (ayrı bir `data-palette` stili olarak)
+- [ ] Minimal dini görsellerden oluşan renk stili (ayrı bir `data-palette` stili — minimal dini illüstrasyon/desen arka planları)
 - [ ] Bildirimler (vakit değişimi)
 - [ ] İlk açılış sayfası ayarı
 - [ ] Tüm ayarlar localStorage'a
@@ -173,6 +174,19 @@
 - [ ] Kuran kayıtlarını indirip içerik yönetiminde ayrı kategori olarak girme (Directus)
 - [ ] Kuran okuma bölümü
 - [ ] Ana ekranda seçili ayetlerden gösterim
+
+---
+
+## Masaüstü Görünüm İyileştirmeleri
+
+Uygulama mobile-first; geniş ekranlarda içerik gereksiz yayılıyor.
+
+- [ ] İçerik için maksimum genişlik / ortalanmış kolon (geniş ekranda yayılmayı engelle)
+- [ ] Masaüstünde çok kolonlu yerleşim (saat + vakitler + takvim yan yana)
+- [ ] BottomNav yerine masaüstünde yan/üst navigasyon
+- [ ] LED saat ve başlıkların geniş ekranda ölçek/oran ayarı
+- [ ] Responsive kırılma noktaları (breakpoint) sistemi tanımla
+- [ ] Klavye navigasyonu / hover durumları (masaüstü etkileşim)
 
 ---
 

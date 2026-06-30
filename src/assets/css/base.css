@@ -180,6 +180,49 @@
 :root[data-palette="mesh"][data-theme="light"][data-vakit="aksam"]  { --primary: #1f55ab; }
 :root[data-palette="mesh"][data-theme="light"][data-vakit="yatsi"]  { --primary: #3d3080; }
 
+/* ════════════ MONO (siyah & beyaz) ════════════ */
+
+/* Koyu */
+:root[data-palette="mono"] {
+  --bg: #0a0a0a;
+  --gradient-start: color-mix(in srgb, var(--primary) 22%, var(--bg));
+  --text: #fafafa;
+  --text-muted: rgba(250, 250, 250, 0.5);
+  --text-dim: #6b6b6b;
+  --surface: #1a1a1a;
+  --border: rgba(255, 255, 255, 0.1);
+  --watermark-opacity: 0.05;
+  --watermark-filter: invert(1);
+  --gradient-end: 45%;
+}
+:root[data-palette="mono"][data-vakit="imsak"]  { --primary: #e6e6e6; }
+:root[data-palette="mono"][data-vakit="gunes"]  { --primary: #d4d4d4; }
+:root[data-palette="mono"][data-vakit="ogle"]   { --primary: #dedede; }
+:root[data-palette="mono"][data-vakit="ikindi"] { --primary: #bfbfbf; }
+:root[data-palette="mono"][data-vakit="aksam"]  { --primary: #a8a8a8; }
+:root[data-palette="mono"][data-vakit="yatsi"]  { --primary: #8f8f8f; }
+
+/* Açık (ana görünüm) */
+:root[data-palette="mono"][data-theme="light"] {
+  --bg: #fafafa;
+  --gradient-start: color-mix(in srgb, var(--primary) 14%, var(--bg));
+  --text: #0a0a0a;
+  --text-muted: rgba(10, 10, 10, 0.55);
+  --text-dim: #9a9a9a;
+  --surface: #efefef;
+  --border: rgba(0, 0, 0, 0.1);
+  --watermark-opacity: 0.05;
+  --watermark-filter: none;
+  --gradient-end: 40%;
+  color-scheme: light;
+}
+:root[data-palette="mono"][data-theme="light"][data-vakit="imsak"]  { --primary: #1a1a1a; }
+:root[data-palette="mono"][data-theme="light"][data-vakit="gunes"]  { --primary: #333333; }
+:root[data-palette="mono"][data-theme="light"][data-vakit="ogle"]   { --primary: #262626; }
+:root[data-palette="mono"][data-theme="light"][data-vakit="ikindi"] { --primary: #404040; }
+:root[data-palette="mono"][data-theme="light"][data-vakit="aksam"]  { --primary: #595959; }
+:root[data-palette="mono"][data-theme="light"][data-vakit="yatsi"]  { --primary: #737373; }
+
 /* ════════════════════════════════════════════════════════════ */
 
 html {

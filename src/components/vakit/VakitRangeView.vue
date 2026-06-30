@@ -85,6 +85,8 @@ onUnmounted(() => clearInterval(intervalId))
       </template>
     </div>
 
+    <div class="ticks" aria-hidden="true"></div>
+
     <div
       v-if="nowPercent !== null"
       class="now-line"
@@ -158,6 +160,23 @@ onUnmounted(() => clearInterval(intervalId))
 
 .kerahat--left  { left: 0; }
 .kerahat--right { right: 0; }
+
+/* Radyo kadranı tarzı ince çizgi aralıkları (minör + her 5'te bir majör) */
+.ticks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 75px;
+  z-index: 5;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 38%, transparent) 0 1px, transparent 1px 30px),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 18%, transparent) 0 1px, transparent 1px 6px);
+  background-repeat: repeat-x, repeat-x;
+  background-position: bottom, bottom;
+  background-size: 30px 18px, 6px 10px;
+}
 
 .now-line {
   position: absolute;

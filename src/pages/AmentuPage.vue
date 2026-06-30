@@ -2,7 +2,7 @@
   <div class="amentu-page blog-details">
     <img src="/img/ismetozel.jpg" alt="İsmet Özel" />
 
-    <h1 class="page-title" style="font-size:4em;line-height:0;font-weight:800;margin:1.5em 0 .75em 0">Amentü</h1>
+    <h1 class="page-title" style="line-height:0;margin:1.5em 0 .75em 0">amentü</h1>
     <h2>İsmet Özel</h2>
     <span class="year">1974</span>
 

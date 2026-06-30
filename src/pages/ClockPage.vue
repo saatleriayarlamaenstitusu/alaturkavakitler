@@ -21,7 +21,7 @@ onUnmounted(() => clearInterval(intervalId))
 
 <template>
   <div class="clock-page">
-    <h1 class="page-title">Saat</h1>
+    <h1 class="page-title">saat</h1>
     <div class="clock-content">
       <div class="analog-section">
         <AnalogClock />
