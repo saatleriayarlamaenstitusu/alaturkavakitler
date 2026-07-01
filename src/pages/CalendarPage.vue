@@ -1,17 +1,23 @@
+<script setup>
+import HijriMonthCalendar from '@/components/calendar/HijriMonthCalendar.vue'
+</script>
+
 <template>
   <div class="calendar-page">
     <h1 class="page-title">takvim</h1>
-    <p class="placeholder">Takvim sayfası yakında.</p>
+    <HijriMonthCalendar />
   </div>
 </template>
 
 <style scoped>
 .calendar-page {
-  padding: 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: 1.5rem;
 }
 
-.placeholder {
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 1rem;
+.calendar-page :deep(.hijri-month) {
+  flex: 1;
 }
 </style>

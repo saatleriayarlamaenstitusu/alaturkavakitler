@@ -10,7 +10,7 @@ import { RouterLink } from 'vue-router'
       </RouterLink>
 
       <RouterLink to="/amentu" class="beyit-link">
-        <span class="beyit">bilmezdim neden bazı saatler alaturka vakitlere ayarlı</span>
+        <span class="beyit">bilmezdim neden bazı saatler <br>alaturka vakitlere ayarlı</span>
       </RouterLink>
     </section>
 
@@ -87,7 +87,7 @@ import { RouterLink } from 'vue-router'
   font-size: 1.5rem;
   margin: 1.25em 0 0;
   display: block;
-  max-width: 18ch;
+  max-width: 24ch;
   line-height: 1.4;
   font-weight: 200;
   position: relative;

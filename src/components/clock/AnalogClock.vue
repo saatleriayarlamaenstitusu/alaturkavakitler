@@ -29,28 +29,26 @@ onUnmounted(() => clearInterval(intervalId))
 
 <template>
   <svg viewBox="0 0 200 200" class="analog-clock" aria-label="Alaturka saat">
-    <!-- Yüz kenarı -->
-    <circle cx="100" cy="100" r="94" stroke="currentColor" stroke-opacity="0.14" stroke-width="1" fill="none" />
-
-    <!-- Saat çizgileri (dış kenar) -->
-    <g v-for="i in 12" :key="i" :transform="`rotate(${i * 30}, 100, 100)`">
+    <!-- Dakika çizgileri (60) — Swiss demiryolu saati stili -->
+    <g v-for="i in 60" :key="i" :transform="`rotate(${i * 6}, 100, 100)`">
       <line
         x1="100"
-        :y1="i % 3 === 0 ? 8 : 11"
+        :y1="i % 5 === 0 ? 8 : 12"
         x2="100"
-        y2="17"
+        :y2="i % 5 === 0 ? 20 : 15"
         stroke="currentColor"
-        :stroke-opacity="i % 3 === 0 ? 0.55 : 0.22"
-        :stroke-width="i % 3 === 0 ? 2 : 1"
+        :stroke-opacity="i % 5 === 0 ? 0.7 : 0.28"
+        :stroke-width="i % 5 === 0 ? 2.5 : 1"
+        stroke-linecap="butt"
       />
     </g>
 
     <!-- Yelkovan (dakika) — uzun, nötr -->
     <line
-      x1="100" y1="100"
-      x2="100" y2="30"
+      x1="100" y1="108"
+      x2="100" y2="28"
       stroke="currentColor"
-      stroke-width="2.5"
+      stroke-width="3"
       stroke-linecap="butt"
       :transform="`rotate(${hands.minute}, 100, 100)`"
     />
@@ -58,15 +56,16 @@ onUnmounted(() => clearInterval(intervalId))
     <!-- Akrep (saat) — kısa, vakit renginde -->
     <line
       class="hand-hour"
-      x1="100" y1="100"
-      x2="100" y2="58"
-      stroke-width="5"
+      x1="100" y1="108"
+      x2="100" y2="56"
+      stroke-width="6"
       stroke-linecap="butt"
       :transform="`rotate(${hands.hour}, 100, 100)`"
     />
 
     <!-- Merkez -->
-    <circle cx="100" cy="100" r="4" fill="currentColor" />
+    <circle cx="100" cy="100" r="4.5" fill="currentColor" />
+    <circle cx="100" cy="100" r="2" class="hand-hour" :style="{ fill: 'var(--primary)' }" stroke="none" />
   </svg>
 </template>
 
