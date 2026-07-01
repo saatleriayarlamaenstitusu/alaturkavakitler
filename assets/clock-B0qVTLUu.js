@@ -1,0 +1,1 @@
+import{D as n}from"./index-Cu1OtZ5I.js";function i(t,a){var f,c;if(!a)return"--:--";const m=t.toISODate(),s=t.minus({days:1}).toISODate(),o=(f=a[m])==null?void 0:f.aksam,r=(c=a[s])==null?void 0:c.aksam;if(!o||!r)return"--:--";const e=n.fromISO(`${m}T${o}`);if(t<e){const u=n.fromISO(`${s}T${r}`);return t.diff(u).toFormat("hh:mm")}return t.diff(e).toFormat("hh:mm")}export{i as c};
