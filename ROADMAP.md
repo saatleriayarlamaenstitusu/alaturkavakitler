@@ -32,7 +32,7 @@
 - [x] `100dvh` ile chrome mobil scroll sorunu
 - [x] Açık/koyu/sistem tema (CSS + ayardan)
 - [x] OG/Twitter paylaşım görselleri (statik, index.html'de)
-- [ ] Dropdown dışına tıklanırsa kapanma (clickOutside directive)
+- [x] Dropdown dışına tıklanırsa kapanma (clickOutside directive)
 - [ ] Gece yarısından sonra dünün vakitlerini gösterme sorunu
 - [ ] Akşam ezanı geçince günü güncelleme (reactive date watch)
 - [ ] Loading placeholder'lar (skeleton)
