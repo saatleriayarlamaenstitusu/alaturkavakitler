@@ -29,9 +29,11 @@ const firstPageOptions = [
 
     <section class="setting-block">
       <div class="setting-head">
-        <h2 class="setting-name">Tema</h2>
-        <p class="setting-desc">Görünüm modu</p>
+        <h2 class="setting-name">Görünüm</h2>
+        <p class="setting-desc">Tema ve renk stili</p>
       </div>
+
+      <span class="sub-label">Tema</span>
       <div class="theme-selector">
         <button
           v-for="opt in themeOptions"
@@ -42,6 +44,29 @@ const firstPageOptions = [
         >
           <span class="theme-icon">{{ opt.icon }}</span>
           <span>{{ opt.label }}</span>
+        </button>
+      </div>
+
+      <span class="sub-label sub-label--spaced">Renk stili</span>
+      <div class="style-scroller">
+        <button
+          v-for="style in COLOR_STYLES"
+          :key="style.id"
+          class="style-card"
+          :class="{ active: settings.colorStyle === style.id }"
+          @click="settings.colorStyle = style.id"
+        >
+          <span class="style-square" :style="{ background: style.bg, color: style.fg }">
+            <span class="square-label">{{ style.label }}</span>
+            <span class="square-dots">
+              <span
+                v-for="(c, i) in style.swatch"
+                :key="i"
+                class="dot"
+                :style="{ background: c }"
+              ></span>
+            </span>
+          </span>
         </button>
       </div>
     </section>
@@ -78,34 +103,6 @@ const firstPageOptions = [
           @click="settings.firstPage = opt.value"
         >
           <span>{{ opt.label }}</span>
-        </button>
-      </div>
-    </section>
-
-    <section class="setting-block">
-      <div class="setting-head">
-        <h2 class="setting-name">Renk Stili</h2>
-        <p class="setting-desc">Palet seçimi</p>
-      </div>
-      <div class="style-scroller">
-        <button
-          v-for="style in COLOR_STYLES"
-          :key="style.id"
-          class="style-card"
-          :class="{ active: settings.colorStyle === style.id }"
-          @click="settings.colorStyle = style.id"
-        >
-          <span class="style-square" :style="{ background: style.bg, color: style.fg }">
-            <span class="square-label">{{ style.label }}</span>
-            <span class="square-dots">
-              <span
-                v-for="(c, i) in style.swatch"
-                :key="i"
-                class="dot"
-                :style="{ background: c }"
-              ></span>
-            </span>
-          </span>
         </button>
       </div>
     </section>
@@ -149,6 +146,21 @@ const firstPageOptions = [
   text-transform: uppercase;
   color: var(--text-muted);
   margin-top: 0.4rem;
+}
+
+/* Blok içi alt etiket (Tema / Renk stili) */
+.sub-label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.sub-label--spaced {
+  margin-top: 1.5rem;
 }
 
 /* Tema seçici — sola yaslı segment kontrol */

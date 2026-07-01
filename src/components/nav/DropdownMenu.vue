@@ -6,12 +6,16 @@ const open = ref(false)
 function toggle() {
   open.value = !open.value
 }
+
+function close() {
+  open.value = false
+}
 </script>
 
 <template>
-  <div class="dropdown" @click="toggle" role="button" :aria-expanded="open">
+  <div class="dropdown" @click="toggle" v-click-outside="close" role="button" :aria-expanded="open">
     <img src="/Icons/kababmenu.svg" alt="Menü" width="16" height="16" class="trigger-icon" />
-    <div v-show="open" class="dropdown-content" @click.stop>
+    <div v-show="open" class="dropdown-content" @click.stop="close">
       <slot />
     </div>
   </div>

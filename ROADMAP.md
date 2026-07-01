@@ -53,20 +53,21 @@
 
 ## Faz 3: Ayarlar Sayfası
 
-- [ ] Sayfa tasarımı
+- [x] Sayfa tasarımı
 - [ ] Birincil saat seçimi (alaturka / normal)
 - [ ] İkincil saat seçimi (opsiyonel)
 - [ ] Saat tipi (dijital / analog)
 - [ ] Hicri takvimi akşam ezanıyla ilerlet
 - [ ] Vakit kaynağı (Diyanet / Türkiye Takvimi)
-- [ ] İlk açılacak sayfa seçimi
+- [x] İlk açılacak sayfa seçimi
 - [ ] Vakite göre tema rengi kullan/ma
-- [ ] Renk stili seçimi (klasik / pastel / canlı / mesh — `data-palette`)
+- [x] Renk stili seçimi (klasik / pastel / canlı / mesh / mono — `data-palette`)
+- [x] Ana sayfa saati seçimi (LED / normal)
 - [ ] AI görsel stili: her vakit için AI ile üretilmiş blurlu long-exposure minimal arka plan görselleri (ayrı bir `data-palette` stili olarak)
 - [ ] Minimal dini görsellerden oluşan renk stili (ayrı bir `data-palette` stili — minimal dini illüstrasyon/desen arka planları)
 - [ ] Bildirimler (vakit değişimi)
-- [ ] İlk açılış sayfası ayarı
-- [ ] Tüm ayarlar localStorage'a
+- [x] İlk açılış sayfası ayarı
+- [x] Tüm ayarlar localStorage'a
 
 ---
 
@@ -74,9 +75,10 @@
 
 - [ ] 5 farklı dijital tasarım (seçilebilir)
 - [ ] 5 farklı analog saat tasarımı
-- [ ] Analog saat component (SVG tabanlı, akrep/yelkovan)
+- [x] Analog saat component (SVG tabanlı, akrep/yelkovan)
+- [x] LED nokta-matris alaturka saat (ana sayfa)
 - [ ] Alaturka saat web component (bağımsız embed edilebilir)
-- [ ] Normal + alaturka eş zamanlı gösterim
+- [x] Normal + alaturka eş zamanlı gösterim
 
 ---
 
@@ -126,7 +128,7 @@
 - [ ] Rumi ve hicri takvim üzerine yazılar
 - [ ] Dini günler verisi oluşturma (Directus'a)
 - [ ] Geliştiriciler için bölüm (API, web component dokümantasyonu)
-- [ ] Amentü sayfasına ses ekleme
+- [x] Amentü sayfasına ses ekleme
 
 ---
 
