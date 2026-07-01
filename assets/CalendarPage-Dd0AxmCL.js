@@ -1,1 +1,0 @@
-import{_ as s,b as c,c as t,d as e}from"./index-Cu1OtZ5I.js";const o={},r={class:"calendar-page"};function n(d,a){return c(),t("div",r,[...a[0]||(a[0]=[e("h1",{class:"page-title"},"takvim",-1),e("p",{class:"placeholder"},"Takvim sayfası yakında.",-1)])])}const _=s(o,[["render",n],["__scopeId","data-v-ce27c018"]]);export{_ as default};
