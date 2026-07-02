@@ -38,6 +38,7 @@ function selectDay(cell) {
 
 // Boş alana tıklayınca bugüne dön (görünümü ve seçimi sıfırla)
 function resetToday() {
+  if (justSwiped.value) return // swipe sonrası tetiklenen click'i yok say
   viewDate.value = new Date()
   selected.value = {
     day: today.date,
@@ -101,10 +102,33 @@ function nextMonth() {
   const first = DateTime.fromJSDate(info.value.firstGregorian)
   viewDate.value = first.plus({ days: info.value.daysInMonth }).toJSDate() // sonraki ayın 1'i
 }
+
+// Swipe ile aylar arası geçiş
+let touchStartX = 0
+let touchStartY = 0
+const justSwiped = ref(false)
+
+function onTouchStart(e) {
+  const t = e.changedTouches[0]
+  touchStartX = t.clientX
+  touchStartY = t.clientY
+}
+
+function onTouchEnd(e) {
+  const t = e.changedTouches[0]
+  const dx = t.clientX - touchStartX
+  const dy = t.clientY - touchStartY
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+    justSwiped.value = true
+    setTimeout(() => (justSwiped.value = false), 350)
+    if (dx < 0) nextMonth()
+    else prevMonth()
+  }
+}
 </script>
 
 <template>
-  <div class="hijri-month" @click="resetToday">
+  <div class="hijri-month" @click="resetToday" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd">
     <div class="hm-divider"></div>
     <div class="hm-head">
       <div class="hm-headtop">
