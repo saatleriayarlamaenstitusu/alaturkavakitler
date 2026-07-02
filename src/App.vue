@@ -91,5 +91,6 @@ watch(() => settings.colorStyle, applyPalette)
   overflow-x: hidden;
   position: relative;
   z-index: 1;
+  padding:0 1.25rem;
 }
 </style>

@@ -12,9 +12,7 @@ defineProps({
 </template>
 
 <style scoped>
-.blog-page {
-  padding: 0 1.25rem;
-}
+
 
 .placeholder {
   color: rgba(255, 255, 255, 0.5);

@@ -39,7 +39,7 @@ const miladiLine = computed(() =>
   align-items: center;
   gap: 1rem;
   color: var(--text);
-  padding: 0 1.25rem;
+
 }
 
 .hijri-day {

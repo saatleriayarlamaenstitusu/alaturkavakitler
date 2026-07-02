@@ -92,7 +92,7 @@ const firstPageOptions = [
     <section class="setting-block">
       <div class="setting-head">
         <h2 class="setting-name">Açılış Sayfası</h2>
-        <p class="setting-desc">Uygulama açılınca hangi sayfa</p>
+        <p class="setting-desc">Uygulama açılınca hangi sayfa ile başlasın</p>
       </div>
       <div class="theme-selector">
         <button
@@ -116,7 +116,7 @@ const firstPageOptions = [
 
 /* Çizgiyle ayrılmış, sola yaslı section */
 .setting-block {
-  padding: 1.5rem 1.25rem;
+  padding: 1.5rem 0;
   border-top: 1px solid var(--border);
 }
 

@@ -18,9 +18,7 @@ import VakitRangeView from '@/components/vakit/VakitRangeView.vue'
 </template>
 
 <style scoped>
-.prayer-times-page {
-  padding: 0 1.25rem 1.25rem;
-}
+
 
 .counter-section {
   margin-top: 1.5rem;

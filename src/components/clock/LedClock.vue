@@ -111,7 +111,6 @@ onUnmounted(() => {
       <span class="clock-label">Alaturka</span>
       <span class="normal-clock">{{ normalTime }}</span>
     </div>
-
     <div
       ref="gridEl"
       class="led-matrix"
@@ -135,18 +134,20 @@ onUnmounted(() => {
 .led-clock {
   display: flex;
   flex-direction: column;
+  gap: 1em;
 }
 
 .led-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 0;
+  padding: 0 .5em;
 }
 
 .clock-label {
-  font-size: 0.6rem;
+  font-size: 0.5rem;
   font-weight: 300;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -155,7 +156,7 @@ onUnmounted(() => {
 
 .led-matrix {
   /* Kesin yükseklik — flex/yüzde zinciri çökmesin, dot grid alanı dolsun */
-  height: clamp(240px, 46vh, 520px);
+  height: clamp(200px, 40vh, 480px);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

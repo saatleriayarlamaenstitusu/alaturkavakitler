@@ -154,7 +154,7 @@ function nextMonth() {
 
 <style scoped>
 .hijri-month {
-  padding: 0 1.25rem;
+
   display: flex;
   flex-direction: column;
   min-height: 100%;

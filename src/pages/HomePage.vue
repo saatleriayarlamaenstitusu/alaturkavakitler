@@ -34,21 +34,20 @@ const settings = useSettingsStore()
 }
 
 .clock-section {
-  padding: 0.5rem 1.25rem 0;
   flex: 1;
 }
 
 /* Kalan vakit sayacı + vakit listesi tek bir bütün blok */
 .vakit-block {
-  padding: 1.25rem 1.25rem 0.75rem;
+  padding: 0.75rem 0 0.75rem;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  margin-bottom: 1em;
 }
 
 .calendar-section {
-  padding: 0.75rem 0 0.5rem;
+  padding: 1rem 0 0.25rem;
   border-top: 1px solid var(--border);
 }
 </style>

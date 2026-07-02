@@ -58,7 +58,7 @@ const selectedPlate = computed({
 }
 
 .logo {
-  height: 36px;
+  height: 28px;
   width: auto;
   margin: 0 0.625rem;
 }
