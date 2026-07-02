@@ -122,8 +122,9 @@
 - [x] CMS kararı: local Directus → JSON export
 - [ ] Directus Docker kurulumu + koleksiyonlar (blog, dini günler, yenilikler)
 - [ ] `scripts/export-content.js` yazımı
-- [ ] Prismic → Directus içerik migration
-- [ ] Şule Gürbüz yazısı render hatası düzeltme
+- [x] Prismic içerik migration (yerel JSON — `src/content/saatuzerine.json`, Directus şemasına uyumlu)
+- [x] Şule Gürbüz yazısı render hatası düzeltme
+- [x] Saat üzerine sayfası: BlogPage liste (kapak görseli) + BlogDetailPage detay
 - [ ] Yenilikler bölümü (changelog, blog formatında)
 - [ ] Rumi ve hicri takvim üzerine yazılar
 - [ ] Dini günler verisi oluşturma (Directus'a)

@@ -156,7 +156,7 @@ onUnmounted(() => {
 
 .led-matrix {
   /* Kesin yükseklik — flex/yüzde zinciri çökmesin, dot grid alanı dolsun */
-  height: clamp(150px, 30vh, 340px);
+  height: clamp(200px, 36vh, 400px);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
