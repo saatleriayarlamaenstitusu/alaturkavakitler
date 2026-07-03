@@ -1,5 +1,13 @@
 <script setup>
 import { RouterLink } from 'vue-router'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo({
+  title: 'Hakkında',
+  description:
+    'Alaturka Vakitler uygulaması, alaturka saat kavramı ve projenin amacı hakkında.',
+  path: '/hakkinda',
+})
 </script>
 
 <template>

@@ -1,6 +1,13 @@
 <script setup>
 import { useSettingsStore } from '@/stores/settings'
 import { COLOR_STYLES } from '@/data/colorStyles'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo({
+  title: 'Ayarlar',
+  description: 'Tema, renk stili, saat görünümü ve açılış sayfası ayarları.',
+  path: '/ayarlar',
+})
 
 const settings = useSettingsStore()
 

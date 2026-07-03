@@ -40,10 +40,10 @@
 
 ### SEO
 
-- [ ] `@unhead/vue` kurulumu — sayfa bazlı dinamik `<title>`, `<meta description>`, `<canonical>`
-- [ ] Her sayfa için ayrı OG meta (og:title, og:description, og:image)
-- [ ] JSON-LD: `WebSite` yapısal verisi (ana sayfa)
-- [ ] JSON-LD: `BreadcrumbList` (blog/detay sayfaları)
+- [x] Sayfa bazlı dinamik `<title>`, `<meta description>`, `<canonical>` (`useSeo` composable — @unhead yerine hafif çözüm)
+- [x] Her sayfa için ayrı OG/Twitter meta (og:title, og:description, og:url) — `useSeo` ile
+- [x] JSON-LD: `WebSite` yapısal verisi (ana sayfa)
+- [x] JSON-LD: `Article` + `BreadcrumbList` (blog detay sayfaları)
 - [x] sitemap.xml otomatik üretimi (`scripts/generate-sitemap.js` — build öncesi, statik rotalar + blog detay sayfaları)
 - [x] robots.txt güncelleme (Allow + sitemap URL)
 - [x] Google Analytics 4 (`VITE_GA_ID` env var ile, SPA sayfa görüntüleme takibi)

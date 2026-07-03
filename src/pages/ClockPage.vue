@@ -5,6 +5,14 @@ import { calculateAlaturka } from '@/utils/clock'
 import { nowHijri } from '@/utils/hijri'
 import { DateTime } from 'luxon'
 import AnalogClock from '@/components/clock/AnalogClock.vue'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo({
+  title: 'Alaturka Saat',
+  description:
+    'Alaturka (ezani) saati dijital ve analog olarak canlı görün. Son akşam ezanından itibaren geçen süreyi anlık takip edin.',
+  path: '/saat',
+})
 
 const appStore = useAppStore()
 const now = ref(DateTime.now())

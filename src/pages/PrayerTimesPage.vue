@@ -2,6 +2,14 @@
 import VakitCounter from '@/components/vakit/VakitCounter.vue'
 import VakitList from '@/components/vakit/VakitList.vue'
 import VakitRangeView from '@/components/vakit/VakitRangeView.vue'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo({
+  title: 'Namaz Vakitleri',
+  description:
+    'Şehrinize göre güncel namaz vakitleri: imsak, güneş, öğle, ikindi, akşam ve yatsı. Kalan süre ve kerahat vakitleri.',
+  path: '/vakitler',
+})
 </script>
 
 <template>

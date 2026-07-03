@@ -5,8 +5,28 @@ import VakitCounter from '@/components/vakit/VakitCounter.vue'
 import VakitList from '@/components/vakit/VakitList.vue'
 import CalendarWidget from '@/components/calendar/CalendarWidget.vue'
 import { useSettingsStore } from '@/stores/settings'
+import { useSeo } from '@/composables/useSeo'
 
 const settings = useSettingsStore()
+
+const description =
+  "Türkiye'ye özel alaturka (ezani) saat, namaz vakitleri, hicri ve rumi takvim. Güneşin batışından itibaren geçen alaturka saati anlık takip edin."
+
+useSeo({
+  title: 'Alaturka Vakitler — Alaturka Saat, Namaz Vakitleri ve Hicri Takvim',
+  description,
+  path: '/',
+  isHome: true,
+  jsonLd: {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Alaturka Vakitler',
+    alternateName: 'Alaturka Saat',
+    url: 'https://alaturkavakitler.com',
+    inLanguage: 'tr-TR',
+    description,
+  },
+})
 </script>
 
 <template>

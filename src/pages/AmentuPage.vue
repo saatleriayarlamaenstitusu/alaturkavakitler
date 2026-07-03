@@ -211,6 +211,13 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo({
+  title: 'Amentü',
+  description: 'Amentü — İsmet Özel şiiri, sesli dinleme ve metin.',
+  path: '/amentu',
+})
 
 const audioEl = ref(null)
 const progressTrack = ref(null)

@@ -2,10 +2,55 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { getItem } from '@/content'
+import { useSeo, SEO_SITE } from '@/composables/useSeo'
 
 const route = useRoute()
 const item = computed(() => getItem(route.params.page, route.params.id))
 const paragraphs = computed(() => (item.value?.body || '').split('\n\n').filter(Boolean))
+
+const pageLabel = computed(() =>
+  route.params.page === 'yenilikler' ? 'Yenilikler' : 'Saat Üzerine'
+)
+const description = computed(() => {
+  const first = (item.value?.body || '').split('\n\n')[0] || ''
+  const base = first.length > 155 ? first.slice(0, 155).trimEnd() + '…' : first
+  return base || 'Alaturka saat ve zaman üzerine.'
+})
+const url = computed(() => `${SEO_SITE.url}/detay/${route.params.page}/${route.params.id}`)
+
+const jsonLd = computed(() => {
+  if (!item.value) return null
+  const article = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: item.value.title,
+    description: description.value,
+    mainEntityOfPage: url.value,
+    inLanguage: 'tr-TR',
+    publisher: { '@type': 'Organization', name: SEO_SITE.name, url: SEO_SITE.url },
+  }
+  if (item.value.author) article.author = { '@type': 'Person', name: item.value.author }
+  if (item.value.date) article.datePublished = item.value.date
+  if (item.value.cover) article.image = item.value.cover
+
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: `${SEO_SITE.url}/` },
+      { '@type': 'ListItem', position: 2, name: pageLabel.value, item: `${SEO_SITE.url}/${route.params.page}` },
+      { '@type': 'ListItem', position: 3, name: item.value.title, item: url.value },
+    ],
+  }
+  return [article, breadcrumb]
+})
+
+useSeo({
+  title: computed(() => item.value?.title || 'Yazı'),
+  description,
+  path: computed(() => `/detay/${route.params.page}/${route.params.id}`),
+  jsonLd,
+})
 </script>
 
 <template>

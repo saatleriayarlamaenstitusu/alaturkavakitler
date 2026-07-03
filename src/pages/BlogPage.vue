@@ -1,13 +1,25 @@
 <script setup>
 import { computed } from 'vue'
 import { getList } from '@/content'
+import { useSeo } from '@/composables/useSeo'
 
 const props = defineProps({
   page: { type: String, default: '' },
 })
 
-const title = computed(() => (props.page === 'yenilikler' ? 'yenilikler' : 'saat üzerine'))
+const isYenilikler = computed(() => props.page === 'yenilikler')
+const title = computed(() => (isYenilikler.value ? 'yenilikler' : 'saat üzerine'))
 const items = computed(() => getList(props.page))
+
+useSeo({
+  title: computed(() => (isYenilikler.value ? 'Yenilikler' : 'Saat Üzerine')),
+  description: computed(() =>
+    isYenilikler.value
+      ? 'Alaturka Vakitler uygulamasındaki güncellemeler ve yeni özellikler.'
+      : 'Alaturka saat, zaman ve takvim üzerine yazılar ve alıntılar.'
+  ),
+  path: computed(() => `/${props.page}`),
+})
 
 function excerpt(body) {
   const first = (body || '').split('\n\n')[0] || ''

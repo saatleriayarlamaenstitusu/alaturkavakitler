@@ -1,5 +1,11 @@
 <script setup>
 import { RouterLink } from 'vue-router'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo({
+  title: 'Sayfa Bulunamadı',
+  description: 'Aradığınız sayfa bulunamadı.',
+})
 </script>
 
 <template>
