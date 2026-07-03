@@ -44,9 +44,10 @@
 - [ ] Her sayfa için ayrı OG meta (og:title, og:description, og:image)
 - [ ] JSON-LD: `WebSite` yapısal verisi (ana sayfa)
 - [ ] JSON-LD: `BreadcrumbList` (blog/detay sayfaları)
-- [ ] sitemap.xml otomatik üretimi (`vite-plugin-sitemap` veya build script)
-- [ ] robots.txt güncelleme (mevcut dosya var, sitemap URL ekle)
-- [ ] Google Analytics 4 (`VITE_GA_ID` env var ile)
+- [x] sitemap.xml otomatik üretimi (`scripts/generate-sitemap.js` — build öncesi, statik rotalar + blog detay sayfaları)
+- [x] robots.txt güncelleme (Allow + sitemap URL)
+- [x] Google Analytics 4 (`VITE_GA_ID` env var ile, SPA sayfa görüntüleme takibi)
+- [ ] Google Search Console doğrulama (GA4 üzerinden veya `public/google<token>.html`)
 - [ ] Yandex Webmaster doğrulama meta etiketi
 
 ---
@@ -140,6 +141,10 @@
 - [ ] Takvim ağırlıklı post şablonu (1:1 ve 9:16)
 - [ ] Kullanıcı özelleştirme (başlık, yazı, saat, tarih pozisyonları)
 - [ ] Kullanıcı kendi resmini seçip üzerine tarih / saat / not / mesaj yazsın (overlay tasarımları **swiss style**)
+- [ ] Ayet widget'ları (açık Kuran API'si ile): istenilen ayet(ler)in **Arapça metni** ve **Türkçe meali** ayrı birer widget olarak görsele eklenebilsin
+  - [ ] Ayet seçimi (sure + ayet no / aralık) ve açık Kuran API entegrasyonu
+  - [ ] Arapça widget ayarları: renk + Arapça font (rika, sülüs, nesih vb.)
+  - [ ] Türkçe meal widget ayarları: renk + font + boyut/hizalama
 - [ ] Unsplash entegrasyonu (vakite göre önerilen görseller)
 - [ ] AI ile üretilmiş blurlu long-exposure minimal görseller (paylaşım arka planı olarak)
 - [ ] Görsel indirme + doğrudan paylaşım (Web Share API)
@@ -177,6 +182,7 @@
 - [ ] Kuran kayıtlarını indirip içerik yönetiminde ayrı kategori olarak girme (Directus)
 - [ ] Kuran okuma bölümü
 - [ ] Ana ekranda seçili ayetlerden gösterim
+- [ ] Sayfalarda belirli konumlarda ön tanımlı ayetlerin rastgele gösterilmesi (küçük ayet kartı/bandı — her açılışta farklı bir ayet)
 
 ---
 
