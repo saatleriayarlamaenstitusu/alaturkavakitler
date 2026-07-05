@@ -21,3 +21,5 @@ yarn-error.log*
 
 # build output
 /dist
+
+ROADMAP.md

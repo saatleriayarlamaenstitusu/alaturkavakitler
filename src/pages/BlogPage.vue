@@ -70,7 +70,7 @@ function excerpt(body) {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  padding: 1.25rem;
+  padding: 1.25rem 0;
   text-decoration: none;
 }
 

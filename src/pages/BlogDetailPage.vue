@@ -8,6 +8,15 @@ const route = useRoute()
 const item = computed(() => getItem(route.params.page, route.params.id))
 const paragraphs = computed(() => (item.value?.body || '').split('\n\n').filter(Boolean))
 
+// Paragrafı güvenli şekilde HTML'e çevir: kaçış + **kalın** → <strong>
+function renderParagraph(text) {
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+  return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+}
+
 const pageLabel = computed(() =>
   route.params.page === 'yenilikler' ? 'Yenilikler' : 'Saat Üzerine'
 )
@@ -67,7 +76,7 @@ useSeo({
       <img v-if="item.cover" :src="item.cover" :alt="item.title" class="detail-cover" />
 
       <div class="detail-body">
-        <p v-for="(p, i) in paragraphs" :key="i">{{ p }}</p>
+        <p v-for="(p, i) in paragraphs" :key="i" v-html="renderParagraph(p)"></p>
       </div>
     </template>
 
@@ -76,9 +85,6 @@ useSeo({
 </template>
 
 <style scoped>
-.blog-detail-page {
-  padding: 0 1.25rem 3rem;
-}
 
 .back-link {
   display: inline-block;
@@ -140,5 +146,9 @@ useSeo({
   line-height: 1.7;
   color: var(--text);
   margin-bottom: 1.1rem;
+}
+
+.detail-body :deep(strong) {
+  font-weight: 700;
 }
 </style>

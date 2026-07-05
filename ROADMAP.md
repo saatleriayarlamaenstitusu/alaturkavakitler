@@ -90,7 +90,7 @@
 - [ ] Aylık vakitleri önbelleğe alma
 - [ ] Nafile namaz etiketleri (kerahat gibi)
 - [ ] Namaz vakti + sayaç web component
-
+- [ ] Kaza namazları sayacı + popup açan buton / popupta basit artı eksi olan sayaç / sayaç değer varsa vakit lstesinde badge ile saysını göster
 ---
 
 ## Faz 6: Takvim Sayfası
