@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { FONT_GROUPS, fontsByScript } from '@/data/shareFonts'
 import { phraseList } from '@/data/phraseSets'
+import { useShareEditor } from '@/composables/useShareEditor'
 
 const props = defineProps({
   field: { type: Object, required: true },
@@ -16,8 +17,24 @@ const value = computed({
   set: (v) => emit('update:modelValue', v),
 })
 
+const editor = useShareEditor()
+
 // 'auto' swatch'i vakit rengini temsil eder.
 const swatchColor = (sw) => (sw === 'auto' ? props.accent : sw)
+
+// Renk seçici üç kümeden oluşur: alanın sabit renkleri, arka plan
+// fotoğrafından çıkarılan palet ve kullanıcının eklediği renkler.
+const colorGroups = computed(() => [
+  { id: 'sabit', label: null, colors: props.field.swatches ?? [] },
+  { id: 'palet', label: 'Görselden', colors: editor.state.photoPalette },
+  { id: 'kendi', label: 'Kendi', colors: editor.state.customColors, removable: true },
+].filter(g => g.colors.length))
+
+function pickCustom(e) {
+  const hex = e.target.value
+  editor.addCustomColor(hex)
+  value.value = hex
+}
 
 // Sürgülerin yanında sayısal okuma: Swiss düzende değer görünür olmalı,
 // kullanıcı tahmin etmemeli.
@@ -45,15 +62,25 @@ const fullWidth = computed(() =>
 
     <div class="field-control">
       <div v-if="field.type === 'color'" class="swatches">
-        <button
-          v-for="sw in field.swatches"
-          :key="sw"
-          class="swatch"
-          :class="{ active: value === sw }"
-          :style="{ background: swatchColor(sw) }"
-          :aria-label="sw === 'auto' ? 'Vakit rengi' : sw"
-          @click="value = sw"
-        ></button>
+        <template v-for="group in colorGroups" :key="group.id">
+          <span v-if="group.label" class="swatch-label">{{ group.label }}</span>
+          <button
+            v-for="sw in group.colors"
+            :key="group.id + sw"
+            class="swatch"
+            :class="{ active: value === sw }"
+            :style="{ background: swatchColor(sw) }"
+            :aria-label="sw === 'auto' ? 'Vakit rengi' : sw"
+            :title="group.removable ? 'Uzun bas: kaldır' : null"
+            @click="value = sw"
+            @contextmenu.prevent="group.removable && editor.removeCustomColor(sw)"
+          ></button>
+        </template>
+
+        <label class="swatch add" title="Renk ekle">
+          <span aria-hidden="true">+</span>
+          <input type="color" class="color-input" @input="pickCustom" />
+        </label>
       </div>
 
       <div v-else-if="field.type === 'font'" class="fonts">
@@ -176,13 +203,56 @@ const fullWidth = computed(() =>
 }
 
 /* ── Renk ── */
-.swatches { display: flex; gap: 0.3rem; }
+.swatches {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.swatches::-webkit-scrollbar { display: none; }
+
+.swatch-label {
+  flex-shrink: 0;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 0 0.1rem 0 0.35rem;
+}
 
 .swatch {
+  flex-shrink: 0;
   width: 1.375rem;
   height: 1.375rem;
   border: 1px solid var(--border);
   cursor: pointer;
+  padding: 0;
+}
+
+/* Sistem renk seçicisini açan kare. Şerit uzayıp kaydırılabilir hale
+   geldiğinde bile erişilebilir kalsın diye sağa yapışık duruyor. */
+.swatch.add {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  line-height: 1;
+  position: sticky;
+  right: 0;
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--surface), var(--surface));
+  box-shadow: -0.5rem 0 0.5rem -0.25rem var(--surface);
+}
+
+.color-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
   padding: 0;
 }
 

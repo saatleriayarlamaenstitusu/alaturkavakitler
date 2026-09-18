@@ -1,6 +1,7 @@
 import { reactive, computed, watch, provide, inject } from 'vue'
 import { getRatio, DEFAULT_RATIO } from '@/data/shareRatios'
 import { getWidget } from '@/components/share/widgets/registry'
+import { extractPalette } from '@/utils/palette'
 
 const KEY = Symbol('shareEditor')
 const STORAGE_KEY = 'shareEditor'
@@ -40,9 +41,17 @@ export function createShareEditor(snapshot) {
     grid: { ...defaultGrid(), ...(saved?.grid ?? {}) },
     grain: { ...defaultGrain(), ...(saved?.grain ?? {}) },
     brand: saved?.brand ?? false,
+    // Kullanıcının eklediği renkler kalıcı; fotoğraftan çıkarılan palet
+    // fotoğraf değişince yeniden hesaplanır.
+    customColors: saved?.customColors ?? [],
+    // Hizalama yardımı; kapatınca katman serbest hareket eder.
+    snap: saved?.snap ?? true,
+    photoPalette: [],
     bgEditing: false,
     panelOpen: true,
     dragging: false,
+    // Taşıma sırasında gösterilen hizalama çizgileri: [{ axis, pos }]
+    guides: [],
     exporting: false,
     viewScale: 1,
   })
@@ -69,6 +78,8 @@ export function createShareEditor(snapshot) {
         grid: state.grid,
         grain: state.grain,
         brand: state.brand,
+        customColors: state.customColors,
+        snap: state.snap,
       }
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
@@ -87,7 +98,7 @@ export function createShareEditor(snapshot) {
   }
 
   watch(
-    () => [state.ratioId, state.layers, state.background, state.grid, state.grain, state.brand],
+    () => [state.ratioId, state.layers, state.background, state.grid, state.grain, state.brand, state.customColors, state.snap],
     persist,
     { deep: true },
   )
@@ -181,6 +192,27 @@ export function createShareEditor(snapshot) {
 
   function setBackground(patch) {
     Object.assign(state.background, patch)
+    if ('photo' in patch) refreshPhotoPalette()
+  }
+
+  async function refreshPhotoPalette() {
+    state.photoPalette = await extractPalette(state.background.photo)
+  }
+
+  function toggleSnap() {
+    state.snap = !state.snap
+  }
+
+  function addCustomColor(hex) {
+    const value = String(hex).toLowerCase()
+    if (!/^#[0-9a-f]{6}$/.test(value)) return
+    if (state.customColors.includes(value)) return
+    // En yeni başta, liste şeridi taşırmasın diye sınırlı.
+    state.customColors = [value, ...state.customColors].slice(0, 12)
+  }
+
+  function removeCustomColor(hex) {
+    state.customColors = state.customColors.filter(c => c !== hex)
   }
 
   function setGrid(patch) {
@@ -241,6 +273,7 @@ export function createShareEditor(snapshot) {
     addLayer, removeLayer, duplicateLayer, select,
     updateLayer, updateProps, resetProps, bringToFront, sendToBack,
     setRatio, setBackground, setGrid, setGrain, panPhoto, zoomPhoto, resetPhoto,
+    refreshPhotoPalette, addCustomColor, removeCustomColor, toggleSnap,
     ensureComposition, resetAll,
     snapshot,
   }

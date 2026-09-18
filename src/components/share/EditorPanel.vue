@@ -125,6 +125,14 @@ function pickPhoto(e) {
       <header class="panel-head">
         <span class="title">{{ selectedDef.label }}</span>
         <div class="head-actions">
+          <button
+            class="ghost toggle"
+            :class="{ on: state.snap }"
+            :aria-pressed="state.snap"
+            title="Taşırken diğer katmanlara ve tuval merkezine hizala"
+            @click="editor.toggleSnap()"
+          >Hizala</button>
+          <span class="head-sep" aria-hidden="true"></span>
           <button class="ghost" @click="editor.sendToBack(selected.id)">Arkaya</button>
           <button class="ghost" @click="editor.bringToFront(selected.id)">Öne</button>
           <button class="ghost" @click="editor.duplicateLayer(selected.id)">Çoğalt</button>
@@ -411,6 +419,23 @@ function pickPhoto(e) {
 
 .ghost:hover { color: var(--text); }
 .ghost.primary { color: var(--accent-ui); }
+
+/* Hizalama katman değil editör ayarı; açık/kapalı olduğu okunabilsin diye
+   diğer eylemlerden ince bir çizgiyle ayrılıyor. */
+.ghost.toggle { color: var(--text-dim); }
+
+.ghost.toggle.on {
+  color: var(--bg);
+  background: var(--text);
+  padding: 0.1rem 0.3rem;
+  margin: -0.1rem -0.3rem;
+}
+
+.head-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+}
 
 .fields {
   max-height: 34vh;

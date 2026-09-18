@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useShareEditor } from '@/composables/useShareEditor'
 import { getWidget } from './widgets/registry'
+import { applySnap, collectTargets } from '@/utils/snap'
 
 const props = defineProps({
   layer: { type: Object, required: true },
@@ -47,6 +48,42 @@ function snapAngle(deg) {
   return norm
 }
 
+// Taşıma başında bir kez toplanır: diğer katmanların tuval birimindeki
+// kutuları. Sürükleme boyunca DOM'u tekrar ölçmeye gerek kalmaz.
+let snapTargets = null
+
+function measureOthers() {
+  const canvas = rootRef.value?.closest('.canvas')
+  if (!canvas) return []
+  const k = state.viewScale || 1
+  const cRect = canvas.getBoundingClientRect()
+  return [...canvas.querySelectorAll('.layer')]
+    .filter(el => el.dataset.layerId !== props.layer.id)
+    .map((el) => {
+      const r = el.getBoundingClientRect()
+      return {
+        x: (r.left + r.width / 2 - cRect.left) / k,
+        y: (r.top + r.height / 2 - cRect.top) / k,
+        w: r.width / k,
+        h: r.height / k,
+      }
+    })
+}
+
+function ownSize() {
+  const el = rootRef.value
+  if (!el) return { w: 0, h: 0 }
+  const s = props.layer.scale || 1
+  return { w: el.offsetWidth * s, h: el.offsetHeight * s }
+}
+
+function snapped(x, y) {
+  if (!snapTargets || !state.snap) return { x, y }
+  const res = applySnap({ x, y, size: ownSize(), targets: snapTargets, viewScale: state.viewScale })
+  state.guides = res.guides
+  return res
+}
+
 function clamp(layer) {
   const m = 40
   layer.x = Math.min(Math.max(layer.x, -m), ratio.value.width + m)
@@ -72,6 +109,12 @@ function onPointerDown(e) {
   e.stopPropagation()
   editor.select(props.layer.id)
   state.dragging = true
+  snapTargets = state.snap ? collectTargets({
+    width: ratio.value.width,
+    height: ratio.value.height,
+    grid: state.grid,
+    others: measureOthers(),
+  }) : null
   e.currentTarget.setPointerCapture?.(e.pointerId)
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
   captureBaseline()
@@ -97,10 +140,11 @@ function onPointerMove(e) {
     })
   } else {
     const p = pts[0]
-    editor.updateLayer(props.layer.id, {
-      x: props.layer.x + (p.x - gesture.last.x) / k,
-      y: props.layer.y + (p.y - gesture.last.y) / k,
-    })
+    const moved = snapped(
+      props.layer.x + (p.x - gesture.last.x) / k,
+      props.layer.y + (p.y - gesture.last.y) / k,
+    )
+    editor.updateLayer(props.layer.id, { x: moved.x, y: moved.y })
     gesture.last = { ...p }
   }
 
@@ -109,7 +153,11 @@ function onPointerMove(e) {
 
 function onPointerUp(e) {
   pointers.delete(e.pointerId)
-  if (!pointers.size) state.dragging = false
+  if (!pointers.size) {
+    state.dragging = false
+    state.guides = []
+    snapTargets = null
+  }
   // Parmaklardan biri kalkınca kalanla yeni bir taban al — pinch'ten
   // sürüklemeye geçerken katman zıplamasın.
   if (pointers.size) captureBaseline()
@@ -158,6 +206,7 @@ function onHandleUp() {
 <template>
   <div
     ref="rootRef"
+    :data-layer-id="layer.id"
     class="layer"
     :class="{ selected: isSelected }"
     :style="boxStyle"

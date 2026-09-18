@@ -151,6 +151,16 @@ function onBgUp(e) {
 
           <div v-if="state.brand" class="brand">alaturkavakitler.com</div>
 
+          <!-- Hizalama çizgileri: yalnızca taşıma sırasında, katmanların üstünde -->
+          <div
+            v-for="(g, i) in state.guides"
+            :key="`g${i}`"
+            class="guide"
+            :class="g.axis === 'x' ? 'guide-v' : 'guide-h'"
+            :style="g.axis === 'x' ? { left: `${g.pos}px` } : { top: `${g.pos}px` }"
+            aria-hidden="true"
+          ></div>
+
           <!-- Arka plan düzenleme modunda katmanların üstünü kapatan jest yüzeyi -->
           <div
             v-if="bgInteractive"
@@ -246,6 +256,16 @@ function onBgUp(e) {
   opacity: 0.45;
   pointer-events: none;
 }
+
+.guide {
+  position: absolute;
+  background: var(--accent);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+.guide-v { top: 0; bottom: 0; width: 2px; margin-left: -1px; }
+.guide-h { left: 0; right: 0; height: 2px; margin-top: -1px; }
 
 .bg-catcher {
   position: absolute;

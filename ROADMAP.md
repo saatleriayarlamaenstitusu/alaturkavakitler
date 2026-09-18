@@ -164,15 +164,35 @@
 - [x] Alaturka saat widget'ında saat / başlık / alt yazı boyutları ayrı ayrı ayarlanabilir
 - [x] Arapça rakam seçeneği (saat widget'ı)
 - [x] Ayar panelinde gruplama + Swiss düzen geçişi (kolon ızgarası, sayısal okumalar, dik açılar)
+- [x] Taşırken hizalama (snap): tuval kenar/merkez, grid kenar boşluğu, diğer katmanlar + kılavuz çizgiler; katman başlığından kapatılabilir
+- [x] Renk seçici: fotoğraftan çıkarılan palet + kullanıcının ekleyebildiği kalıcı renkler
 - [ ] **Hat widget'ı**: vektörel hatlar, rengi değiştirilebilir
   - [ ] Hat setinin toplanması (besmele, lafza-i celâl, çâr-ı yâr, kandil/vakit hatları) — her birinin telif/lisans durumu netleştirilecek
   - [ ] SVG'ler tek renge indirgenip `fill: currentColor` ile yazılacak; renk ayarı bunun üzerinden çalışır
   - [ ] **Export kuralı**: stroke'lu `<line>`/`<path>` kullanılamaz, dolgulu path'e dönüştürülmeli (bkz. `CLAUDE.md` → Görsel Oluşturucu)
   - [ ] Vektörü bulunamayan hatlar için şeffaf zeminli PNG yedeği (rengi değiştirilemez, ayar panelinde gizlenir)
   - [ ] Hat seti `src/data/` altında veri dosyası olarak; yeni hat eklemek bir satır olmalı
-- [ ] dış ve ek resim ekleyebilme ve bunkları kırpabilme
+- [ ] **Görsel widget'ı**: kullanıcının kendi PNG / SVG / JPG dosyasını katman olarak ekleyebilmesi
+  - [ ] Dosya seçici + sürükleyip bırakma; katman olarak eklenir (taşı/ölçekle/döndür mevcut motordan gelir)
+  - [ ] Kırpma: dikdörtgen kadraj, isteğe bağlı yuvarlak/kare maske
+  - [ ] Tek renkli SVG'lerde renk değiştirme (`fill: currentColor`'a indirgenebilenler için); çok renkli SVG ve PNG'de renk ayarı gizlenir
+  - [ ] **Export kuralı**: eklenen SVG'deki stroke'lu `<line>`/`<path>` dışa aktarımı çökertiyor — içe alırken dolgulu path'e dönüştür ya da rasterize et (bkz. `CLAUDE.md` → Görsel Oluşturucu)
+  - [ ] Boyut sınırı + kalıcılık: data URI olarak saklanan büyük görsel localStorage kotasını aşar; arka plan fotoğrafındaki geri çekilme yolunun aynısı ya da IndexedDB
+  - [ ] Opaklık ve karışım modu (grenle tutarlı olsun diye)
 - [x] Son düzenlemenin otomatik saklanması (localStorage) + Sıfırla
-- [ ] Şablonu lokal kaydetme (adlandırılmış, birden fazla şablon)
+- [ ] **Şablon**: "mevcut tasarımı şablona ekle" + kayıtlı şablonlardan seçme
+  Amaç aynı düzeni **başka bir görsele** uygulamak: şablon widget ayarlarını taşır, arka plan fotoğrafını taşımaz.
+  - [ ] Şablon içeriği: katmanların tipi, konum/ölçek/dönüş/opaklık/z sırası ve **tüm widget ayarları** (yazı tipi, kalınlık, harf aralığı, renk, boyutlar, hizalama, varyant)
+  - [ ] Şablona dahil: oran, grid ve gren ayarları, marka satırı
+  - [ ] Şablona dahil DEĞİL: arka plan fotoğrafı ve o fotoğrafa özel kadraj (zoom/x/y). Şablon uygulanınca o an yüklü olan görsel yerinde kalır, düzen onun üstüne geçer
+  - [ ] Panelde "Şablonlar" sekmesi: kayıtlı şablonlar şerit halinde, "Bu tasarımı kaydet" ile adlandırıp ekleme
+  - [ ] **Değerler şablon uygulanırken tazelenir**: saat, tarih, hicri gün, vakit adları şablonun kaydedildiği ana değil, seçildiği ana ait olmalı
+    - [ ] Bunun için her alanın "canlı mı, elle mi girildi" bilgisi gerekiyor: kaydederken değer o anki `defaultProps(snapshot)` çıktısıyla aynıysa canlı say, farklıysa elle girilmiş kabul edip olduğu gibi sakla
+    - [ ] Uygulama anında yalnızca canlı alanlar `defaultProps(yeni snapshot)`'tan yeniden doldurulur; elle yazılmış metinler korunur
+  - [ ] Oran farkı: şablon 9:16'da kaydedilip 1:1'de uygulanabilir — katmanlar `setRatio`'daki oransal taşıma mantığıyla yeniden konumlanmalı
+  - [ ] Şablon silme / yeniden adlandırma
+  - [ ] Önizleme: fotoğraf içermediği için küçük ölçekli bir export yeterli (mevcut `renderCanvasToBlob` düşük scale ile, küçük JPEG)
+  - [ ] Depolama: fotoğraf dışarıda kaldığı için şablonlar küçük JSON; localStorage yeterli olmalı, önizleme görselleri büyürse ayrı düşünülür
 - [ ] Şablonu QR ile paylaşma
 - [ ] Şablon mağazası (ileride)
 

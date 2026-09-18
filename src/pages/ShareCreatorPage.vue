@@ -42,6 +42,8 @@ onMounted(async () => {
   ensureShareFonts()
   // Kayıtlı bir düzen varsa o geri gelir; yoksa varsayılan kompozisyon kurulur.
   editor.ensureComposition()
+  // Fotoğraf paleti kaydedilmez, geri yüklenen fotoğraftan yeniden çıkarılır.
+  editor.refreshPhotoPalette()
 
   await nextTick()
   warmupExport(canvasEl())
