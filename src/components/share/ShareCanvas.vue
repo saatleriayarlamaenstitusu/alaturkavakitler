@@ -181,9 +181,8 @@ function onBgUp(e) {
 
 .scaled {
   position: relative;
-  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
 .scaler {
@@ -265,10 +264,12 @@ function onBgUp(e) {
   transform: translateX(-50%);
   margin: 0;
   padding: 0.3rem 0.7rem;
-  border-radius: 1rem;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.72);
   color: #fff;
-  font-size: 0.75rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   pointer-events: none;
 }
 </style>

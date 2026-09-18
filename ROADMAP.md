@@ -162,6 +162,8 @@
 - [x] Katman opaklığı + harf aralığı ayarları
 - [x] Gren doku (film grain) ayarları: yoğunluk, kabalık, karışım modu
 - [x] Alaturka saat widget'ında saat / başlık / alt yazı boyutları ayrı ayrı ayarlanabilir
+- [x] Arapça rakam seçeneği (saat widget'ı)
+- [x] Ayar panelinde gruplama + Swiss düzen geçişi (kolon ızgarası, sayısal okumalar, dik açılar)
 - [ ] **Hat widget'ı**: vektörel hatlar, rengi değiştirilebilir
   - [ ] Hat setinin toplanması (besmele, lafza-i celâl, çâr-ı yâr, kandil/vakit hatları) — her birinin telif/lisans durumu netleştirilecek
   - [ ] SVG'ler tek renge indirgenip `fill: currentColor` ile yazılacak; renk ayarı bunun üzerinden çalışır

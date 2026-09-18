@@ -23,14 +23,23 @@ import { defaultPhrase } from '@/data/phraseSets'
 
 const COLOR_SWATCHES = ['#ffffff', '#000000', 'auto', '#ffd733', '#ff8c33', '#0491fb']
 
-const colorField = (key, label) => ({ key, type: 'color', label, swatches: COLOR_SWATCHES })
+// Ayar grupları. EditorPanel alanları bu sırayla başlıklar altında toplar;
+// bir alanda `group` yoksa 'gorunum' kabul edilir.
+export const FIELD_GROUPS = [
+  { id: 'icerik', label: 'İçerik' },
+  { id: 'tipografi', label: 'Tipografi' },
+  { id: 'boyut', label: 'Boyut' },
+  { id: 'gorunum', label: 'Görünüm' },
+]
+
+const colorField = (key, label) => ({ key, type: 'color', label, swatches: COLOR_SWATCHES, group: 'gorunum' })
 // Yazı içeren her widget aynı üç alanı paylaşır: font, kalınlık, italik.
 // Kalınlık listesi ve italik anahtarının varlığı seçili fonta bağlıdır.
 const typographyFields = [
-  { key: 'font', type: 'font', label: 'Yazı tipi' },
-  { key: 'weight', type: 'select', compact: true, label: 'Kalınlık', options: (p) => weightOptions(p.font) },
-  { key: 'italic', type: 'toggle', label: 'İtalik', hidden: (p) => !getFont(p.font).italic },
-  { key: 'letterSpacing', type: 'range', label: 'Harf aralığı', min: -0.06, max: 0.4, step: 0.01 },
+  { key: 'font', type: 'font', label: 'Yazı tipi', group: 'tipografi' },
+  { key: 'weight', type: 'select', compact: true, label: 'Kalınlık', group: 'tipografi', options: (p) => weightOptions(p.font) },
+  { key: 'italic', type: 'toggle', label: 'İtalik', group: 'tipografi', hidden: (p) => !getFont(p.font).italic },
+  { key: 'letterSpacing', type: 'range', label: 'Harf aralığı', group: 'tipografi', min: -0.06, max: 0.4, step: 0.01, unit: 'em' },
 ]
 
 // Arap harfleri bitişik yazılır; letter-spacing bağlantıları koparıp metni
@@ -40,7 +49,7 @@ const typographyFieldsNoTracking = typographyFields.filter(f => f.key !== 'lette
 const typographyDefaults = (weight) => ({ font: DEFAULT_FONT, weight, italic: false, letterSpacing: 0 })
 
 const alignField = {
-  key: 'align', type: 'select', label: 'Hizalama',
+  key: 'align', type: 'select', label: 'Hizalama', group: 'gorunum',
   options: [{ value: 'left', label: 'Sol' }, { value: 'center', label: 'Orta' }, { value: 'right', label: 'Sağ' }],
 }
 
@@ -64,17 +73,17 @@ export const SHARE_WIDGETS = [
       ...typographyDefaults(700),
     }),
     settings: [
-      { key: 'time', type: 'text', label: 'Saat' },
-      { key: 'label', type: 'text', label: 'Başlık' },
-      { key: 'normal', type: 'text', label: 'Normal saat' },
-      { key: 'city', type: 'text', label: 'Şehir' },
+      { key: 'time', type: 'text', label: 'Saat', group: 'icerik' },
+      { key: 'label', type: 'text', label: 'Başlık', group: 'icerik' },
+      { key: 'normal', type: 'text', label: 'Normal saat', group: 'icerik' },
+      { key: 'city', type: 'text', label: 'Şehir', group: 'icerik' },
       ...typographyFields,
-      { key: 'timeSize', type: 'range', label: 'Saat boyutu', min: 80, max: 420, step: 5 },
-      { key: 'labelSize', type: 'range', label: 'Başlık boyutu', min: 14, max: 90, step: 2,
+      { key: 'timeSize', type: 'range', label: 'Saat boyutu', min: 80, max: 420, step: 5, group: 'boyut' },
+      { key: 'labelSize', type: 'range', label: 'Başlık boyutu', min: 14, max: 90, step: 2, group: 'boyut',
         hidden: (p) => !p.label },
-      { key: 'footSize', type: 'range', label: 'Alt yazı boyutu', min: 16, max: 100, step: 2,
+      { key: 'footSize', type: 'range', label: 'Alt yazı boyutu', min: 16, max: 100, step: 2, group: 'boyut',
         hidden: (p) => !p.normal && !p.city },
-      { key: 'numerals', type: 'select', label: 'Rakam', options: [
+      { key: 'numerals', type: 'select', label: 'Rakam', group: 'tipografi', options: [
         { value: 'latin', label: '12:34' }, { value: 'arabic', label: '١٢:٣٤' },
       ] },
       colorField('color', 'Renk'),
@@ -93,10 +102,10 @@ export const SHARE_WIDGETS = [
       showTicks: true,
     }),
     settings: [
-      { key: 'time', type: 'text', label: 'Saat (SS:DD)' },
+      { key: 'time', type: 'text', label: 'Saat (SS:DD)', group: 'icerik' },
       colorField('color', 'Kadran'),
       colorField('handColor', 'Akrep'),
-      { key: 'showTicks', type: 'toggle', label: 'Dakika çizgileri' },
+      { key: 'showTicks', type: 'toggle', label: 'Dakika çizgileri', group: 'gorunum' },
     ],
   },
   {
@@ -116,15 +125,15 @@ export const SHARE_WIDGETS = [
       ...typographyDefaults(700),
     }),
     settings: [
-      { key: 'current', type: 'text', label: 'Vakit' },
-      { key: 'currentTime', type: 'text', label: 'Vakit saati' },
-      { key: 'next', type: 'text', label: 'Sonraki vakit' },
-      { key: 'nextTime', type: 'text', label: 'Sonraki saati' },
-      { key: 'nowLabel', type: 'text', label: 'Üst etiket' },
-      { key: 'nextLabel', type: 'text', label: 'Alt etiket' },
+      { key: 'current', type: 'text', label: 'Vakit', group: 'icerik' },
+      { key: 'currentTime', type: 'text', label: 'Vakit saati', group: 'icerik' },
+      { key: 'next', type: 'text', label: 'Sonraki vakit', group: 'icerik' },
+      { key: 'nextTime', type: 'text', label: 'Sonraki saati', group: 'icerik' },
+      { key: 'nowLabel', type: 'text', label: 'Üst etiket', group: 'icerik' },
+      { key: 'nextLabel', type: 'text', label: 'Alt etiket', group: 'icerik' },
       ...typographyFields,
       colorField('color', 'Renk'),
-      { key: 'layout', type: 'select', label: 'Düzen', options: [
+      { key: 'layout', type: 'select', label: 'Düzen', group: 'gorunum', options: [
         { value: 'stacked', label: 'Alt alta' }, { value: 'inline', label: 'Yan yana' },
       ] },
     ],
@@ -147,19 +156,19 @@ export const SHARE_WIDGETS = [
       ...typographyDefaults(700),
     }),
     settings: [
-      { key: 'hijriDay', type: 'text', label: 'Hicri gün' },
-      { key: 'hijriText', type: 'text', label: 'Hicri ay/yıl' },
-      { key: 'miladi', type: 'text', label: 'Miladi tarih' },
-      { key: 'event', type: 'text', label: 'Etkinlik' },
+      { key: 'hijriDay', type: 'text', label: 'Hicri gün', group: 'icerik' },
+      { key: 'hijriText', type: 'text', label: 'Hicri ay/yıl', group: 'icerik' },
+      { key: 'miladi', type: 'text', label: 'Miladi tarih', group: 'icerik' },
+      { key: 'event', type: 'text', label: 'Etkinlik', group: 'icerik' },
       { key: 'eventColor', type: 'color', label: 'Etkinlik rengi', swatches: COLOR_SWATCHES,
-        hidden: (p) => !p.event },
+        group: 'gorunum', hidden: (p) => !p.event },
       ...typographyFields,
       colorField('color', 'Renk'),
-      { key: 'variant', type: 'select', label: 'Görünüm', options: [
+      { key: 'variant', type: 'select', label: 'Görünüm', group: 'gorunum', options: [
         { value: 'card', label: 'Kart' }, { value: 'plain', label: 'Sade' }, { value: 'vertical', label: 'Dikey' },
       ] },
-      { key: 'showMoon', type: 'toggle', label: 'Ay fazı' },
-      { key: 'moonDay', type: 'range', label: 'Ay günü', min: 1, max: 29, step: 1 },
+      { key: 'showMoon', type: 'toggle', label: 'Ay fazı', group: 'gorunum' },
+      { key: 'moonDay', type: 'range', label: 'Ay günü', min: 1, max: 29, step: 1, group: 'gorunum' },
     ],
   },
   {
@@ -176,12 +185,12 @@ export const SHARE_WIDGETS = [
       ...typographyDefaults(600),
     }),
     settings: [
-      { key: 'text', type: 'textarea', label: 'Yazı' },
+      { key: 'text', type: 'textarea', label: 'Yazı', group: 'icerik' },
       ...typographyFields,
-      { key: 'size', type: 'range', label: 'Boyut', min: 24, max: 160, step: 4 },
+      { key: 'size', type: 'range', label: 'Boyut', min: 24, max: 160, step: 4, group: 'boyut' },
       colorField('color', 'Renk'),
       alignField,
-      { key: 'uppercase', type: 'toggle', label: 'BÜYÜK HARF' },
+      { key: 'uppercase', type: 'toggle', label: 'BÜYÜK HARF', group: 'gorunum' },
     ],
   },
   {
@@ -206,15 +215,15 @@ export const SHARE_WIDGETS = [
       }
     },
     settings: [
-      { key: 'preset', type: 'phrase', source: 'arabic', label: 'Hazır metin' },
-      { key: 'text', type: 'textarea', label: 'Arapça' },
-      { key: 'harakat', type: 'toggle', label: 'Hareke' },
-      { key: 'sub', type: 'text', label: 'Alt satır' },
+      { key: 'preset', type: 'phrase', source: 'arabic', label: 'Hazır metin', group: 'icerik' },
+      { key: 'text', type: 'textarea', label: 'Arapça', group: 'icerik' },
+      { key: 'harakat', type: 'toggle', label: 'Hareke', group: 'icerik' },
+      { key: 'sub', type: 'text', label: 'Alt satır', group: 'icerik' },
       ...typographyFieldsNoTracking,
-      { key: 'size', type: 'range', label: 'Boyut', min: 40, max: 220, step: 4 },
+      { key: 'size', type: 'range', label: 'Boyut', min: 40, max: 220, step: 4, group: 'boyut' },
       colorField('color', 'Renk'),
       { key: 'subColor', type: 'color', label: 'Alt satır rengi', swatches: COLOR_SWATCHES,
-        hidden: (p) => !p.sub },
+        group: 'gorunum', hidden: (p) => !p.sub },
       alignField,
     ],
   },
@@ -240,14 +249,14 @@ export const SHARE_WIDGETS = [
       }
     },
     settings: [
-      { key: 'preset', type: 'phrase', source: 'ottoman', label: 'Hazır metin' },
-      { key: 'text', type: 'textarea', label: 'Eski yazı' },
-      { key: 'sub', type: 'text', label: 'Alt satır' },
+      { key: 'preset', type: 'phrase', source: 'ottoman', label: 'Hazır metin', group: 'icerik' },
+      { key: 'text', type: 'textarea', label: 'Eski yazı', group: 'icerik' },
+      { key: 'sub', type: 'text', label: 'Alt satır', group: 'icerik' },
       ...typographyFieldsNoTracking,
-      { key: 'size', type: 'range', label: 'Boyut', min: 40, max: 220, step: 4 },
+      { key: 'size', type: 'range', label: 'Boyut', min: 40, max: 220, step: 4, group: 'boyut' },
       colorField('color', 'Renk'),
       { key: 'subColor', type: 'color', label: 'Alt satır rengi', swatches: COLOR_SWATCHES,
-        hidden: (p) => !p.sub },
+        group: 'gorunum', hidden: (p) => !p.sub },
       alignField,
     ],
   },
@@ -262,10 +271,10 @@ export const SHARE_WIDGETS = [
       color: '#ffffff',
     }),
     settings: [
-      { key: 'variant', type: 'select', label: 'Biçim', options: [
+      { key: 'variant', type: 'select', label: 'Biçim', group: 'gorunum', options: [
         { value: 'wide', label: 'Logo' }, { value: 'mark', label: 'Sembol' },
       ] },
-      { key: 'size', type: 'range', label: 'Genişlik', min: 90, max: 800, step: 10 },
+      { key: 'size', type: 'range', label: 'Genişlik', min: 90, max: 800, step: 10, group: 'boyut' },
       colorField('color', 'Renk'),
     ],
   },

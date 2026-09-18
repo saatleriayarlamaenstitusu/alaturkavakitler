@@ -18,306 +18,301 @@ const value = computed({
 
 // 'auto' swatch'i vakit rengini temsil eder.
 const swatchColor = (sw) => (sw === 'auto' ? props.accent : sw)
+
+// Sürgülerin yanında sayısal okuma: Swiss düzende değer görünür olmalı,
+// kullanıcı tahmin etmemeli.
+const readout = computed(() => {
+  const v = Number(value.value)
+  if (!Number.isFinite(v)) return ''
+  switch (props.field.unit) {
+    case '%': return `${Math.round(v * 100)}%`
+    case 'em': return v.toFixed(2)
+    case '×': return `${v.toFixed(2)}×`
+    case 'px': return `${Math.round(v)}`
+    default: return String(Math.round(v * 100) / 100)
+  }
+})
+
+// Etiket + denetim aynı ızgarada; textarea ve şeritler tam genişlik ister.
+const fullWidth = computed(() =>
+  ['textarea', 'font', 'phrase'].includes(props.field.type)
+)
 </script>
 
 <template>
-  <div class="field" :class="`type-${field.type}`">
+  <div class="field" :class="[`type-${field.type}`, { full: fullWidth }]">
     <label class="field-label">{{ field.label }}</label>
 
-    <div v-if="field.type === 'color'" class="swatches">
-      <button
-        v-for="sw in field.swatches"
-        :key="sw"
-        class="swatch"
-        :class="{ active: value === sw }"
-        :style="{ background: swatchColor(sw) }"
-        :aria-label="sw === 'auto' ? 'Vakit rengi' : sw"
-        @click="value = sw"
-      ></button>
-    </div>
-
-    <div v-else-if="field.type === 'font'" class="fonts">
-      <template v-for="group in FONT_GROUPS" :key="group.id">
-        <span class="font-group">{{ group.label }}</span>
+    <div class="field-control">
+      <div v-if="field.type === 'color'" class="swatches">
         <button
-          v-for="f in fontsByScript(group.id)"
-          :key="f.id"
-          class="font-chip"
-          :class="{ active: value === f.id }"
-          :style="{ fontFamily: f.family }"
-          @click="value = f.id"
-        >{{ f.label }}</button>
-      </template>
-    </div>
+          v-for="sw in field.swatches"
+          :key="sw"
+          class="swatch"
+          :class="{ active: value === sw }"
+          :style="{ background: swatchColor(sw) }"
+          :aria-label="sw === 'auto' ? 'Vakit rengi' : sw"
+          @click="value = sw"
+        ></button>
+      </div>
 
-    <div v-else-if="field.type === 'phrase'" class="phrases">
-      <button
-        v-for="p in phraseList(field.source)"
-        :key="p.id"
-        class="phrase-chip"
-        :class="{ active: value === p.id }"
-        :title="p.meal"
-        @click="value = p.id"
+      <div v-else-if="field.type === 'font'" class="fonts">
+        <template v-for="group in FONT_GROUPS" :key="group.id">
+          <span class="strip-label">{{ group.label }}</span>
+          <button
+            v-for="f in fontsByScript(group.id)"
+            :key="f.id"
+            class="font-chip"
+            :class="{ active: value === f.id }"
+            :style="{ fontFamily: f.family }"
+            @click="value = f.id"
+          >{{ f.label }}</button>
+        </template>
+      </div>
+
+      <div v-else-if="field.type === 'phrase'" class="phrases">
+        <button
+          v-for="p in phraseList(field.source)"
+          :key="p.id"
+          class="phrase-chip"
+          :class="{ active: value === p.id }"
+          :title="p.meal"
+          @click="value = p.id"
+        >
+          <span class="phrase-ar" dir="rtl">{{ p.ar }}</span>
+          <span class="phrase-tr">{{ p.tr }}</span>
+        </button>
+      </div>
+
+      <select
+        v-else-if="field.type === 'select' && field.compact"
+        class="compact-select"
+        :value="value"
+        @change="value = field.options.find(o => String(o.value) === $event.target.value)?.value"
       >
-        <span class="phrase-ar" dir="rtl">{{ p.ar }}</span>
-        <span class="phrase-tr">{{ p.tr }}</span>
-      </button>
-    </div>
+        <option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+      </select>
 
-    <select
-      v-else-if="field.type === 'select' && field.compact"
-      class="compact-select"
-      :value="value"
-      @change="value = field.options.find(o => String(o.value) === $event.target.value)?.value"
-    >
-      <option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-    </select>
+      <div v-else-if="field.type === 'select'" class="segments">
+        <button
+          v-for="opt in field.options"
+          :key="opt.value"
+          class="segment"
+          :class="{ active: value === opt.value }"
+          @click="value = opt.value"
+        >{{ opt.label }}</button>
+      </div>
 
-    <div v-else-if="field.type === 'select'" class="segments">
       <button
-        v-for="opt in field.options"
-        :key="opt.value"
-        class="segment"
-        :class="{ active: value === opt.value }"
-        @click="value = opt.value"
-      >{{ opt.label }}</button>
+        v-else-if="field.type === 'toggle'"
+        class="switch"
+        :class="{ on: value }"
+        role="switch"
+        :aria-checked="value"
+        @click="value = !value"
+      ><span class="knob"></span></button>
+
+      <template v-else-if="field.type === 'range'">
+        <input
+          class="range"
+          type="range"
+          :min="field.min" :max="field.max" :step="field.step"
+          :value="value"
+          @input="value = Number($event.target.value)"
+        />
+        <output class="readout">{{ readout }}</output>
+      </template>
+
+      <input
+        v-else-if="field.type === 'text'"
+        class="text-input"
+        type="text"
+        :value="value"
+        :placeholder="field.label"
+        @input="value = $event.target.value"
+      />
+
+      <textarea
+        v-else-if="field.type === 'textarea'"
+        class="textarea"
+        rows="2"
+        :value="value"
+        @input="value = $event.target.value"
+      ></textarea>
     </div>
-
-    <button
-      v-else-if="field.type === 'toggle'"
-      class="switch"
-      :class="{ on: value }"
-      role="switch"
-      :aria-checked="value"
-      @click="value = !value"
-    ><span class="knob"></span></button>
-
-    <input
-      v-else-if="field.type === 'range'"
-      class="range"
-      type="range"
-      :min="field.min" :max="field.max" :step="field.step"
-      :value="value"
-      @input="value = Number($event.target.value)"
-    />
-
-    <input
-      v-else-if="field.type === 'text'"
-      class="text-input"
-      type="text"
-      :value="value"
-      :placeholder="field.label"
-      @input="value = $event.target.value"
-    />
-
-    <textarea
-      v-else-if="field.type === 'textarea'"
-      class="textarea"
-      rows="2"
-      :value="value"
-      @input="value = $event.target.value"
-    ></textarea>
   </div>
 </template>
 
 <style scoped>
+/* Swiss ızgara: etiket sabit bir kolonda, denetim ikinci kolonda sola
+   dayalı. Böylece panel boyunca kesintisiz bir dikey hiza oluşur. */
 .field {
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--label-col) 1fr;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.5rem 0;
-  min-height: 2.75rem;
+  gap: 0 1rem;
+  min-height: 2.25rem;
 }
 
-.type-phrase {
-  flex-direction: column;
+.field.full {
+  grid-template-columns: 1fr;
   align-items: stretch;
-  gap: 0.4rem;
-}
-
-.type-font {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.4rem;
-}
-
-.type-textarea {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.4rem;
+  gap: 0.35rem;
+  padding: 0.3rem 0;
 }
 
 .field-label {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-muted);
-  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.field-control {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
 }
 
 /* ── Renk ── */
-.swatches { display: flex; gap: 0.4rem; }
+.swatches { display: flex; gap: 0.3rem; }
 
 .swatch {
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 50%;
-  border: 2px solid rgba(128, 128, 128, 0.4);
+  width: 1.375rem;
+  height: 1.375rem;
+  border: 1px solid var(--border);
   cursor: pointer;
   padding: 0;
 }
 
 .swatch.active {
+  box-shadow: inset 0 0 0 2px var(--surface), 0 0 0 1.5px var(--text);
   border-color: var(--text);
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text);
 }
 
-/* ── Hazır Arapça metinler ── */
+/* ── Font şeridi ── */
+.fonts,
 .phrases {
   display: flex;
-  gap: 0.4rem;
+  align-items: center;
+  gap: 0.3rem;
   overflow-x: auto;
   padding-bottom: 0.2rem;
   scrollbar-width: none;
+  width: 100%;
 }
 
+.fonts::-webkit-scrollbar,
 .phrases::-webkit-scrollbar { display: none; }
+
+/* Grup etiketi şeridin içinde akar; yatay kaydırmada ayraç görevi görür. */
+.strip-label {
+  flex-shrink: 0;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding-right: 0.2rem;
+}
+
+.strip-label:not(:first-child) { padding-left: 0.5rem; }
+
+.font-chip {
+  flex-shrink: 0;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.font-chip.active,
+.phrase-chip.active {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
 
 .phrase-chip {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
-  padding: 0.45rem 0.8rem;
-  border-radius: 0.5rem;
+  gap: 0.1rem;
+  padding: 0.35rem 0.6rem;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--text) 6%, transparent);
+  background: transparent;
   color: var(--text);
   cursor: pointer;
   white-space: nowrap;
-}
-
-.phrase-chip.active {
-  border-color: var(--accent-ui);
-  background: color-mix(in srgb, var(--accent-ui) 18%, transparent);
 }
 
 .phrase-ar {
   font-family: 'Amiri', serif;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   line-height: 1.5;
 }
 
 .phrase-tr {
-  font-size: 0.625rem;
-  color: var(--text-muted);
+  font-size: 0.5625rem;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
 }
 
-/* ── Font şeridi ── */
-.fonts {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  overflow-x: auto;
-  padding-bottom: 0.2rem;
-  scrollbar-width: none;
-}
-
-.fonts::-webkit-scrollbar { display: none; }
-
-.font-chip {
-  flex-shrink: 0;
-  padding: 0.4rem 0.8rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--text) 6%, transparent);
-  color: var(--text);
-  font-size: 1rem;
-  line-height: 1.3;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.font-chip.active {
-  border-color: var(--accent-ui);
-  background: color-mix(in srgb, var(--accent-ui) 18%, transparent);
-}
-
-/* Grup etiketi şeridin içinde akar; yatay kaydırmada ayraç görevi görür. */
-.font-group {
-  flex-shrink: 0;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  padding: 0 0.15rem 0 0.35rem;
-}
-
-.font-group:first-child { padding-left: 0; }
+.phrase-chip.active .phrase-tr { opacity: 0.85; }
 
 /* ── Segment ── */
 .segments {
   display: flex;
-  max-width: 70%;
-  overflow-x: auto;
-  scrollbar-width: none;
-  background: color-mix(in srgb, var(--text) 8%, transparent);
-  border-radius: 0.5rem;
-  padding: 0.125rem;
+  border: 1px solid var(--border);
 }
-
-.segments::-webkit-scrollbar { display: none; }
 
 .segment {
   flex-shrink: 0;
   border: 0;
+  border-right: 1px solid var(--border);
   background: transparent;
   color: var(--text-muted);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.35rem 0.7rem;
-  border-radius: 0.4rem;
+  padding: 0.3rem 0.6rem;
   cursor: pointer;
   font-family: inherit;
 }
+
+.segment:last-child { border-right: 0; }
 
 .segment.active {
   background: var(--text);
   color: var(--bg);
 }
 
-/* Seçenek sayısı fonta göre 1'den 7'ye çıkabildiği için kalınlık, segment
-   şeridi yerine yer kaplamayan yerel bir açılır liste kullanır. */
 .compact-select {
-  max-width: 55%;
   border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  background: color-mix(in srgb, var(--text) 8%, transparent);
+  background: transparent;
   color: var(--text);
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.35rem 0.6rem;
+  padding: 0.3rem 0.5rem;
   cursor: pointer;
 }
 
 .compact-select:focus { outline: none; border-color: var(--accent-ui); }
-
-.compact-select option {
-  background: var(--surface);
-  color: var(--text);
-}
+.compact-select option { background: var(--surface); color: var(--text); }
 
 /* ── Anahtar ── */
 .switch {
-  width: 2.75rem;
-  height: 1.6rem;
-  border-radius: 1rem;
-  border: 0;
-  background: color-mix(in srgb, var(--text) 18%, transparent);
-  padding: 0.18rem;
+  width: 2.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  padding: 0.125rem;
   cursor: pointer;
   display: flex;
   justify-content: flex-start;
@@ -325,60 +320,62 @@ const swatchColor = (sw) => (sw === 'auto' ? props.accent : sw)
 
 .switch.on {
   background: var(--accent-ui);
+  border-color: var(--accent-ui);
   justify-content: flex-end;
 }
 
 .knob {
-  width: 1.24rem;
-  height: 1.24rem;
-  border-radius: 50%;
-  background: #fff;
+  width: 0.875rem;
+  height: 100%;
+  background: var(--text-dim);
   display: block;
 }
 
-/* ── Kaydırıcı ── */
+.switch.on .knob { background: var(--bg); }
+
+/* ── Kaydırıcı + sayısal okuma ── */
 .range {
   flex: 1;
-  max-width: 60%;
+  min-width: 0;
   accent-color: var(--accent-ui);
 }
 
+.readout {
+  flex-shrink: 0;
+  min-width: 2.75rem;
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* ── Metin ── */
 .text-input {
   flex: 1;
   min-width: 0;
-  max-width: 62%;
-  text-align: right;
   border: 0;
   border-bottom: 1px solid var(--border);
-  border-radius: 0;
   background: transparent;
   color: var(--text);
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  padding: 0.3rem 0.1rem;
+  padding: 0.25rem 0;
 }
 
-.text-input::placeholder {
-  color: var(--text-dim);
-  font-weight: 400;
-}
-
-.text-input:focus {
-  outline: none;
-  border-bottom-color: var(--accent-ui);
-}
+.text-input::placeholder { color: var(--text-dim); font-weight: 400; }
+.text-input:focus { outline: none; border-bottom-color: var(--accent-ui); }
 
 .textarea {
   width: 100%;
   resize: none;
-  border-radius: 0.5rem;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--text) 6%, transparent);
+  background: transparent;
   color: var(--text);
   font-family: inherit;
-  font-size: 0.9375rem;
-  padding: 0.55rem 0.7rem;
+  font-size: 0.875rem;
+  padding: 0.45rem 0.6rem;
 }
 
 .textarea:focus { outline: none; border-color: var(--accent-ui); }

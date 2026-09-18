@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, watchEffect } from 'vue'
 import { useShareEditor } from '@/composables/useShareEditor'
-import { SHARE_WIDGETS, getWidget } from './widgets/registry'
+import { SHARE_WIDGETS, getWidget, FIELD_GROUPS } from './widgets/registry'
 import { SHARE_RATIOS } from '@/data/shareRatios'
 import { getFont, nearestWeight } from '@/data/shareFonts'
 import { getPhraseFrom } from '@/data/phraseSets'
@@ -59,6 +59,31 @@ function fieldVisible(field) {
   return typeof field.hidden === 'function' ? !field.hidden(selected.value?.props ?? {}) : true
 }
 
+// Katman seviyesindeki alan: widget tipinden bağımsız, hepsinde var.
+const LAYER_FIELDS = [
+  { key: '__opacity', type: 'range', label: 'Opaklık', min: 0.05, max: 1, step: 0.05, unit: '%', group: 'gorunum', layerLevel: true },
+]
+
+// Alanlar sabit grup sırasına göre başlıklar altında toplanır; boş grup çizilmez.
+const groupedFields = computed(() => {
+  const def = selectedDef.value
+  if (!def) return []
+  const all = [...def.settings.filter(fieldVisible).map(resolveField), ...LAYER_FIELDS]
+  return FIELD_GROUPS
+    .map(g => ({ ...g, fields: all.filter(f => (f.group || 'gorunum') === g.id) }))
+    .filter(g => g.fields.length)
+})
+
+function fieldValue(field) {
+  if (field.layerLevel) return selected.value?.opacity ?? 1
+  return selected.value?.props[field.key]
+}
+
+function writeField(field, val) {
+  if (field.layerLevel) editor.updateLayer(selected.value.id, { opacity: val })
+  else updateProp(field.key, val)
+}
+
 const hasPhoto = computed(() =>
   state.background.kind === 'photo' && Boolean(state.background.photo)
 )
@@ -109,21 +134,17 @@ function pickPhoto(e) {
       </header>
 
       <div class="sheet-body fields">
-        <SettingControl
-          v-for="field in selectedDef.settings.filter(fieldVisible)"
-          :key="field.key"
-          :field="resolveField(field)"
-          :accent="editor.snapshot.primary"
-          :model-value="selected.props[field.key]"
-          @update:model-value="updateProp(field.key, $event)"
-        />
-
-        <!-- Katman seviyesinde: widget tipinden bağımsız, hepsinde var. -->
-        <SettingControl
-          :field="{ type: 'range', label: 'Opaklık', min: 0.05, max: 1, step: 0.05 }"
-          :model-value="selected.opacity ?? 1"
-          @update:model-value="editor.updateLayer(selected.id, { opacity: $event })"
-        />
+        <section v-for="group in groupedFields" :key="group.id" class="group">
+          <h3 class="group-label">{{ group.label }}</h3>
+          <SettingControl
+            v-for="field in group.fields"
+            :key="field.key"
+            :field="field"
+            :accent="editor.snapshot.primary"
+            :model-value="fieldValue(field)"
+            @update:model-value="writeField(field, $event)"
+          />
+        </section>
       </div>
     </template>
 
@@ -174,104 +195,112 @@ function pickPhoto(e) {
           />
         </div>
 
-        <template v-if="hasPhoto">
+        <section class="group">
+          <h3 class="group-label">Ayar</h3>
+          <template v-if="hasPhoto">
+            <SettingControl
+              :field="{ type: 'range', label: 'Yakınlaştır', min: 1, max: 4, step: 0.05, unit: '×' }"
+              :model-value="state.background.zoom"
+              @update:model-value="editor.zoomPhoto($event)"
+            />
+            <SettingControl
+              :field="{ type: 'range', label: 'Bulanıklık', min: 0, max: 60, step: 2, unit: 'px' }"
+              :model-value="state.background.blur"
+              @update:model-value="editor.setBackground({ blur: $event })"
+            />
+          </template>
+
           <SettingControl
-            :field="{ type: 'range', label: 'Yakınlaştır', min: 1, max: 4, step: 0.05 }"
-            :model-value="state.background.zoom"
-            @update:model-value="editor.zoomPhoto($event)"
+            :field="{ type: 'range', label: 'Karartma', min: 0, max: 0.8, step: 0.05, unit: '%' }"
+            :model-value="state.background.dim"
+            @update:model-value="editor.setBackground({ dim: $event })"
           />
           <SettingControl
-            :field="{ type: 'range', label: 'Bulanıklık', min: 0, max: 60, step: 2 }"
-            :model-value="state.background.blur"
-            @update:model-value="editor.setBackground({ blur: $event })"
+            :field="{ type: 'toggle', label: 'Site adresi' }"
+            :model-value="state.brand"
+            @update:model-value="state.brand = $event"
           />
-        </template>
-
-        <SettingControl
-          :field="{ type: 'range', label: 'Karartma', min: 0, max: 0.8, step: 0.05 }"
-          :model-value="state.background.dim"
-          @update:model-value="editor.setBackground({ dim: $event })"
-        />
-        <SettingControl
-          :field="{ type: 'toggle', label: 'Site adresi' }"
-          :model-value="state.brand"
-          @update:model-value="state.brand = $event"
-        />
-
+        </section>
         <!-- Film grain: arka planın üstünde, grid ve widget'ların altında -->
-        <SettingControl
-          :field="{ type: 'toggle', label: 'Gren doku' }"
-          :model-value="state.grain.on"
-          @update:model-value="editor.setGrain({ on: $event })"
-        />
+        <section class="group">
+          <h3 class="group-label">Doku</h3>
+          <SettingControl
+            :field="{ type: 'toggle', label: 'Gren doku' }"
+            :model-value="state.grain.on"
+            @update:model-value="editor.setGrain({ on: $event })"
+          />
 
-        <template v-if="state.grain.on">
-          <SettingControl
-            :field="{ type: 'range', label: 'Doku yoğunluğu', min: 0.05, max: 1, step: 0.05 }"
-            :model-value="state.grain.opacity"
-            @update:model-value="editor.setGrain({ opacity: $event })"
-          />
-          <SettingControl
-            :field="{ type: 'range', label: 'Doku kabalığı', min: 120, max: 900, step: 20 }"
-            :model-value="state.grain.size"
-            @update:model-value="editor.setGrain({ size: $event })"
-          />
-          <SettingControl
-            :field="{ type: 'select', compact: true, label: 'Karışım', options: [
-              { value: 'overlay', label: 'Overlay' },
-              { value: 'soft-light', label: 'Yumuşak' },
-              { value: 'normal', label: 'Düz' },
-            ] }"
-            :model-value="state.grain.blend"
-            @update:model-value="editor.setGrain({ blend: $event })"
-          />
-        </template>
+          <template v-if="state.grain.on">
+            <SettingControl
+              :field="{ type: 'range', label: 'Yoğunluk', min: 0.05, max: 1, step: 0.05, unit: '%' }"
+              :model-value="state.grain.opacity"
+              @update:model-value="editor.setGrain({ opacity: $event })"
+            />
+            <SettingControl
+              :field="{ type: 'range', label: 'Kabalık', min: 120, max: 900, step: 20, unit: 'px' }"
+              :model-value="state.grain.size"
+              @update:model-value="editor.setGrain({ size: $event })"
+            />
+            <SettingControl
+              :field="{ type: 'select', compact: true, label: 'Karışım', options: [
+                { value: 'overlay', label: 'Overlay' },
+                { value: 'soft-light', label: 'Yumuşak' },
+                { value: 'normal', label: 'Düz' },
+              ] }"
+              :model-value="state.grain.blend"
+              @update:model-value="editor.setGrain({ blend: $event })"
+            />
+          </template>
+        </section>
 
         <!-- Swiss ızgara: tuvalin tamamına yayılan hatlar, widget'ların altında -->
-        <SettingControl
-          :field="{ type: 'toggle', label: 'Grid' }"
-          :model-value="state.grid.on"
-          @update:model-value="editor.setGrid({ on: $event })"
-        />
+        <section class="group">
+          <h3 class="group-label">Izgara</h3>
+          <SettingControl
+            :field="{ type: 'toggle', label: 'Grid' }"
+            :model-value="state.grid.on"
+            @update:model-value="editor.setGrid({ on: $event })"
+          />
 
-        <template v-if="state.grid.on">
-          <SettingControl
-            :field="{ type: 'range', label: 'Sütun', min: 1, max: 12, step: 1 }"
-            :model-value="state.grid.cols"
-            @update:model-value="editor.setGrid({ cols: $event })"
-          />
-          <SettingControl
-            :field="{ type: 'range', label: 'Satır', min: 1, max: 12, step: 1 }"
-            :model-value="state.grid.rows"
-            @update:model-value="editor.setGrid({ rows: $event })"
-          />
-          <SettingControl
-            :field="{ type: 'range', label: 'Kenar boşluğu', min: 0, max: 200, step: 8 }"
-            :model-value="state.grid.margin"
-            @update:model-value="editor.setGrid({ margin: $event })"
-          />
-          <SettingControl
-            :field="{ type: 'range', label: 'Çizgi kalınlığı', min: 1, max: 10, step: 1 }"
-            :model-value="state.grid.thickness"
-            @update:model-value="editor.setGrid({ thickness: $event })"
-          />
-          <SettingControl
-            :field="{ type: 'range', label: 'Belirginlik', min: 0.05, max: 1, step: 0.05 }"
-            :model-value="state.grid.opacity"
-            @update:model-value="editor.setGrid({ opacity: $event })"
-          />
-          <SettingControl
-            :field="{ type: 'color', label: 'Çizgi rengi', swatches: ['#ffffff', '#000000', 'auto', '#ffd733', '#ff8c33', '#0491fb'] }"
-            :model-value="state.grid.color"
-            @update:model-value="editor.setGrid({ color: $event })"
-            :accent="editor.snapshot.primary"
-          />
-          <SettingControl
-            :field="{ type: 'toggle', label: 'Kenar çerçevesi' }"
-            :model-value="state.grid.frame"
-            @update:model-value="editor.setGrid({ frame: $event })"
-          />
-        </template>
+          <template v-if="state.grid.on">
+            <SettingControl
+              :field="{ type: 'range', label: 'Sütun', min: 1, max: 12, step: 1 }"
+              :model-value="state.grid.cols"
+              @update:model-value="editor.setGrid({ cols: $event })"
+            />
+            <SettingControl
+              :field="{ type: 'range', label: 'Satır', min: 1, max: 12, step: 1 }"
+              :model-value="state.grid.rows"
+              @update:model-value="editor.setGrid({ rows: $event })"
+            />
+            <SettingControl
+              :field="{ type: 'range', label: 'Kenar boşluğu', min: 0, max: 200, step: 8, unit: 'px' }"
+              :model-value="state.grid.margin"
+              @update:model-value="editor.setGrid({ margin: $event })"
+            />
+            <SettingControl
+              :field="{ type: 'range', label: 'Kalınlık', min: 1, max: 10, step: 1, unit: 'px' }"
+              :model-value="state.grid.thickness"
+              @update:model-value="editor.setGrid({ thickness: $event })"
+            />
+            <SettingControl
+              :field="{ type: 'range', label: 'Belirginlik', min: 0.05, max: 1, step: 0.05, unit: '%' }"
+              :model-value="state.grid.opacity"
+              @update:model-value="editor.setGrid({ opacity: $event })"
+            />
+            <SettingControl
+              :field="{ type: 'color', label: 'Çizgi rengi', swatches: ['#ffffff', '#000000', 'auto', '#ffd733', '#ff8c33', '#0491fb'] }"
+              :model-value="state.grid.color"
+              @update:model-value="editor.setGrid({ color: $event })"
+              :accent="editor.snapshot.primary"
+            />
+            <SettingControl
+              :field="{ type: 'toggle', label: 'Çerçeve' }"
+              :model-value="state.grid.frame"
+              @update:model-value="editor.setGrid({ frame: $event })"
+            />
+          </template>
+        </section>
       </div>
 
       <div v-else class="sheet-body strip">
@@ -292,7 +321,10 @@ function pickPhoto(e) {
 </template>
 
 <style scoped>
+/* Swiss düzen: dik açılar, dolgu yerine ince çizgi, ağırlık ve boşlukla
+   hiyerarşi. Etiketler tek bir kolonda hizalanır (--label-col). */
 .panel {
+  --label-col: 7rem;
   position: absolute;
   left: 0;
   right: 0;
@@ -304,10 +336,14 @@ function pickPhoto(e) {
      Bu yüzden önce mat --bg, üstüne --surface tonu boyanıyor. */
   background-color: var(--bg);
   background-image: linear-gradient(var(--surface), var(--surface));
-  border-top: 1px solid var(--border);
-  border-radius: 1rem 1rem 0 0;
+  border-top: 1px solid var(--text);
   padding: 0 1rem calc(0.5rem + env(safe-area-inset-bottom));
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
+}
+
+/* Editör mobil önceliklidir; geniş ekranda panel tuvalle aynı sütunda kalır. */
+.panel > * {
+  max-width: 34rem;
+  margin-inline: auto;
 }
 
 /* Katlanınca yalnızca tutamak + başlık satırı kalır. */
@@ -326,29 +362,22 @@ function pickPhoto(e) {
   width: 100%;
   border: 0;
   background: transparent;
-  padding: 0.5rem 0 0.35rem;
+  padding: 0.45rem 0 0.3rem;
   cursor: pointer;
 }
 
 .grab-bar {
   display: block;
-  width: 2.5rem;
-  height: 0.25rem;
+  width: 2rem;
+  height: 2px;
   margin: 0 auto;
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--text) 25%, transparent);
-}
-
-/* Editör mobil önceliklidir; geniş ekranda panel tuvalle aynı sütunda kalır. */
-.panel > * {
-  max-width: 34rem;
-  margin-inline: auto;
+  background: var(--text-dim);
 }
 
 /* ── Seçili katman başlığı ── */
 .panel-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 0.75rem;
   padding-bottom: 0.5rem;
@@ -356,13 +385,15 @@ function pickPhoto(e) {
 }
 
 .title {
-  font-size: 0.9375rem;
+  font-size: 0.6875rem;
   font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .head-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.75rem;
 }
 
 .ghost {
@@ -370,10 +401,11 @@ function pickPhoto(e) {
   background: transparent;
   color: var(--text-muted);
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.625rem;
   font-weight: 600;
-  padding: 0.35rem 0.5rem;
-  border-radius: 0.4rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0;
   cursor: pointer;
 }
 
@@ -383,64 +415,96 @@ function pickPhoto(e) {
 .fields {
   max-height: 34vh;
   overflow-y: auto;
+  /* Sayısal okumalar kaydırma çubuğuna değmesin. */
+  padding-right: 0.5rem;
 }
 
-.strip.sheet-body {
-  max-height: 8rem;
+/* ── Ayar grubu ── */
+.group {
+  padding: 0.5rem 0 0.25rem;
 }
 
-/* Arka plan sekmesi grid ayarlarıyla uzayabiliyor. */
-.bg-tab {
-  max-height: 30vh;
-  overflow-y: auto;
+.group + .group {
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+}
+
+/* Başlık solda, ince çizgi sağa doğru uzanır — klasik Swiss ayraç. */
+.group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
 }
 
 /* ── Sekmeler ── */
 .tabs {
   display: flex;
-  gap: 0.25rem;
-  margin-bottom: 0.6rem;
+  gap: 1.25rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .tabs button {
+  position: relative;
   border: 0;
   background: transparent;
-  color: var(--text-muted);
+  color: var(--text-dim);
   font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: 0.35rem 0.75rem;
-  border-radius: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.4rem 0 0.5rem;
   cursor: pointer;
 }
 
-.tabs button.active {
-  background: color-mix(in srgb, var(--text) 10%, transparent);
-  color: var(--text);
+.tabs button.active { color: var(--text); }
+
+.tabs button.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--text);
 }
 
 /* ── Yatay şerit ── */
 .strip {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.375rem;
   overflow-x: auto;
-  padding-bottom: 0.25rem;
+  padding: 0.6rem 0 0.35rem;
   scrollbar-width: none;
 }
 
 .strip::-webkit-scrollbar { display: none; }
+
+.strip.sheet-body { max-height: 8rem; }
 
 .chip {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.15rem;
-  min-width: 6.5rem;
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.75rem;
+  gap: 0.1rem;
+  min-width: 6rem;
+  padding: 0.5rem 0.6rem;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--text) 6%, transparent);
+  background: transparent;
   color: var(--text);
   font-family: inherit;
   cursor: pointer;
@@ -448,21 +512,43 @@ function pickPhoto(e) {
 }
 
 .chip.active {
-  border-color: var(--accent-ui);
-  background: color-mix(in srgb, var(--accent-ui) 16%, transparent);
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
 }
 
-.chip-label { font-size: 0.875rem; font-weight: 600; }
-.chip-hint { font-size: 0.6875rem; color: var(--text-muted); }
+.chip-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
 
-.ratio { align-items: center; min-width: 5rem; }
+.chip-hint {
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.chip.active .chip-hint { color: inherit; opacity: 0.7; }
+
+/* Arka plan sekmesi grid ayarlarıyla uzayabiliyor. */
+.bg-tab {
+  max-height: 30vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.ratio {
+  align-items: center;
+  min-width: 4.5rem;
+  gap: 0.3rem;
+}
 
 .ratio-box {
-  width: 1.75rem;
-  border-radius: 0.2rem;
-  border: 2px solid currentColor;
-  opacity: 0.6;
-  margin-bottom: 0.15rem;
+  width: 1.5rem;
+  border: 1px solid currentColor;
+  opacity: 0.5;
 }
 
 .file { display: none; }

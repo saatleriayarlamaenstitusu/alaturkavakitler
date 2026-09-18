@@ -100,12 +100,14 @@ const shareSupported = computed(() => Boolean(navigator.share))
 <template>
   <div class="creator">
     <header class="bar">
-      <button class="icon" aria-label="Kapat" @click="router.back()">✕</button>
-      <button
-        class="reset"
-        :class="{ confirming: confirmingReset }"
-        @click="askReset"
-      >{{ confirmingReset ? 'Emin misin?' : 'Sıfırla' }}</button>
+      <div class="bar-left">
+        <button class="icon" aria-label="Kapat" @click="router.back()">✕</button>
+        <button
+          class="reset"
+          :class="{ confirming: confirmingReset }"
+          @click="askReset"
+        >{{ confirmingReset ? 'Emin misin?' : 'Sıfırla' }}</button>
+      </div>
       <span class="bar-title">Görsel Oluştur</span>
       <div class="bar-actions">
         <button class="action" :disabled="busy" @click="run('download')">
@@ -151,19 +153,28 @@ const shareSupported = computed(() => Boolean(navigator.share))
 
 .bar {
   flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: calc(0.6rem + env(safe-area-inset-top)) 0.75rem 0.55rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.bar-left {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: calc(0.6rem + env(safe-area-inset-top)) 0.75rem 0.6rem;
+  gap: 0.5rem;
 }
 
 .bar-title {
-  flex: 1;
   text-align: center;
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .reset {
@@ -171,10 +182,11 @@ const shareSupported = computed(() => Boolean(navigator.share))
   background: transparent;
   color: var(--text-muted);
   font-family: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  padding: 0.45rem 0.5rem;
-  border-radius: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.3rem;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -182,30 +194,37 @@ const shareSupported = computed(() => Boolean(navigator.share))
 .reset.confirming {
   background: var(--accent-ui);
   color: var(--bg);
+  padding-inline: 0.5rem;
 }
 
 .icon {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.5rem;
-  border: 0;
-  background: color-mix(in srgb, var(--text) 8%, transparent);
-  color: var(--text);
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.bar-actions { display: flex; gap: 0.4rem; }
-
-.action {
+  width: 1.875rem;
+  height: 1.875rem;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.icon:hover { border-color: var(--text); }
+
+.bar-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.action {
+  border: 1px solid var(--text);
+  background: transparent;
+  color: var(--text);
   font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: 0.45rem 0.9rem;
-  border-radius: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.8rem;
   cursor: pointer;
 }
 
