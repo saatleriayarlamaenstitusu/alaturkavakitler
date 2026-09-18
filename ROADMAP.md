@@ -128,7 +128,7 @@
 - [x] Saat üzerine sayfası: BlogPage liste (kapak görseli) + BlogDetailPage detay
 - [ ] Yenilikler bölümü (changelog, blog formatında)
 - [ ] Rumi ve hicri takvim üzerine yazılar
-- [ ] Dini günler verisi oluşturma (Directus'a)
+- [ ] Dini günler verisi oluşturma (Directus'a) — hazır olunca Tarih widget'ının "Etkinlik" alanı otomatik dolabilir
 - [ ] Geliştiriciler için bölüm (API, web component dokümantasyonu)
 - [x] Amentü sayfasına ses ekleme
 
@@ -136,19 +136,41 @@
 
 ## Faz 8: Paylaş Özelliği
 
-- [ ] Paylaş canvas engine (HTML Canvas tabanlı)
-- [ ] Saat ağırlıklı post şablonu (1:1 ve 9:16)
-- [ ] Takvim ağırlıklı post şablonu (1:1 ve 9:16)
-- [ ] Kullanıcı özelleştirme (başlık, yazı, saat, tarih pozisyonları)
-- [ ] Kullanıcı kendi resmini seçip üzerine tarih / saat / not / mesaj yazsın (overlay tasarımları **swiss style**)
+- [x] Paylaş tuval motoru (gerçek boyutlu DOM tuval + snapdom export; katman modeli, sürükle/ölçekle/döndür)
+- [x] Oran seçimi: 9:16 / 4:5 / 1:1 (katmanlar oran değişiminde oransal taşınır)
+- [x] Widget seti: alaturka saat (dijital), analog saat, vakit (şu an + sonraki), hicri+miladi tarih (kart/sade/dikey + etkinlik satırı), serbest metin, Arapça hazır ibare, logo/sembol
+- [x] Swiss ızgara katmanı (arka plan ayarlarında): sütun/satır, kenar boşluğu, kalınlık, belirginlik, renk, çerçeve
+- [x] Kullanıcı özelleştirme (konum, ölçek, dönüş, renk, hizalama) + her değer elle girilebilir (saat, tarih, vakit adları); boş alan gizlenir
+- [x] Yazı tipi seçimi (Google Fonts uyumlu, `src/data/shareFonts.js`'ten genişletilebilir) + kalınlık + italik — 7 latin + 8 Arapça hat (Amiri, Aref Ruqaa/rika, Scheherazade New, Noto Naskh, Noto Nastaliq/talik, Reem Kufi, Cairo, Tajawal)
+- [x] Kullanıcı kendi resmini arka plan yapsın + kadraj (pinch zoom/kaydır), bulanıklık, karartma (overlay tasarımları **swiss style**)
 - [ ] Ayet widget'ları (açık Kuran API'si ile): istenilen ayet(ler)in **Arapça metni** ve **Türkçe meali** ayrı birer widget olarak görsele eklenebilsin
   - [ ] Ayet seçimi (sure + ayet no / aralık) ve açık Kuran API entegrasyonu
-  - [ ] Arapça widget ayarları: renk + Arapça font (rika, sülüs, nesih vb.)
+  - [ ] Arapça widget ayarları: renk + Arapça font (font altyapısı hazır — `shareFonts.js`'te rika/nesih/kufi hatları tanımlı)
   - [ ] Türkçe meal widget ayarları: renk + font + boyut/hizalama
-- [ ] Unsplash entegrasyonu (vakite göre önerilen görseller)
+- [ ] **Hazır görsel kütüphanesi** (arka plan sekmesinde): Pexels/Unsplash üzerinde küratörlü galeriler oluşturulup widget'ta listelenir
+  - [ ] Galerilerin oluşturulması — vakit temalı (şafak, gün batımı, gece), minimal doku, mimari/cami
+  - [ ] Kaynak ve anahtar kararı: Pexels API ücretsiz ve atıf isteğe bağlı, Unsplash atıf zorunlu — lisans metni karşılaştırılacak
+  - [ ] Galeri şeridi + küçük önizlemeler; seçilince tam çözünürlük indirilir
+  - [ ] Seçilen görsel mevcut fotoğraf akışını kullanır (kadraj/pinch zoom, bulanıklık, karartma)
+  - [ ] Atıf/lisans bilgisinin görselde ya da paylaşım metninde gösterimi
+  - [ ] Önbellek: indirilen görsel localStorage kotasına sığmaz (bkz. mevcut fotoğraf geri çekilmesi) — IndexedDB değerlendirilmeli
 - [ ] AI ile üretilmiş blurlu long-exposure minimal görseller (paylaşım arka planı olarak)
-- [ ] Görsel indirme + doğrudan paylaşım (Web Share API)
-- [ ] Şablonu lokal kaydetme
+- [x] Görsel indirme + doğrudan paylaşım (Web Share API)
+- [ ] Görselleri herkese açık payaşma moderotör kontrolünde
+- [x] Ayet dışı Arapça dini hazır metinler (19 ibare, `src/data/arabicPhrases.js`) + serbest giriş + Latin alt satır + harekeli/harekesiz
+- [x] Osmanlıca (eski yazı) hazır ifadeler widget'ı (14 ifade, `src/data/ottomanPhrases.js`)
+- [x] Katman opaklığı + harf aralığı ayarları
+- [x] Gren doku (film grain) ayarları: yoğunluk, kabalık, karışım modu
+- [x] Alaturka saat widget'ında saat / başlık / alt yazı boyutları ayrı ayrı ayarlanabilir
+- [ ] **Hat widget'ı**: vektörel hatlar, rengi değiştirilebilir
+  - [ ] Hat setinin toplanması (besmele, lafza-i celâl, çâr-ı yâr, kandil/vakit hatları) — her birinin telif/lisans durumu netleştirilecek
+  - [ ] SVG'ler tek renge indirgenip `fill: currentColor` ile yazılacak; renk ayarı bunun üzerinden çalışır
+  - [ ] **Export kuralı**: stroke'lu `<line>`/`<path>` kullanılamaz, dolgulu path'e dönüştürülmeli (bkz. `CLAUDE.md` → Görsel Oluşturucu)
+  - [ ] Vektörü bulunamayan hatlar için şeffaf zeminli PNG yedeği (rengi değiştirilemez, ayar panelinde gizlenir)
+  - [ ] Hat seti `src/data/` altında veri dosyası olarak; yeni hat eklemek bir satır olmalı
+- [ ] dış ve ek resim ekleyebilme ve bunkları kırpabilme
+- [x] Son düzenlemenin otomatik saklanması (localStorage) + Sıfırla
+- [ ] Şablonu lokal kaydetme (adlandırılmış, birden fazla şablon)
 - [ ] Şablonu QR ile paylaşma
 - [ ] Şablon mağazası (ileride)
 
@@ -183,7 +205,7 @@
 - [ ] Kuran okuma bölümü
 - [ ] Ana ekranda seçili ayetlerden gösterim
 - [ ] Sayfalarda belirli konumlarda ön tanımlı ayetlerin rastgele gösterilmesi (küçük ayet kartı/bandı — her açılışta farklı bir ayet)
-
+- [ ] öntanımlı ayetleri uygulada günlük gösterme
 ---
 
 ## Masaüstü Görünüm İyileştirmeleri

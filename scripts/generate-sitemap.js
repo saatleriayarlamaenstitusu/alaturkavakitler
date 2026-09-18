@@ -14,6 +14,7 @@ const STATIC_ROUTES = [
   { path: '/saat', changefreq: 'daily', priority: '0.8' },
   { path: '/vakitler', changefreq: 'daily', priority: '0.8' },
   { path: '/takvim', changefreq: 'daily', priority: '0.7' },
+  { path: '/gorsel-olustur', changefreq: 'monthly', priority: '0.6' },
   { path: '/hakkinda', changefreq: 'monthly', priority: '0.5' },
   { path: '/saatuzerine', changefreq: 'weekly', priority: '0.6' },
   { path: '/yenilikler', changefreq: 'weekly', priority: '0.6' },

@@ -3,8 +3,45 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
 
+// Dev'de service worker'ı etkisizleştirir.
+// test tünelinde daha önce kurulmuş bir production SW, eski app shell'i
+// önbellekten sunup geliştirmeyi kilitliyor. Tarayıcı gezinmede /sw.js'i
+// yeniden istediği için bu script devralıp kendini siliyor.
+// `apply: 'serve'` → production build'e hiç girmiyor.
+function devServiceWorkerKiller() {
+  const script = `self.addEventListener('install', () => self.skipWaiting())
+self.addEventListener('activate', async () => {
+  const keys = await caches.keys()
+  await Promise.all(keys.map((k) => caches.delete(k)))
+  await self.registration.unregister()
+  const clients = await self.clients.matchAll({ type: 'window' })
+  clients.forEach((c) => c.navigate(c.url))
+})`
+
+  return {
+    name: 'dev-service-worker-killer',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use('/sw.js', (_req, res) => {
+        res.setHeader('Content-Type', 'application/javascript')
+        res.setHeader('Cache-Control', 'no-store')
+        res.end(script)
+      })
+    },
+  }
+}
+
 export default defineConfig({
+ server: {
+    host: true,
+    allowedHosts: ['test.alaturkavakitler.com'],
+    hmr: {
+      clientPort: 443,
+      protocol: 'wss',
+    },
+  },
   plugins: [
+    devServiceWorkerKiller(),
     vue(),
     VitePWA({
       registerType: 'autoUpdate',

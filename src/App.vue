@@ -1,5 +1,5 @@
 <script setup>
-import { watch, onMounted, onUnmounted } from 'vue'
+import { computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useSettingsStore } from '@/stores/settings'
@@ -10,6 +10,9 @@ const appStore = useAppStore()
 const settings = useSettingsStore()
 const router = useRouter()
 const route = useRoute()
+
+// Görsel oluşturucu kendi tam ekran kabuğuyla gelir.
+const chromeless = computed(() => route.path === '/gorsel-olustur')
 
 let systemMediaQuery = null
 
@@ -52,11 +55,11 @@ watch(() => settings.colorStyle, applyPalette)
 <template>
   <div class="app">
     <div class="hat-watermark" aria-hidden="true"></div>
-    <TopNav />
+    <TopNav v-if="!chromeless" />
     <div class="app-content">
       <router-view />
     </div>
-    <BottomNav />
+    <BottomNav v-if="!chromeless" />
   </div>
 </template>
 

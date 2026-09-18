@@ -20,6 +20,11 @@
   --bottom-nav-height: 48px;
   --gradient-end: 38%;
   --grain-opacity: 0;
+  /* Arayüz aksanı (düğme, aktif durum, odak). Normalde vakit rengidir ama
+     bazı paletlerde --primary zeminle çakışıyor: canlıda --bg = --primary,
+     mono açıkta --primary ≈ --surface. Oralarda okunur bir renge düşer.
+     Tuvalin içindeki vakit rengi bundan bağımsız (JS'ten gelir). */
+  --accent-ui: var(--primary);
 }
 
 /* ════════════ KLASİK (default) ════════════ */
@@ -204,6 +209,7 @@
 
 /* Açık (ana görünüm) */
 :root[data-palette="mono"][data-theme="light"] {
+  --accent-ui: var(--text);
   --bg: #fafafa;
   --gradient-start: color-mix(in srgb, var(--primary) 14%, var(--bg));
   --text: #0a0a0a;
@@ -233,6 +239,10 @@ html {
 }
 
 /* Canlı paletinde düz, keskin renk bloğu — gradient yok */
+:root[data-palette="canli"] {
+  --accent-ui: var(--ink);
+}
+
 html[data-palette="canli"] {
   background: var(--primary);
   background-attachment: fixed;

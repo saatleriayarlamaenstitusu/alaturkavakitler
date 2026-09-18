@@ -31,6 +31,8 @@ const selectedPlate = computed({
       </select>
 
       <DropdownMenu>
+        <RouterLink to="/gorsel-olustur" class="menu-action">Görsel Oluştur</RouterLink>
+        <span class="menu-sep" aria-hidden="true"></span>
         <RouterLink to="/ayarlar">Ayarlar</RouterLink>
         <RouterLink to="/saatuzerine">Saat Üzerine</RouterLink>
         <RouterLink to="/yenilikler">Yenilikler</RouterLink>
@@ -41,6 +43,16 @@ const selectedPlate = computed({
 </template>
 
 <style scoped>
+.menu-action {
+  font-weight: 700 !important;
+}
+
+.menu-sep {
+  height: 1px;
+  margin: 0.4rem 0.25rem;
+  background: rgba(128, 128, 128, 0.45);
+}
+
 .top-nav {
   display: flex;
   justify-content: space-between;

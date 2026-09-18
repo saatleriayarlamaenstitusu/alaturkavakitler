@@ -13,6 +13,7 @@ Alaturka saat: son akşam (güneş batımı) ezanından geçen süre.
 - **Pinia** (state management, AppContext yerine)
 - **Luxon** (tarih/saat hesaplamaları)
 - **hijri-date** (hicri takvim — doğruluk kontrolü yapılacak, değişebilir)
+- **@zumer/snapdom** (DOM → PNG; paylaşım görseli dışa aktarımı, sadece `/gorsel-olustur` chunk'ında)
 
 ### Stil
 - **Custom CSS** — Tailwind yok. Sınıf tabanlı CSS, component başına `<style scoped>`.
@@ -114,6 +115,7 @@ src/
 | `/yenilikler` | BlogPage | ✅ |
 | `/detay/:page/:id` | BlogDetailPage | ✅ |
 | `/amentu` | AmentuPage | ✅ |
+| `/gorsel-olustur` | ShareCreatorPage | ✅ |
 | `/takvim-olustur` | CalendarCreatorPage | yeni |
 
 ---
@@ -168,6 +170,11 @@ homeClock         // 'led' | 'normal' — ana sayfa saat görünümü (LedClock 
 - `data-palette` `App.vue` içinde `settings.colorStyle` izlenerek set edilir (default `klasik`).
 - Açık mod gradient: `color-mix(in srgb, var(--primary) 18%, var(--bg))` — subtle tint.
 - `html` arka planı `--gradient-end` değişkeniyle parametrik: klasik 38%, pastel 52%, canlı 65% (vakit rengi ne kadar alan kaplıyor).
+
+### Arayüz aksanı — `--accent-ui`
+- Düğme, aktif durum ve odak vurguları `--primary` değil **`--accent-ui`** kullanır. Sebebi: bazı paletlerde `--primary` zeminle çakışıyor — `canli`'de `--bg: var(--primary)` (aksan tamamen kaybolur), `mono` açık modda `--primary` ≈ `--surface`. `--accent-ui` normalde `--primary`'ye eşittir, bu iki durumda okunur bir renge düşer.
+- Tuvalin içindeki vakit rengi bundan bağımsızdır (JS'ten `snapshot.primary` olarak gelir).
+- **`--surface` her palette mat değildir** (`canli`: `color-mix(... transparent)`). Tuvalin/başka bir şeyin üstüne binen bir yüzey `background: var(--surface)` ile bırakılırsa altındaki görünür. Mat gerekiyorsa `background-color: var(--bg)` + `background-image: linear-gradient(var(--surface), var(--surface))`.
 
 ### Renk stilleri (genişletilebilir)
 - Stil tanımları `src/data/colorStyles.js` içinde (`COLOR_STYLES` listesi: `id`, `label`, `bg`/`fg` (ayarlardaki önizleme karesinin zemin+yazı rengi), 3 renklik `swatch`). SettingsPage ve App.vue bu listeyi kullanır.
@@ -264,6 +271,50 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 | `VakitList.vue` | `components/vakit/` | 6 vakit yatay liste |
 | `VakitRangeView.vue` | `components/vakit/` | Timeline + kırmızı now-line |
 | `SettingsPage.vue` | `pages/` | Tema seçici (sistem/açık/koyu) |
+| `ShareCreatorPage.vue` | `pages/` | Görsel oluşturucu (tam ekran editör) |
+| `ShareCanvas.vue` | `components/share/` | Gerçek boyutlu tuval + ölçekli önizleme |
+| `CanvasLayer.vue` | `components/share/` | Katman sarmalayıcı: sürükle/pinch/döndür |
+| `EditorPanel.vue` | `components/share/` | Ekle / arka plan / oran + katman ayarları |
+| `widgets/registry.js` | `components/share/` | Widget kayıt tablosu (tek kaynak) |
+| `VakitNowWidget.vue` | `components/share/widgets/` | Şu anki + sonraki vakit (liste değil) |
+| `LogoWidget.vue` | `components/share/widgets/` | Logo / sembol, inline path, fill:currentColor |
+| `DateWidget.vue` | `components/share/widgets/` | Hicri+miladi+etkinlik; kart / sade / dikey minimal |
+| `PhraseWidget.vue` | `components/share/widgets/` | Arap harfli hazır ibare (Arapça + Osmanlıca) + Latin alt satır |
+| `GridOverlay.vue` | `components/share/` | Swiss ızgara, katmanların altında |
+| `GrainOverlay.vue` | `components/share/` | Film grain, arka planın üstünde |
+
+---
+
+## Görsel Oluşturucu (Faz 8)
+
+- Route `/gorsel-olustur`, kebab menüden girilir. `App.vue` bu rotada TopNav/BottomNav'ı gizler.
+- **Tuval gerçek çıktı pikselinde yaşar** (genişlik 1080, yükseklik orana göre). Önizleme, tuvali saran katmana `transform: scale()` uygulanarak küçültülür; export her zaman `scale: 1`.
+  Sebebi ölçülmüştür: snapdom/html-to-image ile 2x+ raster istendiğinde foreignObject rasterizasyonu katman düşürüyor.
+- **Paylaşım widget'ları uygulama bileşenlerinden ayrıdır** (`components/share/widgets/`). Store'a dokunmazlar; tek veri kaynağı kendi `settings` objeleridir.
+- **Her değer elle değiştirilebilir.** `defaultProps(snapshot)` sadece katman eklenirken bir kez çalışıp alanları o anki tarih/saatten doldurur; sonrası tamamen kullanıcının. Katman başlığındaki "Sıfırla" değerleri anlık görüntüden yeniden çeker.
+- **Boş bırakılan metin alanı render edilmez** — ayrı "göster/gizle" anahtarı yok, metni silmek yeterli.
+- **Büyük yazı sınırı (ölçüldü):** çıktı rasterinde ~325px'ten büyük bir harf render edilirse Chrome'un foreignObject rasterizasyonu TÜM katmanı düşürüyor, görsel bomboş çıkıyor. Sınır CSS `font-size` değerine değil, **katman ölçeğiyle çarpılmış nihai boyuta** bağlı (320px sorunsuz, 330px sıfır; 200px'lik yazı `scale: 2` ile de bozuluyor). Düz bir `<div>` ile de tekrarlanıyor, widget'lara özgü değil.
+  `shareExport.js` bunu kendi hallediyor: export öncesi en büyük render edilen harf ölçülür, sınırı aşıyorsa küçük rasterle render edilip hedef boyuta büyütülür (çıktı biraz yumuşar ama boş kalmaz). Ayrıca sonuç %5'ten az doluysa bir kez daha küçülterek denenir, o da olmazsa anlaşılır bir hata verilir — sessizce boş PNG indirilmez.
+- **SVG kuralı:** paylaşım widget'larında stroke'lu `<line>` / `<path>` KULLANMA — tek bir tanesi bile export'ta tüm katmanı düşürüyor. Dolgulu `<rect>` / `<circle>` sorunsuz (stroke'lu `<rect>`/`<circle>` de sorunsuz).
+- Yeni widget eklemek: compact bileşeni yaz + `widgets/registry.js`'e bir satır ekle. Seçici, ayar paneli ve tuval aynı tablodan beslenir.
+- Yeni oran eklemek: `src/data/shareRatios.js`'e bir satır.
+- Hazır ibareler iki kümede: `src/data/arabicPhrases.js` (Arapça) ve `src/data/ottomanPhrases.js` (Osmanlıca/eski yazı). `src/data/phraseSets.js` ikisini `PHRASE_SETS` altında toplar; widget ayarındaki `source` alanı hangi kümeden besleneceğini söyler. Tek bir `PhraseWidget.vue` her ikisini de render eder.
+- Arapça kümesinde `ar` **her zaman harekeli** yazılır; harekesiz gösterim `stripHarakat()` ile türetilir (anahtar geri alınabilir, elle girilen metinde de çalışır). Osmanlıca küme harekesizdir, o widget'ta hareke anahtarı yoktur.
+- **Harf aralığı** mutlak değil, tasarımdaki değere eklenen bir kaymadır (`--ls`): `letter-spacing: calc(0.42em + var(--ls, 0em))`. Böylece widget içindeki tracking hiyerarşisi korunur. Arap harfleri bitişik yazıldığı ve letter-spacing bağlantıları kopardığı için Arapça/Osmanlıca widget'larında bu alan sunulmaz (`typographyFieldsNoTracking`).
+- **Opaklık katman seviyesindedir** (`layer.opacity`), widget tipinden bağımsız. Yalnızca içerik sarmalayıcısına uygulanır — katmanın tamamına verilseydi yığın bağlamı oluşup seçim tutamakları da soluklaşırdı. Seçim, widget'ın iki satırını da doldurur, sonrası serbest düzenlenebilir (`EditorPanel.updateProp`'taki `preset` dalı).
+- **Düzen localStorage'da saklanır** (`shareEditor`): oran, katmanlar, arka plan, grid, marka satırı. Seçim/sürükleme gibi anlık durumlar saklanmaz. Yazma 400ms geciktirilir; fotoğraf data URI'si kotayı aşarsa düzen fotoğrafsız kaydedilir (katmanlar kaybolmaz). Üst çubuktaki **Sıfırla** iki dokunuşla onaylanır ve varsayılan kompozisyonu kurar.
+- **Ayar paneli tuvali itmez**, üstüne binen bir alt sayfadır (`position: absolute`). Tuval alanı her zaman panelin KATLANMIŞ yüksekliğine göre ölçülür (`.stage` padding-bottom), böylece panel açılıp kapandıkça tuval ölçeği hiç değişmez. Tutamağa basınca gövde katlanır; katman sürüklenirken (`state.dragging`) kendiliğinden katlanır, bırakınca açılır.
+- Katmanların görünmez bir dokunma payı vardır (`.layer::before`, `--k` ile ekran birimine sabitlenmiş ±22px); küçültülmüş widget'lar da parmakla tutulabilir.
+- **Gren doku** (`state.grain`) arka planın hemen üstünde, grid ve widget'ların altındadır: fotoğrafa/gradyana doku verir ama metni kumlamaz. Doku kaynağı `base.css`'teki uygulama grain'iyle aynı (`feTurbulence` data URI) — tuval ve uygulama aynı karakterde. `mix-blend-mode` ve SVG filtresi export'ta ölçülerek doğrulandı (komşu piksel farkı 0.25 → 2.73).
+- **Grid** katman değil, arka plan gibi tuval durumudur (`state.grid`): kenar boşluğu çerçevesi + sütun/satır ayraçları, tuvalin tamamına yayılır ve widget katmanlarının ALTINDA (z-index 0) durur.
+- **Yazı tipleri** `src/data/shareFonts.js`'te tanımlıdır (Google Fonts CSS2 uyumlu); dosyanın başındaki 5 adımlı yorum yeni font eklemeyi anlatır. Latin + Arapça olarak `script` alanıyla gruplanır. Hepsi tek bir `<link>` ile yüklenir (`composables/useShareFonts.js` — 15 aile, ~26kB CSS); font dosyaları yalnızca kullanılan ailelerde iner.
+- Font eklerken **kalınlık aralığı (`400..700`) yalnızca variable fontlarda çalışır**; statik fontlarda (örn. Scheherazade New) tek tek yazmak gerekir (`400;500;600;700`), aksi halde Google Fonts tüm isteği 400 ile reddeder ve o `<link>`'teki hiçbir font yüklenmez. Eklemeden önce specleri `fonts.googleapis.com/css2?family=...` ile tek tek doğrula.
+- Widget'larda kalınlık tek bir sayı değil: kök `--w` (ana) ve `--w-soft` (ikincil) değişkenlerini verir, alt elemanlar bunlardan okur. Böylece kullanıcı kalınlığı değiştirince tasarımın ağırlık hiyerarşisi birlikte kayar.
+- Ayar alanının `options` ve `hidden` değerleri fonksiyon olabilir (`(props) => ...`); EditorPanel bunları o anki props ile çözer. Kalınlık listesi ve italik anahtarının görünürlüğü böyle çalışır.
+- **Arka plan** katman değil, tuvalin kendi durumudur: `{ kind: 'palette'|'photo', photo, zoom, x, y, blur, dim }`. Fotoğrafta kadraj (pinch/sürükle) tuvalin üstüne binen `.bg-catcher` yüzeyiyle yapılır; bu yüzey yalnızca Arka plan sekmesi açıkken ve katman seçili değilken vardır (`state.bgEditing`).
+- Bulanıklık kenarları saydamlaştırdığı için fotoğraf, blur değeri kadar taşırılıp (`inset: -2×blur`) çerçeve dolu tutulur.
+
+---
 
 ## Geliştirme Notları
 
