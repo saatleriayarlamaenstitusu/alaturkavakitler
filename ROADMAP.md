@@ -141,7 +141,7 @@
 - [x] Widget seti: alaturka saat (dijital), analog saat, vakit (şu an + sonraki), hicri+miladi tarih (kart/sade/dikey + etkinlik satırı), serbest metin, Arapça hazır ibare, logo/sembol
 - [x] Swiss ızgara katmanı (arka plan ayarlarında): sütun/satır, kenar boşluğu, kalınlık, belirginlik, renk, çerçeve
 - [x] Kullanıcı özelleştirme (konum, ölçek, dönüş, renk, hizalama) + her değer elle girilebilir (saat, tarih, vakit adları); boş alan gizlenir
-- [x] Yazı tipi seçimi (Google Fonts uyumlu, `src/data/shareFonts.js`'ten genişletilebilir) + kalınlık + italik — 7 latin + 8 Arapça hat (Amiri, Aref Ruqaa/rika, Scheherazade New, Noto Naskh, Noto Nastaliq/talik, Reem Kufi, Cairo, Tajawal)
+- [x] Yazı tipi seçimi (Google Fonts uyumlu, `src/data/shareFonts.js`'ten genişletilebilir) + kalınlık + italik — 70 font, 5 sekmeli seçici (sans / serif / display / el yazısı / arapça); gruplar tembel yüklenir
 - [x] Kullanıcı kendi resmini arka plan yapsın + kadraj (pinch zoom/kaydır), bulanıklık, karartma (overlay tasarımları **swiss style**)
 - [ ] Ayet widget'ları (açık Kuran API'si ile): istenilen ayet(ler)in **Arapça metni** ve **Türkçe meali** ayrı birer widget olarak görsele eklenebilsin
   - [ ] Ayet seçimi (sure + ayet no / aralık) ve açık Kuran API entegrasyonu

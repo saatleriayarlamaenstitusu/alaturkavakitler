@@ -1,6 +1,7 @@
 <script setup>
-import { computed } from 'vue'
-import { FONT_GROUPS, fontsByScript } from '@/data/shareFonts'
+import { computed, onMounted, ref, watch } from 'vue'
+import { FONT_GROUPS, fontsByGroup, getFont } from '@/data/shareFonts'
+import { ensureFontGroup } from '@/composables/useShareFonts'
 import { phraseList } from '@/data/phraseSets'
 import { useShareEditor } from '@/composables/useShareEditor'
 
@@ -29,6 +30,34 @@ const colorGroups = computed(() => [
   { id: 'palet', label: 'Görselden', colors: editor.state.photoPalette },
   { id: 'kendi', label: 'Kendi', colors: editor.state.customColors, removable: true },
 ].filter(g => g.colors.length))
+
+// ── Font seçici ──
+// 70 font tek şeritte okunmuyor; gruplar sekmeye ayrıldı. Açılışta seçili
+// fontun sekmesi gelir, sekme değişince o grubun CSS'i indirilir.
+const fontTab = ref(getFont(props.modelValue).group)
+
+watch(
+  () => props.field.type === 'font' && props.modelValue,
+  (id) => { if (id) fontTab.value = getFont(id).group },
+)
+
+watch(fontTab, (g) => ensureFontGroup(g), { immediate: true })
+
+const tabFonts = computed(() => fontsByGroup(fontTab.value))
+
+// Seçili font şeridin görünmeyen kısmında kalabiliyor (bir grupta 18 font
+// var); sekme açılınca ya da seçim değişince görünür alana kaydırılır.
+const stripRef = ref(null)
+
+function revealActive() {
+  requestAnimationFrame(() => {
+    stripRef.value?.querySelector('.font-chip.active')
+      ?.scrollIntoView({ block: 'nearest', inline: 'center' })
+  })
+}
+
+watch([fontTab, () => props.modelValue], revealActive)
+onMounted(() => { if (props.field.type === 'font') revealActive() })
 
 function pickCustom(e) {
   const hex = e.target.value
@@ -83,18 +112,27 @@ const fullWidth = computed(() =>
         </label>
       </div>
 
-      <div v-else-if="field.type === 'font'" class="fonts">
-        <template v-for="group in FONT_GROUPS" :key="group.id">
-          <span class="strip-label">{{ group.label }}</span>
+      <div v-else-if="field.type === 'font'" class="font-picker">
+        <div class="font-tabs">
           <button
-            v-for="f in fontsByScript(group.id)"
+            v-for="group in FONT_GROUPS"
+            :key="group.id"
+            class="font-tab"
+            :class="{ active: fontTab === group.id, holds: getFont(value).group === group.id }"
+            @click="fontTab = group.id"
+          >{{ group.label }}</button>
+        </div>
+
+        <div ref="stripRef" class="fonts">
+          <button
+            v-for="f in tabFonts"
             :key="f.id"
             class="font-chip"
             :class="{ active: value === f.id }"
             :style="{ fontFamily: f.family }"
             @click="value = f.id"
           >{{ f.label }}</button>
-        </template>
+        </div>
       </div>
 
       <div v-else-if="field.type === 'phrase'" class="phrases">
@@ -261,7 +299,63 @@ const fullWidth = computed(() =>
   border-color: var(--text);
 }
 
-/* ── Font şeridi ── */
+/* ── Font seçici: sekmeler + şerit ── */
+.font-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.font-tabs {
+  display: flex;
+  gap: 0.9rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.font-tabs::-webkit-scrollbar { display: none; }
+
+.font-tab {
+  position: relative;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0 0 0.3rem;
+  cursor: pointer;
+}
+
+.font-tab.active { color: var(--text); }
+
+.font-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--text);
+}
+
+/* Seçili fontun hangi sekmede olduğu, o sekme kapalıyken de belli olsun. */
+.font-tab.holds:not(.active)::before {
+  content: '';
+  position: absolute;
+  top: 0.15rem;
+  right: -0.3rem;
+  width: 3px;
+  height: 3px;
+  background: var(--accent-ui);
+}
+
 .fonts,
 .phrases {
   display: flex;

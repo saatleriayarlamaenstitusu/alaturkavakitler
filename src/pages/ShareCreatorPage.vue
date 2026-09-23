@@ -9,7 +9,7 @@ import {
   warmupExport, renderCanvasToBlob, buildFileName,
   downloadBlob, canShareFiles, shareBlob,
 } from '@/utils/shareExport'
-import { ensureShareFonts } from '@/composables/useShareFonts'
+import { ensureFontsFor } from '@/composables/useShareFonts'
 import ShareCanvas from '@/components/share/ShareCanvas.vue'
 import EditorPanel from '@/components/share/EditorPanel.vue'
 
@@ -39,9 +39,11 @@ const error = ref('')
 const canvasEl = () => canvasComp.value?.canvasRef ?? null
 
 onMounted(async () => {
-  ensureShareFonts()
   // Kayıtlı bir düzen varsa o geri gelir; yoksa varsayılan kompozisyon kurulur.
   editor.ensureComposition()
+  // Yalnızca kullanımdaki fontların grubu yüklenir; gerisi seçicide o sekme
+  // açıldığında iner.
+  ensureFontsFor(editor.state.layers.map(l => l.props.font))
   // Fotoğraf paleti kaydedilmez, geri yüklenen fotoğraftan yeniden çıkarılır.
   editor.refreshPhotoPalette()
 

@@ -5,7 +5,7 @@ import DateWidget from './DateWidget.vue'
 import TextWidget from './TextWidget.vue'
 import LogoWidget from './LogoWidget.vue'
 import PhraseWidget from './PhraseWidget.vue'
-import { DEFAULT_FONT, getFont, weightOptions } from '@/data/shareFonts'
+import { DEFAULT_FONT, getFont, weightOptions, isColorFont } from '@/data/shareFonts'
 import { defaultPhrase } from '@/data/phraseSets'
 
 // Paylaşım widget'ları — uygulama bileşenlerinden ayrı, export için yazılmış
@@ -33,6 +33,14 @@ export const FIELD_GROUPS = [
 ]
 
 const colorField = (key, label) => ({ key, type: 'color', label, swatches: COLOR_SWATCHES, group: 'gorunum' })
+
+// Widget'ın kendi yazı tipiyle çizilen metnin rengi. COLRv1 fontlarda
+// (örn. Aref Ruqaa Ink) harfler kendi renklerini taşır ve CSS color yok
+// sayılır — ayarın çalışmadığı yerde görünmemesi daha dürüst.
+const textColorField = (key, label) => ({
+  ...colorField(key, label),
+  hidden: (p) => isColorFont(p.font),
+})
 // Yazı içeren her widget aynı üç alanı paylaşır: font, kalınlık, italik.
 // Kalınlık listesi ve italik anahtarının varlığı seçili fonta bağlıdır.
 const typographyFields = [
@@ -86,7 +94,7 @@ export const SHARE_WIDGETS = [
       { key: 'numerals', type: 'select', label: 'Rakam', group: 'tipografi', options: [
         { value: 'latin', label: '12:34' }, { value: 'arabic', label: '١٢:٣٤' },
       ] },
-      colorField('color', 'Renk'),
+      textColorField('color', 'Renk'),
       alignField,
     ],
   },
@@ -132,7 +140,7 @@ export const SHARE_WIDGETS = [
       { key: 'nowLabel', type: 'text', label: 'Üst etiket', group: 'icerik' },
       { key: 'nextLabel', type: 'text', label: 'Alt etiket', group: 'icerik' },
       ...typographyFields,
-      colorField('color', 'Renk'),
+      textColorField('color', 'Renk'),
       { key: 'layout', type: 'select', label: 'Düzen', group: 'gorunum', options: [
         { value: 'stacked', label: 'Alt alta' }, { value: 'inline', label: 'Yan yana' },
       ] },
@@ -161,9 +169,9 @@ export const SHARE_WIDGETS = [
       { key: 'miladi', type: 'text', label: 'Miladi tarih', group: 'icerik' },
       { key: 'event', type: 'text', label: 'Etkinlik', group: 'icerik' },
       { key: 'eventColor', type: 'color', label: 'Etkinlik rengi', swatches: COLOR_SWATCHES,
-        group: 'gorunum', hidden: (p) => !p.event },
+        group: 'gorunum', hidden: (p) => !p.event || isColorFont(p.font) },
       ...typographyFields,
-      colorField('color', 'Renk'),
+      textColorField('color', 'Renk'),
       { key: 'variant', type: 'select', label: 'Görünüm', group: 'gorunum', options: [
         { value: 'card', label: 'Kart' }, { value: 'plain', label: 'Sade' }, { value: 'vertical', label: 'Dikey' },
       ] },
@@ -188,7 +196,7 @@ export const SHARE_WIDGETS = [
       { key: 'text', type: 'textarea', label: 'Yazı', group: 'icerik' },
       ...typographyFields,
       { key: 'size', type: 'range', label: 'Boyut', min: 24, max: 160, step: 4, group: 'boyut' },
-      colorField('color', 'Renk'),
+      textColorField('color', 'Renk'),
       alignField,
       { key: 'uppercase', type: 'toggle', label: 'BÜYÜK HARF', group: 'gorunum' },
     ],
@@ -221,7 +229,7 @@ export const SHARE_WIDGETS = [
       { key: 'sub', type: 'text', label: 'Alt satır', group: 'icerik' },
       ...typographyFieldsNoTracking,
       { key: 'size', type: 'range', label: 'Boyut', min: 40, max: 220, step: 4, group: 'boyut' },
-      colorField('color', 'Renk'),
+      textColorField('color', 'Renk'),
       { key: 'subColor', type: 'color', label: 'Alt satır rengi', swatches: COLOR_SWATCHES,
         group: 'gorunum', hidden: (p) => !p.sub },
       alignField,
@@ -254,7 +262,7 @@ export const SHARE_WIDGETS = [
       { key: 'sub', type: 'text', label: 'Alt satır', group: 'icerik' },
       ...typographyFieldsNoTracking,
       { key: 'size', type: 'range', label: 'Boyut', min: 40, max: 220, step: 4, group: 'boyut' },
-      colorField('color', 'Renk'),
+      textColorField('color', 'Renk'),
       { key: 'subColor', type: 'color', label: 'Alt satır rengi', swatches: COLOR_SWATCHES,
         group: 'gorunum', hidden: (p) => !p.sub },
       alignField,
