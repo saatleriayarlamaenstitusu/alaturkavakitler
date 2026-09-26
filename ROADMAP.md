@@ -138,7 +138,7 @@
 
 - [x] Paylaş tuval motoru (gerçek boyutlu DOM tuval + snapdom export; katman modeli, sürükle/ölçekle/döndür)
 - [x] Oran seçimi: 9:16 / 4:5 / 1:1 (katmanlar oran değişiminde oransal taşınır)
-- [x] Widget seti: alaturka saat (dijital), analog saat, vakit (şu an + sonraki), hicri+miladi tarih (kart/sade/dikey + etkinlik satırı), serbest metin, Arapça hazır ibare, logo/sembol
+- [x] Widget seti: alaturka saat (dijital), analog saat, vakit (şu an + sonraki), hicri+miladi tarih (kart/sade/dikey + etkinlik satırı), serbest metin, Arapça hazır ibare, logo/sembol, aylık takvim (hicri/miladi/çift, ızgara/tek satır, gün zemini, hafta sonu)
 - [x] Swiss ızgara katmanı (arka plan ayarlarında): sütun/satır, kenar boşluğu, kalınlık, belirginlik, renk, çerçeve
 - [x] Kullanıcı özelleştirme (konum, ölçek, dönüş, renk, hizalama) + her değer elle girilebilir (saat, tarih, vakit adları); boş alan gizlenir
 - [x] Yazı tipi seçimi (Google Fonts uyumlu, `src/data/shareFonts.js`'ten genişletilebilir) + kalınlık + italik — 70 font, 5 sekmeli seçici (sans / serif / display / el yazısı / arapça); gruplar tembel yüklenir

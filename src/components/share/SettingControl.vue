@@ -20,8 +20,12 @@ const value = computed({
 
 const editor = useShareEditor()
 
-// 'auto' swatch'i vakit rengini temsil eder.
-const swatchColor = (sw) => (sw === 'auto' ? props.accent : sw)
+// 'auto' vakit rengini, 'tint' metin renginin soluk tonunu temsil eder.
+const swatchColor = (sw) => {
+  if (sw === 'auto') return props.accent
+  if (sw === 'tint') return 'color-mix(in srgb, var(--text) 30%, transparent)'
+  return sw
+}
 
 // Renk seçici üç kümeden oluşur: alanın sabit renkleri, arka plan
 // fotoğrafından çıkarılan palet ve kullanıcının eklediği renkler.
@@ -99,7 +103,7 @@ const fullWidth = computed(() =>
             class="swatch"
             :class="{ active: value === sw }"
             :style="{ background: swatchColor(sw) }"
-            :aria-label="sw === 'auto' ? 'Vakit rengi' : sw"
+            :aria-label="sw === 'auto' ? 'Vakit rengi' : sw === 'tint' ? 'Soluk ton' : sw"
             :title="group.removable ? 'Uzun bas: kaldır' : null"
             @click="value = sw"
             @contextmenu.prevent="group.removable && editor.removeCustomColor(sw)"
@@ -176,6 +180,22 @@ const fullWidth = computed(() =>
         :aria-checked="value"
         @click="value = !value"
       ><span class="knob"></span></button>
+
+      <div v-else-if="field.type === 'stepper'" class="stepper">
+        <button
+          class="step"
+          :disabled="field.min != null && value <= field.min"
+          aria-label="Azalt"
+          @click="value = Number(value) - (field.step || 1)"
+        >−</button>
+        <output class="step-value">{{ field.format ? field.format(value) : value }}</output>
+        <button
+          class="step"
+          :disabled="field.max != null && value >= field.max"
+          aria-label="Artır"
+          @click="value = Number(value) + (field.step || 1)"
+        >+</button>
+      </div>
 
       <template v-else-if="field.type === 'range'">
         <input
@@ -496,6 +516,38 @@ const fullWidth = computed(() =>
 }
 
 .switch.on .knob { background: var(--bg); }
+
+/* ── Adımlı sayı (ay / yıl gibi) ── */
+.stepper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+}
+
+.step {
+  width: 1.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem 0;
+}
+
+.step:disabled { color: var(--text-dim); cursor: default; }
+
+.step-value {
+  min-width: 5.5rem;
+  padding: 0.25rem 0.4rem;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 
 /* ── Kaydırıcı + sayısal okuma ── */
 .range {

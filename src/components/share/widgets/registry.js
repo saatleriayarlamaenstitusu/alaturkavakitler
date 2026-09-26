@@ -4,9 +4,11 @@ import VakitNowWidget from './VakitNowWidget.vue'
 import DateWidget from './DateWidget.vue'
 import TextWidget from './TextWidget.vue'
 import LogoWidget from './LogoWidget.vue'
+import MonthCalendarWidget from './MonthCalendarWidget.vue'
 import PhraseWidget from './PhraseWidget.vue'
 import { DEFAULT_FONT, getFont, weightOptions, isColorFont } from '@/data/shareFonts'
 import { defaultPhrase } from '@/data/phraseSets'
+import { currentMonthOf, GREGORIAN_MONTHS, HIJRI_MONTHS } from '@/utils/calendarGrid'
 
 // Paylaşım widget'ları — uygulama bileşenlerinden ayrı, export için yazılmış
 // saf/compact bileşenler. Kurallar:
@@ -39,6 +41,8 @@ const colorField = (key, label) => ({ key, type: 'color', label, swatches: COLOR
 // sayılır — ayarın çalışmadığı yerde görünmemesi daha dürüst.
 const textColorField = (key, label) => ({
   ...colorField(key, label),
+  // Takvimde tek bir `font` yok; üç katmanın herhangi biri renkli fontsa bile
+  // diğerleri normal renk alır, o yüzden yalnızca `font` alanına bakılır.
   hidden: (p) => isColorFont(p.font),
 })
 // Yazı içeren her widget aynı üç alanı paylaşır: font, kalınlık, italik.
@@ -266,6 +270,110 @@ export const SHARE_WIDGETS = [
       { key: 'subColor', type: 'color', label: 'Alt satır rengi', swatches: COLOR_SWATCHES,
         group: 'gorunum', hidden: (p) => !p.sub },
       alignField,
+    ],
+  },
+  {
+    id: 'month-calendar',
+    label: 'Aylık Takvim',
+    hint: 'Hicri / miladi',
+    component: MonthCalendarWidget,
+    // Ayar sayısı yüksek; alanlar metin katmanına göre kendi gruplarında
+    // toplanıyor (genel İçerik/Tipografi/Boyut/Görünüm yerine).
+    groups: [
+      { id: 'icerik', label: 'Takvim' },
+      { id: 'baslik', label: 'Ay başlığı' },
+      { id: 'gunadi', label: 'Gün adları' },
+      { id: 'sayi', label: 'Gün sayıları' },
+      { id: 'gorunum', label: 'Görünüm' },
+    ],
+    defaultProps: () => {
+      const { year, month } = currentMonthOf('miladi')
+      return {
+        system: 'miladi',
+        year,
+        month,
+        layout: 'grid',
+        title: '',
+        showAlt: true,
+        showWeekdays: true,
+        weekdayStyle: 'short',
+        highlightToday: true,
+        numerals: 'latin',
+        width: 760,
+        // Üç metin katmanı ayrı ayrı
+        titleFont: DEFAULT_FONT, titleWeight: 700, titleSize: 46, titleAlign: 'center',
+        weekdayFont: DEFAULT_FONT, weekdayWeight: 600, weekdaySize: 22,
+        dayFont: DEFAULT_FONT, dayWeight: 500, daySize: 34,
+        rowHeight: 2.5,
+        color: '#ffffff',
+        todayColor: 'auto',
+        weekendOn: false,
+        weekendColor: 'auto',
+        dayBg: false,
+        dayBgColor: 'tint',
+        dayRadius: 50,
+      }
+    },
+    settings: [
+      // ── Takvim ──
+      { key: 'system', type: 'select', label: 'Takvim', group: 'icerik', options: [
+        { value: 'miladi', label: 'Miladi' }, { value: 'hicri', label: 'Hicri' },
+      ] },
+      { key: 'month', type: 'stepper', label: 'Ay', group: 'icerik',
+        format: (v, p) => (p.system === 'hicri' ? HIJRI_MONTHS : GREGORIAN_MONTHS)[v - 1] ?? v },
+      { key: 'year', type: 'stepper', label: 'Yıl', group: 'icerik' },
+      { key: 'layout', type: 'select', label: 'Düzen', group: 'icerik', options: [
+        { value: 'grid', label: 'Izgara' }, { value: 'row', label: 'Tek satır' },
+      ] },
+      { key: 'showAlt', type: 'toggle', label: 'Diğer takvim', group: 'icerik' },
+      { key: 'numerals', type: 'select', label: 'Rakam', group: 'icerik', options: [
+        { value: 'latin', label: '12' }, { value: 'arabic', label: '١٢' },
+      ] },
+
+      // ── Ay başlığı ──
+      { key: 'title', type: 'text', label: 'Metin', group: 'baslik' },
+      { key: 'titleAlign', type: 'select', label: 'Hizalama', group: 'baslik', options: [
+        { value: 'left', label: 'Sol' }, { value: 'center', label: 'Orta' }, { value: 'right', label: 'Sağ' },
+      ] },
+      { key: 'titleSize', type: 'range', label: 'Boyut', group: 'baslik', min: 0, max: 120, step: 2, unit: 'px' },
+      { key: 'titleFont', type: 'font', label: 'Yazı tipi', group: 'baslik' },
+      { key: 'titleWeight', type: 'select', compact: true, label: 'Kalınlık', group: 'baslik',
+        options: (p) => weightOptions(p.titleFont) },
+
+      // ── Gün adları ──
+      { key: 'showWeekdays', type: 'toggle', label: 'Göster', group: 'gunadi' },
+      { key: 'weekdayStyle', type: 'select', label: 'Biçim', group: 'gunadi',
+        hidden: (p) => !p.showWeekdays, options: [
+          { value: 'short', label: 'Pzt' }, { value: 'narrow', label: 'P' },
+        ] },
+      { key: 'weekdaySize', type: 'range', label: 'Boyut', group: 'gunadi', min: 6, max: 60, step: 1, unit: 'px',
+        hidden: (p) => !p.showWeekdays },
+      { key: 'weekdayFont', type: 'font', label: 'Yazı tipi', group: 'gunadi',
+        hidden: (p) => !p.showWeekdays },
+      { key: 'weekdayWeight', type: 'select', compact: true, label: 'Kalınlık', group: 'gunadi',
+        hidden: (p) => !p.showWeekdays, options: (p) => weightOptions(p.weekdayFont) },
+
+      // ── Gün sayıları ──
+      { key: 'daySize', type: 'range', label: 'Boyut', group: 'sayi', min: 8, max: 90, step: 1, unit: 'px' },
+      { key: 'rowHeight', type: 'range', label: 'Hücre yüksekliği', group: 'sayi', min: 1.2, max: 3.2, step: 0.1, unit: '×' },
+      { key: 'dayFont', type: 'font', label: 'Yazı tipi', group: 'sayi' },
+      { key: 'dayWeight', type: 'select', compact: true, label: 'Kalınlık', group: 'sayi',
+        options: (p) => weightOptions(p.dayFont) },
+
+      // ── Görünüm ──
+      { key: 'width', type: 'range', label: 'Genişlik', group: 'gorunum', min: 380, max: 1040, step: 20, unit: 'px' },
+      textColorField('color', 'Renk'),
+      { key: 'dayBg', type: 'toggle', label: 'Gün zemini', group: 'gorunum' },
+      { key: 'dayRadius', type: 'range', label: 'Köşe yuvarlaklığı', group: 'gorunum', min: 0, max: 50, step: 2, unit: '%',
+        hidden: (p) => !p.dayBg },
+      { key: 'dayBgColor', type: 'color', label: 'Zemin rengi', group: 'gorunum',
+        swatches: ['tint', ...COLOR_SWATCHES], hidden: (p) => !p.dayBg },
+      { key: 'highlightToday', type: 'toggle', label: 'Bugünü vurgula', group: 'gorunum' },
+      { key: 'todayColor', type: 'color', label: 'Bugün rengi', swatches: COLOR_SWATCHES, group: 'gorunum',
+        hidden: (p) => !p.highlightToday },
+      { key: 'weekendOn', type: 'toggle', label: 'Hafta sonu', group: 'gorunum' },
+      { key: 'weekendColor', type: 'color', label: 'Hafta sonu rengi', swatches: COLOR_SWATCHES, group: 'gorunum',
+        hidden: (p) => !p.weekendOn },
     ],
   },
   {

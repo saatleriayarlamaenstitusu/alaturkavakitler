@@ -5,6 +5,7 @@ import { SHARE_WIDGETS, getWidget, FIELD_GROUPS } from './widgets/registry'
 import { SHARE_RATIOS } from '@/data/shareRatios'
 import { getFont, nearestWeight } from '@/data/shareFonts'
 import { getPhraseFrom } from '@/data/phraseSets'
+import { convertMonth } from '@/utils/calendarGrid'
 import SettingControl from './SettingControl.vue'
 
 const editor = useShareEditor()
@@ -32,6 +33,8 @@ function resolveField(field) {
   return {
     ...field,
     options: typeof field.options === 'function' ? field.options(props) : field.options,
+    // Stepper etiketi diğer ayarlara bağlı olabilir (ay adı takvime göre).
+    format: typeof field.format === 'function' ? (v) => field.format(v, props) : field.format,
   }
 }
 
@@ -45,6 +48,40 @@ function updateProp(key, value) {
     patch.weight = nearestWeight(value, layer.props.weight)
     if (!getFont(value).italic) patch.italic = false
   }
+  // Tek satırda 31 gün yan yana sığmalı: ölçüler sütun genişliğine göre
+  // yeniden hesaplanır. Izgaradaki değerler saklanıp geri dönüldüğünde
+  // aynen geri verilir — yoksa ızgara minik ölçülerle kalıyordu.
+  if (key === 'layout') {
+    if (value === 'row') {
+      patch.gridSizes = {
+        daySize: layer.props.daySize,
+        weekdaySize: layer.props.weekdaySize,
+        weekdayStyle: layer.props.weekdayStyle,
+      }
+      Object.assign(patch, fitRow(layer.props.width))
+      patch.weekdayStyle = 'narrow'
+    } else if (layer.props.gridSizes) {
+      Object.assign(patch, layer.props.gridSizes)
+    }
+  }
+
+  if (key === 'width' && layer.props.layout === 'row') {
+    Object.assign(patch, fitRow(value))
+  }
+
+  // Takvim türü değişince yıl/ay o takvimde geçersiz kalır (2026 ≠ hicri yıl);
+  // görüntülenen ay diğer takvime çevrilir.
+  // Ay 1↔12 sınırını aşınca yıl devreder — takvimde ileri/geri gezinmek
+  // için iki ayrı alanı elle çevirmek gerekmesin.
+  if (key === 'month' && layer.props.year != null) {
+    if (value > 12) { patch.month = 1; patch.year = layer.props.year + 1 }
+    else if (value < 1) { patch.month = 12; patch.year = layer.props.year - 1 }
+  }
+
+  if (key === 'system') {
+    Object.assign(patch, convertMonth(layer.props.system, value, layer.props.year, layer.props.month))
+  }
+
   // Hazır metin seçimi iki satırı da doldurur; sonrasında ikisi de serbest.
   if (key === 'preset') {
     const field = selectedDef.value?.settings.find(f => f.key === 'preset')
@@ -53,6 +90,15 @@ function updateProp(key, value) {
     patch.sub = p.tr
   }
   editor.updateProps(layer.id, patch)
+}
+
+// Tek satır düzeninde gün sayısı/adı ölçüleri sütun genişliğine oturur.
+function fitRow(width) {
+  const col = width / 31
+  return {
+    daySize: Math.max(8, Math.round(col * 0.7)),
+    weekdaySize: Math.max(6, Math.round(col * 0.34)),
+  }
 }
 
 function fieldVisible(field) {
@@ -64,15 +110,28 @@ const LAYER_FIELDS = [
   { key: '__opacity', type: 'range', label: 'Opaklık', min: 0.05, max: 1, step: 0.05, unit: '%', group: 'gorunum', layerLevel: true },
 ]
 
-// Alanlar sabit grup sırasına göre başlıklar altında toplanır; boş grup çizilmez.
+// Alanlar grup başlıkları altında toplanır; boş grup çizilmez. Widget kendi
+// `groups` listesini verebilir (takvimde ayarlar metin katmanına göre ayrılır).
 const groupedFields = computed(() => {
   const def = selectedDef.value
   if (!def) return []
   const all = [...def.settings.filter(fieldVisible).map(resolveField), ...LAYER_FIELDS]
-  return FIELD_GROUPS
+  return (def.groups ?? FIELD_GROUPS)
     .map(g => ({ ...g, fields: all.filter(f => (f.group || 'gorunum') === g.id) }))
     .filter(g => g.fields.length)
 })
+
+// Uzun ayar listelerinde (takvim ~25 alan) grupları kapatabilmek gerekiyor.
+// Kapalı gruplar widget tipi bazında hatırlanır, katman değişince sıfırlanmaz.
+const closedGroups = ref({})
+
+const groupKey = (id) => `${selectedDef.value?.id}:${id}`
+const isCollapsed = (id) => Boolean(closedGroups.value[groupKey(id)])
+
+function toggleGroup(id) {
+  const key = groupKey(id)
+  closedGroups.value = { ...closedGroups.value, [key]: !closedGroups.value[key] }
+}
 
 function fieldValue(field) {
   if (field.layerLevel) return selected.value?.opacity ?? 1
@@ -142,16 +201,32 @@ function pickPhoto(e) {
       </header>
 
       <div class="sheet-body fields">
-        <section v-for="group in groupedFields" :key="group.id" class="group">
-          <h3 class="group-label">{{ group.label }}</h3>
-          <SettingControl
-            v-for="field in group.fields"
-            :key="field.key"
-            :field="field"
-            :accent="editor.snapshot.primary"
-            :model-value="fieldValue(field)"
-            @update:model-value="writeField(field, $event)"
-          />
+        <section
+          v-for="group in groupedFields"
+          :key="group.id"
+          class="group"
+          :class="{ closed: isCollapsed(group.id) }"
+        >
+          <button
+            class="group-label"
+            :aria-expanded="!isCollapsed(group.id)"
+            @click="toggleGroup(group.id)"
+          >
+            <span>{{ group.label }}</span>
+            <span class="group-rule" aria-hidden="true"></span>
+            <span class="group-count">{{ group.fields.length }}</span>
+          </button>
+
+          <div v-show="!isCollapsed(group.id)" class="group-fields">
+            <SettingControl
+              v-for="field in group.fields"
+              :key="field.key"
+              :field="field"
+              :accent="editor.snapshot.primary"
+              :model-value="fieldValue(field)"
+              @update:model-value="writeField(field, $event)"
+            />
+          </div>
         </section>
       </div>
     </template>
@@ -446,32 +521,61 @@ function pickPhoto(e) {
 
 /* ── Ayar grubu ── */
 .group {
-  padding: 0.5rem 0 0.25rem;
+  padding: 0.25rem 0 0.75rem;
 }
 
 .group + .group {
   border-top: 1px solid var(--border);
-  margin-top: 0.25rem;
+  padding-top: 0.75rem;
 }
 
-/* Başlık solda, ince çizgi sağa doğru uzanır — klasik Swiss ayraç. */
+.group.closed { padding-bottom: 0.25rem; }
+
+/* Başlık solda, ince çizgi sağa doğru uzanır — klasik Swiss ayraç.
+   Tamamı tıklanabilir: uzun listelerde grup kapatılabiliyor. */
 .group-label {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin: 0 0 0.35rem;
+  width: 100%;
+  margin: 0 0 0.5rem;
+  padding: 0.15rem 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
   font-size: 0.5625rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--text-dim);
+  cursor: pointer;
+  text-align: left;
 }
 
-.group-label::after {
-  content: '';
+.group-label:hover { color: var(--text-muted); }
+
+.group.closed .group-label { margin-bottom: 0; }
+
+.group-rule {
   flex: 1;
   height: 1px;
   background: var(--border);
+}
+
+/* Kapalı grupta kaç ayar olduğu görünsün. */
+.group-count {
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  opacity: 0;
+}
+
+.group.closed .group-count { opacity: 1; }
+
+.group-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 /* ── Sekmeler ── */
