@@ -20,4 +20,62 @@ Zaman nâmütenahi bahçe ve saatler orada açar, gâh sağa gâh sola mâil, g�
 
 Unutulan eski saatler içinde eksikliği en ziyade hasretle tahattur edilen saat akşamın on ikisidir. Artık “on iki” solgun yeşil sema altında, ilk yıldıza karşı müezzinin müslümanlara hitap ettiği, sokakların lâcivert bir sisle kaplandığı, ışıkların yandığı, sinilerin kurulduğu ve yarasaların mahzenlerden çıkıp uçuştuğu o müessir ve titrek saat değildir. Akşam telâkkisinden koparak, gâh öğlenin hararetinde ve gâh gece yarılarının karanlığında mevhûm bir zamanı bildiren bu saat, şimdi hayatımızda renksiz ve şaşkın bir noktadır. Yeni saat, müslüman akşamının mahzun ve muşaşa dakikasını dağıttığı gibi, yirmi dört saatlik yabancı “gün”ün getirdiği maîşet şekli de bizi fecr âleminden mehcûr bıraktı. Başka memleketlerde fecri yalnız kırdan şehre sebze ve meyve getirenlerin ahmak gözleriyle muztariplerin şişkin kapaklar içinden bakan kırmızı ve perişan gözleri tanır. Bu zavallılar için fecrin parıltıları, yeniden boyuna geçirilecek olan hayat ipinin kanlı ilmeğini aydınlatan bir ziyadır. Hâlbuki fecir saati, müslüman için rüyasız bir uykunun nihayeti ve yıkanma, ibadet, neşe ve ümidin başlangıcıdır.
 
-Müslüman yüzü, kuş sesleri ve çiçek kokuları gibi fecrin en güzel tecellilerindendir. Kubbe ve minareleri o alaca saatte görmemiş olan gözler, taşa en ilâhî mânâyı veren o muhayyirü’l-ukul mimârîyi anlamış değillerdir. Esmer camiler, fecrden itibaren semavî bir altın ve semavî bir çini ile kaplanır ve İslâm ustalarının nâtamam eserleri o saatte tamamlanır. Bütün mâbetler içinde güneşten ilk ziya alan camidir. Bakır oklu minareler, güneşi en evvel görmek için havalarda yükselir. Şimdi heyhat, eski “saat”le beraber akşam da, fecir de bitti. Birçoklarımız için fecir, artık gecedir ve birçoklarımızı güneş, yeni ve acayip bir uykunun ateşlerinden, eller kilitli, ağız çarpılmış, bacaklar bozuk çarşaflara dolanmış, kıvranırken buluyor. Artık geç uyanıyoruz. Çünkü hayatımıza sokulan yeni ve fena günün eşiğinde çömelmiş, kin, arzu, hırs ve haset sürülerinin bizi ateş saçan gözlerle beklediğini biliyoruz. Artık fecri yalnız kümeslerimizdeki dargın ve mağrur horozlara bıraktık. Şimdi müslüman evindeki saat, başka bir âlemin vakitlerini gösterir gibi, bizim için gece olan saatleri gündüz ve gündüz olan saatleri gece renginde gösteriyor. Çölde yolunu şaşıranlar gibi biz şimdi zaman içinde kaybolmuş kimseleriz.`}],e={saatuzerine:r,yenilikler:[]};function l(a){return e[a]??[]}function t(a,i){return(e[a]??[]).find(n=>n.id===i)??null}export{t as a,l as g};
+Müslüman yüzü, kuş sesleri ve çiçek kokuları gibi fecrin en güzel tecellilerindendir. Kubbe ve minareleri o alaca saatte görmemiş olan gözler, taşa en ilâhî mânâyı veren o muhayyirü’l-ukul mimârîyi anlamış değillerdir. Esmer camiler, fecrden itibaren semavî bir altın ve semavî bir çini ile kaplanır ve İslâm ustalarının nâtamam eserleri o saatte tamamlanır. Bütün mâbetler içinde güneşten ilk ziya alan camidir. Bakır oklu minareler, güneşi en evvel görmek için havalarda yükselir. Şimdi heyhat, eski “saat”le beraber akşam da, fecir de bitti. Birçoklarımız için fecir, artık gecedir ve birçoklarımızı güneş, yeni ve acayip bir uykunun ateşlerinden, eller kilitli, ağız çarpılmış, bacaklar bozuk çarşaflara dolanmış, kıvranırken buluyor. Artık geç uyanıyoruz. Çünkü hayatımıza sokulan yeni ve fena günün eşiğinde çömelmiş, kin, arzu, hırs ve haset sürülerinin bizi ateş saçan gözlerle beklediğini biliyoruz. Artık fecri yalnız kümeslerimizdeki dargın ve mağrur horozlara bıraktık. Şimdi müslüman evindeki saat, başka bir âlemin vakitlerini gösterir gibi, bizim için gece olan saatleri gündüz ve gündüz olan saatleri gece renginde gösteriyor. Çölde yolunu şaşıranlar gibi biz şimdi zaman içinde kaybolmuş kimseleriz.`}],l=[{id:"gorsel-olustur-aylik-takvim",title:"Aylık takvim parçası",date:"2026-09-26",body:`Görsel Oluştur bölümüne **aylık takvim** eklendi. Ayın tamamını bir görsele koyabiliyorsunuz.
+
+Takvim hicri ya da miladi olabilir. İkisini birden de gösterebilirsiniz: her günün altında diğer takvimdeki karşılığı küçük puntoyla yer alır. Ay ve yıl istediğiniz gibi değiştirilebilir, ileri geri gezinirken yıl kendiliğinden döner.
+
+Ay başlığının, gün adlarının ve gün sayılarının yazı tipi, kalınlığı ve boyutu ayrı ayrı seçilebiliyor.
+
+Günlerin arkasına daire ya da kare bir zemin ekleyebilir, hafta sonlarını farklı renkte gösterebilir, bugünü vurgulayabilirsiniz.
+
+Izgara düzeninin yanında bir de **tek satır** seçeneği var: ayın tamamı yan yana tek bir şerit halinde diziliyor.
+
+Bu bölümdeki ayarlar çoğaldığı için panel de yeniden düzenlendi. Ayarlar artık başlıklar altında gruplanıyor ve kullanmadığınız grupları kapatabiliyorsunuz.`},{id:"gorsel-olustur-yazi-tipi-secici",title:"Yetmiş yazı tipi, sekmeli seçici",date:"2026-09-23",body:`Görsel Oluştur bölümündeki yazı tipi sayısı yetmişe çıktı.
+
+Seçici artık beş sekmeye ayrıldı: **Sans**, **Serif**, **Display**, **El yazısı** ve **Arapça**. Her yazı tipi listede kendi görünümüyle yazılı olduğundan seçmeden önce nasıl duracağını görebiliyorsunuz.
+
+Arapça sekmesinde on altı hat var; nesih, rika, kufi ve talik üsluplarının yanına Rakkas, Badeen ve Oi gibi iri başlık hatları da eklendi.
+
+Latin taraf ise Cormorant Garamond ve EB Garamond gibi klasik seriflerden Bebas Neue ve Alfa Slab One gibi başlık yazılarına, Caveat ve Pinyon Script gibi el yazılarına kadar uzanıyor.
+
+Yazı tipleri yalnızca ilgili sekmeyi açtığınızda indiriliyor, bu yüzden liste uzamasına rağmen sayfa aynı hızda açılıyor.`},{id:"gorsel-olustur-hizalama",title:"Hizalama yardımı ve renk seçimi",date:"2026-09-18",body:`Görselde bir parçayı taşırken artık hizalama yardımı devrede. Parça tuvalin ortasına, kenarlarına ya da diğer parçaların hizasına yaklaştığında kendiliğinden oturuyor ve o hizada ince bir kılavuz çizgi beliriyor. İstemezseniz parça ayarlarındaki **Hizala** düğmesinden kapatabilirsiniz.
+
+Renk seçimi genişletildi. Hazır renklerin yanında, arka plan fotoğrafınızdan çıkarılan renkler de listeleniyor — böylece yazı rengini fotoğrafla uyumlu seçmek kolaylaşıyor.
+
+Ayrıca kendi renginizi ekleyebilirsiniz. Eklediğiniz renkler listede kalır ve sonraki görsellerinizde de kullanılabilir.
+
+Son düzenlemeniz otomatik olarak saklanıyor; sayfayı kapatıp geri döndüğünüzde kaldığınız yerden devam edebilirsiniz. Baştan başlamak isterseniz üstteki **Sıfırla** düğmesi var.`},{id:"gorsel-olustur-yazi-tipleri",title:"Arapça ve Osmanlıca metinler, yazı tipi seçimi",date:"2026-09-18",body:`Görsel Oluştur bölümüne hazır **Arapça ibareler** eklendi: besmele, hamdele, tevhid, salavat, selamün aleyküm, cuma ve bayram tebrikleri gibi on dokuz metin. Altlarında okunuşları da yer alıyor ve hepsi harekeli ya da harekesiz gösterilebiliyor.
+
+Yanına ayrı bir **Osmanlıca** bölümü geldi. Burada eski yazıyla hazırlanmış Türkçe ifadeler var: mübarek olsun, hayırlı cumalar, kandiliniz mübarek olsun, selâm ü duâ gibi.
+
+Listede olmayan bir şey yazmak isterseniz metni doğrudan kendiniz de girebilirsiniz.
+
+Yazı tipi seçimi de eklendi. Her metin parçası için ayrı bir yazı tipi, kalınlık, italik ve harf aralığı seçebilirsiniz. Arapça hatlar arasında nesih, rika, kufi ve talik üslupları bulunuyor.
+
+Saat parçasında büyük saatin, başlığın ve alt yazının boyutları ayrı ayrı ayarlanabiliyor; rakamlar Latin ya da Arapça yazılabiliyor.`},{id:"gorsel-olustur",title:"Görsel Oluştur geldi",date:"2026-09-18",body:`Alaturka saatinizi, namaz vakitlerini ve hicri tarihi paylaşabileceğiniz bir görsele dönüştüren yeni bir bölüm eklendi. Sağ üstteki menüden **Görsel Oluştur**'a girerek kullanabilirsiniz.
+
+Story, kare ve dikey post olmak üzere üç boy arasından seçim yapabilir; hazırladığınız görseli telefonunuza indirebilir ya da doğrudan paylaşabilirsiniz.
+
+Tuvale eklenebilen parçalar: alaturka saat (dijital ve analog), o anki ve sonraki vakit, hicri ve miladi tarih, serbest yazı, hazır Arapça ibareler ve Alaturka Vakitler logosu.
+
+Her parçayı parmağınızla sürükleyip taşıyabilir, iki parmakla büyütüp döndürebilirsiniz. Üzerindeki her değer elle değiştirilebilir — saati, tarihi ya da vakit adını dilediğiniz gibi yazabilirsiniz. Boş bıraktığınız satır görselde görünmez.
+
+Arka plan olarak vakte göre değişen rengi kullanabilir ya da kendi fotoğrafınızı yükleyebilirsiniz. Yüklediğiniz fotoğrafı iki parmakla yakınlaştırıp kaydırarak istediğiniz kadrajı seçebilir, bulanıklık ve karartma ekleyebilirsiniz.
+
+Ayrıca tasarıma yön veren ince çizgilerden oluşan bir ızgara ve film dokusu (gren) da ekleyebilirsiniz.`},{id:"takvim-sayfasi",title:"Takvim ve Saat sayfaları",date:"2026-07-02",body:`**Takvim** sayfası tamamlandı. Hicri ayın tamamını bir arada görüyor, her günün altında miladi karşılığını okuyabiliyorsunuz. Bir güne dokunduğunuzda o günün hicri ve miladi tarihi ile haftanın günü üstte beliriyor, yanında da o geceye ait ay fazı çiziliyor.
+
+Aylar arasında sağa sola kaydırarak geçebilirsiniz. Boş bir alana dokunmak sizi bugüne geri getirir.
+
+**Saat** sayfası da yenilendi. Ortada alaturka vakti gösteren bir analog kadran var — akrep içinde bulunduğunuz vaktin renginde. Altında büyük rakamlarla alaturka saat, onun altında normal saat, en altta da hicri ve miladi tarih yer alıyor.`},{id:"ayarlar-bolumu",title:"Ayarlar bölümü eklendi",date:"2026-07-01",body:`Sağ üstteki menüye **Ayarlar** eklendi. Uygulamayı kendinize göre düzenleyebilirsiniz.
+
+**Tema:** Açık, koyu ya da sistem. Sistem seçiliyken telefonunuzun tercihini izler; akşam karanlık moda geçen bir telefonda uygulama da kendiliğinden koyulaşır.
+
+**Renk stili:** Beş ayrı stil var — Klasik, Pastel, Canlı, Mesh ve Mono. Her biri vakit renklerini ve arka planı baştan sona değiştiriyor. Canlı stilinde ekranın tamamı vaktin rengine bürünüyor, Mono ise renk yerine gri tonlarıyla çalışıyor.
+
+**Ana sayfa saati:** Alaturka saat ana sayfada nokta matrisli LED görünümüyle ya da düz rakamlarla gösterilebilir.
+
+**Açılış sayfası:** Uygulamayı her açtığınızda doğrudan Saat, Vakitler ya da Takvim sayfasının gelmesini sağlayabilirsiniz.`},{id:"yeni-surum",title:"Uygulama baştan yazıldı",date:"2026-06-28",body:`Alaturka Vakitler baştan yazıldı. Sayfalar daha hızlı açılıyor, geçişler daha akıcı ve uygulama telefonunuzun ana ekranına eklendiğinde çevrimdışıyken de çalışıyor.
+
+Vakit bilgileri cihazınızda saklandığı için internet bağlantınız yokken de son indirilen vakitleri görebiliyorsunuz.
+
+Görünüm de yenilendi: yalın bir ızgara, geniş boşluklar ve tipografiye dayanan **Swiss** tarzı bir düzen. Ekrandaki renk içinde bulunduğunuz vakte göre değişiyor — imsakta mavi, öğlede sarı, ikindide turuncu, yatsıda lacivert.`}],e={saatuzerine:r,yenilikler:l};function t(a){return e[a]??[]}function d(a,i){return(e[a]??[]).find(n=>n.id===i)??null}export{d as a,t as g};
