@@ -104,6 +104,10 @@ function boxFill(cell) {
   return { ...boxStyle.value, background: today ? todayColor.value : dayBgColor.value }
 }
 
+// Gün zemini açıkken satırlar dikeyde birbirine değiyordu; hafta aralığı
+// bunu açar. Tek satır düzeninde satır kavramı yok, uygulanmaz.
+const gridStyle = computed(() => (isRow.value ? null : { rowGap: `${s.value.rowGap ?? 0}px` }))
+
 const weekdays = computed(() =>
   s.value.weekdayStyle === 'narrow' ? WEEKDAYS_NARROW : WEEKDAYS_SHORT
 )
@@ -132,7 +136,7 @@ const title = computed(() => {
       >{{ w }}</span>
     </div>
 
-    <div class="cal-grid">
+    <div class="cal-grid" :style="gridStyle">
       <div
         v-for="(cell, i) in cells"
         :key="i"

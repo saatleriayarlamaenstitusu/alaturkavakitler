@@ -48,6 +48,12 @@ function updateProp(key, value) {
     patch.weight = nearestWeight(value, layer.props.weight)
     if (!getFont(value).italic) patch.italic = false
   }
+  // Gün zemini ilk kez açıldığında satırlar birbirine değiyor; aralık
+  // sıfırsa okunur bir değere çekilir (kullanıcı yine değiştirebilir).
+  if (key === 'dayBg' && value && !layer.props.rowGap) {
+    patch.rowGap = Math.max(4, Math.round(layer.props.daySize * 0.35))
+  }
+
   // Tek satırda 31 gün yan yana sığmalı: ölçüler sütun genişliğine göre
   // yeniden hesaplanır. Izgaradaki değerler saklanıp geri dönüldüğünde
   // aynen geri verilir — yoksa ızgara minik ölçülerle kalıyordu.

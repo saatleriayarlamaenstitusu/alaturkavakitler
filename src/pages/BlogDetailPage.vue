@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { DateTime } from 'luxon'
 import { useRoute } from 'vue-router'
 import { getItem } from '@/content'
 import { useSeo, SEO_SITE } from '@/composables/useSeo'
@@ -16,6 +17,11 @@ function renderParagraph(text) {
     .replace(/>/g, '&gt;')
   return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
 }
+
+// Yeniliklerde yazar yerine tarih gösterilir.
+const dateLabel = computed(() =>
+  item.value?.date ? DateTime.fromISO(item.value.date).setLocale('tr').toFormat('d LLLL yyyy') : ''
+)
 
 const pageLabel = computed(() =>
   route.params.page === 'yenilikler' ? 'Yenilikler' : 'Saat Üzerine'
@@ -70,6 +76,7 @@ useSeo({
       <h1 class="detail-title">{{ item.title }}</h1>
       <div class="detail-meta">
         <span v-if="item.author" class="detail-author">{{ item.author }}</span>
+        <span v-else-if="dateLabel" class="detail-author">{{ dateLabel }}</span>
         <span v-if="item.source" class="detail-source">{{ item.source }}</span>
       </div>
 

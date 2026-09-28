@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { DateTime } from 'luxon'
 import { getList } from '@/content'
 import { useSeo } from '@/composables/useSeo'
 
@@ -21,8 +22,18 @@ useSeo({
   path: computed(() => `/${props.page}`),
 })
 
+// Üst satırda tek bir bilgi var: yazarı varsa yazar, yoksa tarih.
+// Yeniliklerde yazar yok, orada tarih görünür.
+function meta(item) {
+  if (item.author) return item.author
+  if (!item.date) return ''
+  return DateTime.fromISO(item.date).setLocale('tr').toFormat('d LLLL yyyy')
+}
+
 function excerpt(body) {
-  const first = (body || '').split('\n\n')[0] || ''
+  // Özet düz metindir; detay sayfasında <strong>'a çevrilen **kalın**
+  // işaretleri burada olduğu gibi görünmesin diye ayıklanır.
+  const first = ((body || '').split('\n\n')[0] || '').replace(/\*\*(.+?)\*\*/g, '$1')
   return first.length > 140 ? first.slice(0, 140).trimEnd() + '…' : first
 }
 </script>
@@ -37,7 +48,7 @@ function excerpt(body) {
       <li v-for="item in items" :key="item.id" class="blog-item">
         <RouterLink :to="`/detay/${page}/${item.id}`" class="blog-link">
           <img v-if="item.cover" :src="item.cover" :alt="item.title" class="blog-cover" loading="lazy" />
-          <span v-if="item.author" class="blog-author">{{ item.author }}</span>
+          <span v-if="meta(item)" class="blog-author">{{ meta(item) }}</span>
           <span class="blog-title">{{ item.title }}</span>
           <span class="blog-excerpt">{{ excerpt(item.body) }}</span>
         </RouterLink>

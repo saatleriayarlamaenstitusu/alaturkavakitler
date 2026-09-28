@@ -305,6 +305,7 @@ export const SHARE_WIDGETS = [
         weekdayFont: DEFAULT_FONT, weekdayWeight: 600, weekdaySize: 22,
         dayFont: DEFAULT_FONT, dayWeight: 500, daySize: 34,
         rowHeight: 2.5,
+        rowGap: 0,
         color: '#ffffff',
         todayColor: 'auto',
         weekendOn: false,
@@ -356,6 +357,8 @@ export const SHARE_WIDGETS = [
       // ── Gün sayıları ──
       { key: 'daySize', type: 'range', label: 'Boyut', group: 'sayi', min: 8, max: 90, step: 1, unit: 'px' },
       { key: 'rowHeight', type: 'range', label: 'Hücre yüksekliği', group: 'sayi', min: 1.2, max: 3.2, step: 0.1, unit: '×' },
+      { key: 'rowGap', type: 'range', label: 'Hafta aralığı', group: 'sayi', min: 0, max: 60, step: 2, unit: 'px',
+        hidden: (p) => p.layout === 'row' },
       { key: 'dayFont', type: 'font', label: 'Yazı tipi', group: 'sayi' },
       { key: 'dayWeight', type: 'select', compact: true, label: 'Kalınlık', group: 'sayi',
         options: (p) => weightOptions(p.dayFont) },
