@@ -107,6 +107,13 @@ const shareSupported = computed(() => Boolean(navigator.share))
       <div class="bar-left">
         <button class="icon" aria-label="Kapat" @click="router.back()">✕</button>
         <button
+          class="icon"
+          aria-label="Geri al"
+          title="Geri al"
+          :disabled="!editor.canUndo.value"
+          @click="editor.undo()"
+        >↩</button>
+        <button
           class="reset"
           :class="{ confirming: confirmingReset }"
           @click="askReset"
@@ -212,6 +219,12 @@ const shareSupported = computed(() => Boolean(navigator.share))
 }
 
 .icon:hover { border-color: var(--text); }
+
+.icon:disabled {
+  color: var(--text-dim);
+  border-color: var(--border);
+  cursor: default;
+}
 
 .bar-actions {
   display: flex;

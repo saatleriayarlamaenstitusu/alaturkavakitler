@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useWidgetFont } from './useWidgetFont'
+import WidgetLines from './WidgetLines.vue'
 
 // Şu anki vakit + sonraki vakit. Tüm metinler elle değiştirilebilir,
 // boş bırakılan satır gizlenir.
@@ -18,16 +19,16 @@ const font = useWidgetFont(s, 700)
 <template>
   <div class="w-vakit" :class="`is-${s.layout}`" :style="{ ...font, color }">
     <div class="block current">
-      <div v-if="s.nowLabel" class="tag">{{ s.nowLabel }}</div>
-      <div class="name">{{ s.current }}</div>
+      <div v-if="s.nowLabel" class="tag"><WidgetLines :text="s.nowLabel" /></div>
+      <div class="name"><WidgetLines :text="s.current" /></div>
       <div v-if="s.currentTime" class="time">{{ s.currentTime }}</div>
     </div>
 
     <div v-if="hasNext" class="rule" aria-hidden="true"></div>
 
     <div v-if="hasNext" class="block next">
-      <div v-if="s.nextLabel" class="tag">{{ s.nextLabel }}</div>
-      <div class="name">{{ s.next }}</div>
+      <div v-if="s.nextLabel" class="tag"><WidgetLines :text="s.nextLabel" /></div>
+      <div class="name"><WidgetLines :text="s.next" /></div>
       <div v-if="s.nextTime" class="time">{{ s.nextTime }}</div>
     </div>
   </div>

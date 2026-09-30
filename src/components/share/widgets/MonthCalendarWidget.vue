@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { getFont, nearestWeight } from '@/data/shareFonts'
 import { monthGrid, WEEKDAYS_SHORT, WEEKDAYS_NARROW } from '@/utils/calendarGrid'
 import { localizeNumerals } from '@/utils/numerals'
+import WidgetLines from './WidgetLines.vue'
 
 const props = defineProps({
   settings: { type: Object, default: () => ({}) },
@@ -125,7 +126,7 @@ const title = computed(() => {
 
 <template>
   <div class="w-calendar" :class="{ 'is-row': isRow }" :style="{ color, width: `${s.width}px` }">
-    <div v-if="title" class="cal-title" :style="titleStyle">{{ title }}</div>
+    <div v-if="title" class="cal-title" :style="titleStyle"><WidgetLines :text="title" /></div>
 
     <div v-if="s.showWeekdays && !isRow" class="cal-week" :style="weekdayStyle">
       <span

@@ -103,9 +103,72 @@ export function createShareEditor(snapshot) {
     { deep: true },
   )
 
+  // ── Geri al ──
+  // Her eylem, kendinden ÖNCEKİ düzenin kopyasını yığına bırakır. Sürükleme
+  // ve sürgü gibi sürekli akan değişiklikler aynı etiket altında toplanır;
+  // yoksa tek bir parmak hareketi onlarca adım üretirdi. Yığın bellekte
+  // durur, kaydedilmez — sayfa yenilenince geçmiş sıfırlanır.
+  const HISTORY_LIMIT = 40
+  const COALESCE_MS = 700
+  const history = reactive([])
+  let lastTag = null
+  let lastAt = 0
+
+  function snapshotState() {
+    return JSON.parse(JSON.stringify({
+      ratioId: state.ratioId,
+      layers: state.layers,
+      background: state.background,
+      grid: state.grid,
+      grain: state.grain,
+      brand: state.brand,
+      customColors: state.customColors,
+    }))
+  }
+
+  // Varsayılan kompozisyonu kurmak bir kullanıcı eylemi değil; bu sırada
+  // eklenen katmanlar geçmişe yazılmamalı, yoksa "Geri al" sayfa açılır
+  // açılmaz tuvali boşaltan bir adım sunuyor.
+  let silent = false
+  function withoutHistory(fn) {
+    silent = true
+    try { fn() } finally { silent = false }
+  }
+
+  function record(tag) {
+    if (silent) return
+    const now = Date.now()
+    if (tag && tag === lastTag && now - lastAt < COALESCE_MS) {
+      lastAt = now
+      return
+    }
+    lastTag = tag
+    lastAt = now
+    history.push(snapshotState())
+    if (history.length > HISTORY_LIMIT) history.shift()
+  }
+
+  const canUndo = computed(() => history.length > 0)
+
+  function undo() {
+    const prev = history.pop()
+    if (!prev) return
+    state.ratioId = prev.ratioId
+    state.layers = prev.layers
+    Object.assign(state.background, prev.background)
+    Object.assign(state.grid, prev.grid)
+    Object.assign(state.grain, prev.grain)
+    state.brand = prev.brand
+    state.customColors = prev.customColors
+    // Geri alınan adımda silinmiş bir katman seçiliyse seçim düşer.
+    if (!state.layers.some(l => l.id === state.selectedId)) state.selectedId = null
+    lastTag = null
+  }
+
   function addLayer(typeId) {
     const def = getWidget(typeId)
     if (!def) return null
+    record('add')
 
     // Yeni katman, mevcut en alttakinin altına doğar; tuval dolduysa
     // üstten tekrar başlar. Böylece eklenen widget'lar üst üste binmez.
@@ -137,6 +200,7 @@ export function createShareEditor(snapshot) {
   function removeLayer(id) {
     const i = state.layers.findIndex(l => l.id === id)
     if (i === -1) return
+    record(`remove:${id}`)
     state.layers.splice(i, 1)
     if (state.selectedId === id) state.selectedId = null
   }
@@ -144,6 +208,7 @@ export function createShareEditor(snapshot) {
   function duplicateLayer(id) {
     const src = state.layers.find(l => l.id === id)
     if (!src) return
+    record(`dup:${id}`)
     const copy = { ...src, id: nextId(), x: src.x + 40, y: src.y + 40, z: topZ() + 1, props: { ...src.props } }
     state.layers.push(copy)
     state.selectedId = copy.id
@@ -155,19 +220,25 @@ export function createShareEditor(snapshot) {
 
   function updateLayer(id, patch) {
     const layer = state.layers.find(l => l.id === id)
-    if (layer) Object.assign(layer, patch)
+    if (!layer) return
+    record(`layer:${id}:${Object.keys(patch).join(',')}`)
+    Object.assign(layer, patch)
   }
 
   function updateProps(id, patch) {
     const layer = state.layers.find(l => l.id === id)
-    if (layer) Object.assign(layer.props, patch)
+    if (!layer) return
+    record(`props:${id}:${Object.keys(patch).join(',')}`)
+    Object.assign(layer.props, patch)
   }
 
   // Katmanın değerlerini editörün açıldığı andaki tarih/saate geri döndürür.
   function resetProps(id) {
     const layer = state.layers.find(l => l.id === id)
     const def = layer && getWidget(layer.type)
-    if (def) layer.props = def.defaultProps(snapshot)
+    if (!def) return
+    record(`resetProps:${id}`)
+    layer.props = def.defaultProps(snapshot)
   }
 
   function bringToFront(id) {
@@ -182,6 +253,7 @@ export function createShareEditor(snapshot) {
   // Oran değişince katmanlar oransal olarak yeniden konumlanır,
   // böylece 9:16'da kurduğun düzen 1:1'e geçince dağılmaz.
   function setRatio(id) {
+    record('ratio')
     const from = ratio.value
     const to = getRatio(id)
     const fx = to.width / from.width
@@ -191,6 +263,7 @@ export function createShareEditor(snapshot) {
   }
 
   function setBackground(patch) {
+    record(`bg:${Object.keys(patch).join(',')}`)
     Object.assign(state.background, patch)
     if ('photo' in patch) refreshPhotoPalette()
   }
@@ -216,16 +289,19 @@ export function createShareEditor(snapshot) {
   }
 
   function setGrid(patch) {
+    record(`grid:${Object.keys(patch).join(',')}`)
     Object.assign(state.grid, patch)
   }
 
   function setGrain(patch) {
+    record(`grain:${Object.keys(patch).join(',')}`)
     Object.assign(state.grain, patch)
   }
 
   // Fotoğraf cover yerleştiği için 1x'te kaydırılacak alan yoktur;
   // kaydırma sınırı yakınlaştırma oranıyla büyür.
   function panPhoto(x, y) {
+    record('photo')
     const { width, height } = ratio.value
     const bg = state.background
     const maxX = (width * (bg.zoom - 1)) / 2
@@ -240,6 +316,7 @@ export function createShareEditor(snapshot) {
   }
 
   function resetPhoto() {
+    record('resetPhoto')
     Object.assign(state.background, { zoom: 1, x: 0, y: 0, blur: 0, dim: 0.3 })
   }
 
@@ -254,10 +331,11 @@ export function createShareEditor(snapshot) {
 
   // Kayıtlı düzen varsa ona dokunma; yoksa varsayılanı kur.
   function ensureComposition() {
-    if (!state.layers.length) applyDefaultComposition()
+    if (!state.layers.length) withoutHistory(applyDefaultComposition)
   }
 
   function resetAll() {
+    record('resetAll')
     state.ratioId = DEFAULT_RATIO
     state.layers = []
     state.selectedId = null
@@ -265,7 +343,7 @@ export function createShareEditor(snapshot) {
     Object.assign(state.grid, defaultGrid())
     Object.assign(state.grain, defaultGrain())
     state.brand = false
-    applyDefaultComposition()
+    withoutHistory(applyDefaultComposition)
   }
 
   const editor = {
@@ -275,6 +353,7 @@ export function createShareEditor(snapshot) {
     setRatio, setBackground, setGrid, setGrain, panPhoto, zoomPhoto, resetPhoto,
     refreshPhotoPalette, addCustomColor, removeCustomColor, toggleSnap,
     ensureComposition, resetAll,
+    canUndo, undo,
     snapshot,
   }
 

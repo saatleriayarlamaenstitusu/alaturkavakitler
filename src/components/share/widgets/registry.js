@@ -85,9 +85,9 @@ export const SHARE_WIDGETS = [
       ...typographyDefaults(700),
     }),
     settings: [
-      { key: 'time', type: 'text', label: 'Saat', group: 'icerik' },
+      { key: 'time', type: 'text', label: 'Saat', group: 'icerik', singleLine: true },
       { key: 'label', type: 'text', label: 'Başlık', group: 'icerik' },
-      { key: 'normal', type: 'text', label: 'Normal saat', group: 'icerik' },
+      { key: 'normal', type: 'text', label: 'Normal saat', group: 'icerik', singleLine: true },
       { key: 'city', type: 'text', label: 'Şehir', group: 'icerik' },
       ...typographyFields,
       { key: 'timeSize', type: 'range', label: 'Saat boyutu', min: 80, max: 420, step: 5, group: 'boyut' },
@@ -114,7 +114,7 @@ export const SHARE_WIDGETS = [
       showTicks: true,
     }),
     settings: [
-      { key: 'time', type: 'text', label: 'Saat (SS:DD)', group: 'icerik' },
+      { key: 'time', type: 'text', label: 'Saat (SS:DD)', group: 'icerik', singleLine: true },
       colorField('color', 'Kadran'),
       colorField('handColor', 'Akrep'),
       { key: 'showTicks', type: 'toggle', label: 'Dakika çizgileri', group: 'gorunum' },
@@ -138,9 +138,9 @@ export const SHARE_WIDGETS = [
     }),
     settings: [
       { key: 'current', type: 'text', label: 'Vakit', group: 'icerik' },
-      { key: 'currentTime', type: 'text', label: 'Vakit saati', group: 'icerik' },
+      { key: 'currentTime', type: 'text', label: 'Vakit saati', group: 'icerik', singleLine: true },
       { key: 'next', type: 'text', label: 'Sonraki vakit', group: 'icerik' },
-      { key: 'nextTime', type: 'text', label: 'Sonraki saati', group: 'icerik' },
+      { key: 'nextTime', type: 'text', label: 'Sonraki saati', group: 'icerik', singleLine: true },
       { key: 'nowLabel', type: 'text', label: 'Üst etiket', group: 'icerik' },
       { key: 'nextLabel', type: 'text', label: 'Alt etiket', group: 'icerik' },
       ...typographyFields,
@@ -168,7 +168,7 @@ export const SHARE_WIDGETS = [
       ...typographyDefaults(700),
     }),
     settings: [
-      { key: 'hijriDay', type: 'text', label: 'Hicri gün', group: 'icerik' },
+      { key: 'hijriDay', type: 'text', label: 'Hicri gün', group: 'icerik', singleLine: true },
       { key: 'hijriText', type: 'text', label: 'Hicri ay/yıl', group: 'icerik' },
       { key: 'miladi', type: 'text', label: 'Miladi tarih', group: 'icerik' },
       { key: 'event', type: 'text', label: 'Etkinlik', group: 'icerik' },

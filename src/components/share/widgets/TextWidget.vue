@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useWidgetFont } from './useWidgetFont'
+import WidgetLines from './WidgetLines.vue'
 
 const props = defineProps({
   settings: { type: Object, default: () => ({}) },
@@ -9,7 +10,6 @@ const props = defineProps({
 
 const s = computed(() => props.settings)
 const color = computed(() => (s.value.color === 'auto' ? props.accent : s.value.color))
-const lines = computed(() => String(s.value.text ?? '').split('\n'))
 const font = useWidgetFont(s, 600)
 </script>
 
@@ -24,9 +24,8 @@ const font = useWidgetFont(s, 600)
       textTransform: s.uppercase ? 'uppercase' : 'none',
     }"
   >
-    <!-- dir="auto": Arapça satırlar sağdan sola, Latin satırlar soldan sağa
-         akar; karışık metinde her satır kendi yönünü bulur. -->
-    <div v-for="(line, i) in lines" :key="i" dir="auto">{{ line || ' ' }}</div>
+    <!-- Satır sonları ve satır bazlı yön için ortak bileşen. -->
+    <WidgetLines :text="s.text" />
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { FONT_GROUPS, fontsByGroup, getFont } from '@/data/shareFonts'
 import { ensureFontGroup } from '@/composables/useShareFonts'
 import { phraseList } from '@/data/phraseSets'
@@ -19,6 +19,19 @@ const value = computed({
 })
 
 const editor = useShareEditor()
+
+// Çok satırlı metin alanı içeriği kadar uzar; Enter'a basınca yazdığın satırı
+// görmeden devam etmek zorunda kalmayasın diye.
+const textareaEl = ref(null)
+function fitTextarea() {
+  const el = textareaEl.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = `${el.scrollHeight}px`
+}
+const autoGrow = () => nextTick(fitTextarea)
+onMounted(fitTextarea)
+watch(() => props.modelValue, () => nextTick(fitTextarea))
 
 // 'auto' vakit rengini, 'tint' metin renginin soluk tonunu temsil eder.
 const swatchColor = (sw) => {
@@ -208,21 +221,43 @@ const fullWidth = computed(() =>
         <output class="readout">{{ readout }}</output>
       </template>
 
+      <!-- v-model (:value + @input değil): Vue'nun vModelText direktifi IME
+           bestesi sürerken DOM değerine dokunmuyor. Arapça klavye, mobil
+           tahmin ve yapıştırma sırasında imlecin sona atlamasının sebebi
+           buydu. dir="auto" ise alanın yönünü metne göre belirliyor;
+           LTR bir alanda RTL metin düzenlemek imleci okunmaz kılıyordu. -->
+      <!-- Tek satırlık <input> Enter alamıyor. Serbest metin alanları bu yüzden
+           tek satır yüksekliğinde başlayıp içerikle uzayan bir textarea:
+           görünüm aynı, ama satır sonu girilebiliyor. Saat gibi biçimi sabit
+           alanlar `singleLine` ile bunun dışında tutulur. -->
       <input
-        v-else-if="field.type === 'text'"
+        v-else-if="field.type === 'text' && field.singleLine"
         class="text-input"
         type="text"
-        :value="value"
+        dir="auto"
+        v-model="value"
         :placeholder="field.label"
-        @input="value = $event.target.value"
       />
 
       <textarea
+        v-else-if="field.type === 'text'"
+        ref="textareaEl"
+        class="text-input as-textarea"
+        dir="auto"
+        rows="1"
+        v-model="value"
+        :placeholder="field.label"
+        @input="autoGrow"
+      ></textarea>
+
+      <textarea
         v-else-if="field.type === 'textarea'"
+        ref="textareaEl"
         class="textarea"
+        dir="auto"
         rows="2"
-        :value="value"
-        @input="value = $event.target.value"
+        v-model="value"
+        @input="autoGrow"
       ></textarea>
     </div>
   </div>
@@ -583,14 +618,24 @@ const fullWidth = computed(() =>
 .text-input::placeholder { color: var(--text-dim); font-weight: 400; }
 .text-input:focus { outline: none; border-bottom-color: var(--accent-ui); }
 
+/* Tek satırdan başlayıp uzayan textarea, <input> ile aynı görünsün. */
+.text-input.as-textarea {
+  resize: none;
+  overflow: hidden;
+  line-height: 1.45;
+  font-family: inherit;
+}
+
 .textarea {
   width: 100%;
   resize: none;
+  overflow: hidden; /* yükseklik içerikten hesaplanıyor */
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text);
   font-family: inherit;
   font-size: 0.875rem;
+  line-height: 1.5;
   padding: 0.45rem 0.6rem;
 }
 

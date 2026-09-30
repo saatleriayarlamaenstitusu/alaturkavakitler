@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useWidgetFont } from './useWidgetFont'
+import WidgetLines from './WidgetLines.vue'
 
 const props = defineProps({
   settings: { type: Object, default: () => ({}) },
@@ -23,11 +24,11 @@ const font = useWidgetFont(s, 700)
     <div v-if="s.hijriDay" class="day">{{ s.hijriDay }}</div>
 
     <div class="info">
-      <div v-if="s.hijriText" class="hijri">{{ s.hijriText }}</div>
-      <div v-if="s.miladi" class="miladi">{{ s.miladi }}</div>
+      <div v-if="s.hijriText" class="hijri"><WidgetLines :text="s.hijriText" /></div>
+      <div v-if="s.miladi" class="miladi"><WidgetLines :text="s.miladi" /></div>
       <div v-if="s.event" class="event" :style="{ color: eventColor }">
         <span class="event-rule" aria-hidden="true"></span>
-        <span class="event-text">{{ s.event }}</span>
+        <span class="event-text"><WidgetLines :text="s.event" /></span>
       </div>
     </div>
   </div>

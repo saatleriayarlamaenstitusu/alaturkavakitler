@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useWidgetFont } from './useWidgetFont'
+import WidgetLines from './WidgetLines.vue'
 import { stripHarakat } from '@/data/arabicPhrases'
 
 // Hazır Arapça metin + isteğe bağlı Latin alt satırı (okunuş ya da meal).
@@ -24,6 +25,7 @@ const isNastaliq = computed(() => s.value.font === 'noto-nastaliq')
 const shown = computed(() =>
   s.value.harakat === false ? stripHarakat(s.value.text) : s.value.text
 )
+
 </script>
 
 <template>
@@ -33,13 +35,16 @@ const shown = computed(() =>
       :class="{ nastaliq: isNastaliq, bare: s.harakat === false }"
       dir="rtl"
       :style="{ fontSize: `${s.size}px` }"
-    >{{ shown }}</div>
+    >
+      <WidgetLines :text="shown" dir="rtl" />
+    </div>
     <div
       v-if="s.sub"
       class="sub"
-      dir="auto"
       :style="{ color: subColor, fontSize: `${Math.round(s.size * 0.26)}px` }"
-    >{{ s.sub }}</div>
+    >
+      <WidgetLines :text="s.sub" />
+    </div>
   </div>
 </template>
 

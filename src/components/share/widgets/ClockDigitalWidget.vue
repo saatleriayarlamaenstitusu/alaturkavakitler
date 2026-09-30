@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useWidgetFont } from './useWidgetFont'
+import WidgetLines from './WidgetLines.vue'
 import { localizeNumerals } from '@/utils/numerals'
 
 // Widget'lar saftır: tek veri kaynağı `settings`. Değerler katman eklenirken
@@ -29,7 +30,7 @@ const sizes = computed(() => ({
 
 <template>
   <div class="w-clock" :style="{ ...font, ...sizes, color, textAlign: s.align }">
-    <div v-if="s.label" class="label">{{ s.label }}</div>
+    <div v-if="s.label" class="label"><WidgetLines :text="s.label" /></div>
     <div class="time">{{ num(s.time) }}</div>
     <div v-if="hasFoot" class="foot">
       <span v-if="s.normal">{{ num(s.normal) }}</span>
