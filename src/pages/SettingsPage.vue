@@ -22,6 +22,11 @@ const homeClockOptions = [
   { value: 'normal', label: 'Normal' },
 ]
 
+const hijriOffsetOptions = [
+  { value: true,  label: 'Akşam ezanı' },
+  { value: false, label: 'Gece yarısı' },
+]
+
 const firstPageOptions = [
   { value: '/',         label: 'Ana Sayfa',    desc: 'Ana sayfa' },
   { value: '/saat',     label: 'Saat',         desc: 'Alaturka saat' },
@@ -90,6 +95,24 @@ const firstPageOptions = [
           class="theme-btn"
           :class="{ active: settings.homeClock === opt.value }"
           @click="settings.homeClock = opt.value"
+        >
+          <span>{{ opt.label }}</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="setting-block">
+      <div class="setting-head">
+        <h2 class="setting-name">Hicri Gün</h2>
+        <p class="setting-desc">Hicri gün güneş batımıyla başlar. Açıkken tarih akşam ezanında döner, kapalıyken gece yarısında.</p>
+      </div>
+      <div class="theme-selector">
+        <button
+          v-for="opt in hijriOffsetOptions"
+          :key="String(opt.value)"
+          class="theme-btn"
+          :class="{ active: settings.hijriOffset === opt.value }"
+          @click="settings.hijriOffset = opt.value"
         >
           <span>{{ opt.label }}</span>
         </button>

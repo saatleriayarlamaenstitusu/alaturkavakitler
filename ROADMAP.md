@@ -250,6 +250,15 @@ Uygulama mobile-first; geniş ekranlarda içerik gereksiz yayılıyor.
 - [ ] Performans: VakitCounter interval optimizasyonu
 - [ ] Lazy loading (sayfa bazlı code splitting)
 - [ ] E2E test (Playwright)
+- [ ] **Hicri hesabı ayrı bir kütüphaneye çıkar** — Diyanet'e göre hicri
+      ay/gün hesabı yapan bağımsız bir paket (ayrı repo, npm'e yayınlanabilir).
+      Şu an `src/data/hijriMonths.js` + `src/utils/hijri.js` bu işi yapıyor;
+      tablo Diyanet'in yayımladığı ay başlangıçlarından üretiliyor, ileri
+      yıllar Umm al-Qura'dan tamamlanıyor. Kütüphaneye taşınırken hedef,
+      tabloyu her yıl elle güncellemek yerine Diyanet'in kullandığı hesabî
+      ölçütü (kavuşum + görünürlük) doğrudan hesaplamak olmalı.
+- [ ] Hicri tablo kapsamı 2036'da bitiyor; Diyanet yeni yılları yayımladıkça
+      `src/data/hijriMonths.js` içindeki satırları doğrula.
 
 ---
 

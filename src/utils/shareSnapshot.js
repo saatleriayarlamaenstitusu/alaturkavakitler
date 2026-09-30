@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import { calculateAlaturka } from '@/utils/clock'
 import { nowHijri } from '@/utils/hijri'
+import { aksamCutoff } from '@/composables/useHijriToday'
 import { VAKIT_COLORS } from '@/utils/vakit'
 
 const VAKIT_ORDER = ['imsak', 'gunes', 'ogle', 'ikindi', 'aksam', 'yatsi']
@@ -12,11 +13,12 @@ const VAKIT_NAMES = {
 // Editör açıldığı anın dondurulmuş görüntüsü.
 // Paylaşım widget'ları store'a değil bu objeye bakar: görsel bir ana aittir,
 // tuval açıkken saat ilerlemez.
-export function createSnapshot({ city, vakitler, currentVakit }) {
+export function createSnapshot({ city, vakitler, currentVakit, hijriOffset = false }) {
   const now = DateTime.now().setLocale('tr')
   const todayISO = now.toISODate()
   const today = vakitler?.[todayISO] ?? null
-  const hijri = nowHijri('object')
+  // Hicri gün akşamla başlar; ayar açıksa görsel de kaydırılmış tarihi taşır.
+  const hijri = nowHijri('object', now.toJSDate(), aksamCutoff(vakitler, hijriOffset, now.toJSDate()))
 
   const list = VAKIT_ORDER.map(key => ({
     key,

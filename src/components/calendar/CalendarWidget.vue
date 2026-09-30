@@ -1,10 +1,10 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { nowHijri } from '@/utils/hijri'
+import { computed } from 'vue'
+import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
 
 const now = DateTime.now().setLocale('tr')
-const hijri = ref(nowHijri('object'))
+const hijri = useHijriToday()
 
 const moonSrc = computed(() => `/Icons/moon/${hijri.value.date}.svg`)
 const miladiLine = computed(() =>

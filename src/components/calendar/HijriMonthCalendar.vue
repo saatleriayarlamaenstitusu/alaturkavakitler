@@ -1,13 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { hijriMonth, nowHijri } from '@/utils/hijri'
+import { hijriMonth } from '@/utils/hijri'
+import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
 
 // Görüntülenen aya ait taban tarih (navigasyonla değişir)
 const viewDate = ref(new Date())
 const info = computed(() => hijriMonth(viewDate.value))
 
-const today = nowHijri('object')
+const today = useHijriToday().value
 const isCurrentMonth = computed(
   () => info.value.month === today.month && info.value.year === today.year
 )

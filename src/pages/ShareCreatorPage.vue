@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import { useSettingsStore } from '@/stores/settings'
 import { useSeo } from '@/composables/useSeo'
 import { createShareEditor } from '@/composables/useShareEditor'
 import { createSnapshot } from '@/utils/shareSnapshot'
@@ -15,6 +16,7 @@ import EditorPanel from '@/components/share/EditorPanel.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
+const settings = useSettingsStore()
 
 useSeo({
   title: 'Görsel Oluştur',
@@ -27,6 +29,7 @@ const snapshot = createSnapshot({
   city: appStore.city,
   vakitler: appStore.vakitler,
   currentVakit: appStore.currentVakit,
+  hijriOffset: settings.hijriOffset,
 })
 
 const editor = createShareEditor(snapshot)

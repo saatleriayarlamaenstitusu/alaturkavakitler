@@ -34,6 +34,7 @@ const shown = computed(() =>
       class="arabic"
       :class="{ nastaliq: isNastaliq, bare: s.harakat === false }"
       dir="rtl"
+      lang="ar"
       :style="{ fontSize: `${s.size}px` }"
     >
       <WidgetLines :text="shown" dir="rtl" />

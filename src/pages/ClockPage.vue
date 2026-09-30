@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { calculateAlaturka } from '@/utils/clock'
-import { nowHijri } from '@/utils/hijri'
+import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
 import AnalogClock from '@/components/clock/AnalogClock.vue'
 import { useSeo } from '@/composables/useSeo'
@@ -21,7 +21,8 @@ let intervalId = null
 const alaturkaTime = computed(() => calculateAlaturka(now.value, appStore.vakitler))
 const normalTime = computed(() => now.value.setLocale('tr').toLocaleString(DateTime.TIME_SIMPLE))
 
-const hijri = computed(() => nowHijri('object'))
+// Saniye tiklerini izler: akşam ezanı geçince hicri tarih kendiliğinden döner.
+const hijri = useHijriToday(computed(() => now.value.toJSDate()))
 const hijriLine = computed(() => `${hijri.value.date} ${hijri.value.monthName} ${hijri.value.year}`)
 const miladiLine = computed(() => {
   const d = now.value.setLocale('tr')

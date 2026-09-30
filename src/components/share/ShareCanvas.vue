@@ -120,7 +120,11 @@ function onBgUp(e) {
     <!-- Ölçekli kutu: tuvalin ekranda kapladığı gerçek alan -->
     <div class="scaled" :style="scaledSize">
       <div class="scaler" :style="{ transform: `scale(${state.viewScale})` }">
-        <div ref="canvasRef" class="canvas" :style="canvasStyle">
+        <!-- lang="tr": `text-transform: uppercase` yerele duyarlıdır — Türkçede
+             i→İ, varsayılan yerelde i→I. snapdom tuvali foreignObject içine
+             klonlarken <html lang> taşınmadığı için dışa aktarımda büyük İ
+             noktasını kaybediyordu. Nitelik tuvalin kendisinde olmalı. -->
+        <div ref="canvasRef" class="canvas" lang="tr" :style="canvasStyle">
           <div class="bg" :class="`bg-${state.background.kind}`">
             <img
               v-if="state.background.kind === 'photo' && state.background.photo"

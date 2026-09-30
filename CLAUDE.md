@@ -245,7 +245,7 @@ Veri formatı (ham JSON):
 - Dropdown dışına tıklayınca kapanmıyor → `clickOutside` directive eklenecek (Faz 2)
 - Gece yarısından sonra dünün vakitlerini gösteriyor (Faz 2)
 - Akşam ezanı geçince günü güncellemesi gerekiyor (Faz 2)
-- Hicri takvim doğruluğu — `hijri-date` lib değişimi araştırılacak
+- ~~Hicri takvim doğruluğu — `hijri-date` lib değişimi araştırılacak~~ → `hijri-date` kaldırıldı, Diyanet ay başlangıçları tablosuna geçildi ✅
 
 ---
 
@@ -330,6 +330,24 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - Bulanıklık kenarları saydamlaştırdığı için fotoğraf, blur değeri kadar taşırılıp (`inset: -2×blur`) çerçeve dolu tutulur.
 
 ---
+
+## Hicri Takvim
+
+- Dönüşüm **tablo tabanlıdır**: `src/data/hijriMonths.js` her hicri ayın 1'ine
+  denk gelen miladi günü tutar, `src/utils/hijri.js` ikili aramayla çevirir.
+  `hijri-date` paketi kaldırıldı.
+- **Neden:** aritmetik (tabular) kütüphaneler sabit kural uygular, Diyanet
+  hesabî takvim kullanır. Ölçüldü — 2026'nın 12 ay başlangıcından 9'u tutmuyordu,
+  Ramazan'da sapma 2 güne çıkıyordu. Sabit düzeltme katsayısı işe yaramaz.
+- Tablodaki `Diyanet` işaretli satırlar doğrudan Diyanet'ten (2023–2026);
+  gerisi Umm al-Qura'dan üretildi (Diyanet'in 49 başlangıcının 44'ü birebir
+  aynıydı, farklı 5'i Diyanet değeriyle değiştirildi). Kapsam 2022-07 – 2036-05;
+  dışına çıkılırsa ortalama ay uzunluğuyla tahmin yürütülür (`exact: false`).
+- Satır bütünlüğü (ardışık ay araları 29/30 gün) DEV modunda konsola yazılır.
+- **Hicri gün akşam ezanıyla başlar.** `settings.hijriOffset` açıkken tarih
+  akşamdan sonra bir gün ileri alınır. Tek kaynak `useHijriToday()` composable'ı;
+  tarih gösteren her yer oradan beslenir (`shareSnapshot` hariç — o anlık
+  görüntü aldığı için `aksamCutoff`'u doğrudan çağırır).
 
 ## Geliştirme Notları
 
