@@ -323,6 +323,8 @@ const fullWidth = computed(() =>
   border: 1px solid var(--border);
   cursor: pointer;
   padding: 0;
+  border-radius: 4px;
+    overflow: hidden;
 }
 
 /* Sistem renk seçicisini açan kare. Şerit uzayıp kaydırılabilir hale
@@ -448,6 +450,7 @@ const fullWidth = computed(() =>
   line-height: 1.3;
   white-space: nowrap;
   cursor: pointer;
+  border-radius: 4px;
 }
 
 .font-chip.active,
@@ -489,6 +492,8 @@ const fullWidth = computed(() =>
 .segments {
   display: flex;
   border: 1px solid var(--border);
+  border-radius: 4px;
+    overflow: hidden;
 }
 
 .segment {
@@ -520,6 +525,8 @@ const fullWidth = computed(() =>
   font-weight: 600;
   padding: 0.3rem 0.5rem;
   cursor: pointer;
+  border-radius: 4px;
+    overflow: hidden;
 }
 
 .compact-select:focus { outline: none; border-color: var(--accent-ui); }
@@ -535,6 +542,8 @@ const fullWidth = computed(() =>
   cursor: pointer;
   display: flex;
   justify-content: flex-start;
+  border-radius: 4px;
+    overflow: hidden;
 }
 
 .switch.on {
@@ -548,6 +557,8 @@ const fullWidth = computed(() =>
   height: 100%;
   background: var(--text-dim);
   display: block;
+  border-radius: 4px;
+    overflow: hidden;
 }
 
 .switch.on .knob { background: var(--bg); }

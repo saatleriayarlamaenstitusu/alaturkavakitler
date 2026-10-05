@@ -326,6 +326,13 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - Font eklerken **kalınlık aralığı (`400..700`) yalnızca variable fontlarda çalışır**; statik fontlarda (örn. Scheherazade New) tek tek yazmak gerekir (`400;500;600;700`), aksi halde Google Fonts tüm isteği 400 ile reddeder ve o `<link>`'teki hiçbir font yüklenmez. Eklemeden önce specleri `fonts.googleapis.com/css2?family=...` ile tek tek doğrula.
 - Widget'larda kalınlık tek bir sayı değil: kök `--w` (ana) ve `--w-soft` (ikincil) değişkenlerini verir, alt elemanlar bunlardan okur. Böylece kullanıcı kalınlığı değiştirince tasarımın ağırlık hiyerarşisi birlikte kayar.
 - Ayar alanının `options` ve `hidden` değerleri fonksiyon olabilir (`(props) => ...`); EditorPanel bunları o anki props ile çözer. Kalınlık listesi ve italik anahtarının görünürlüğü böyle çalışır.
+- **Zemin dolgusu** (`background.fill`) fotoğraf yokken tuvali boyar:
+  `vakit` (tabandan yükselen vakit rengi — açılış görünümü), `duz`, `gradyan`,
+  `mesh`. Renkler `'auto'` ise o anki vakit rengine (`snapshot.primary`) çözülür;
+  böylece varsayılan görünüm vakitle değişmeye devam eder. CSS `.bg-palette`
+  kuralı değil, `ShareCanvas`'taki `fillStyle` computed'ı çizer — ayarlar
+  JS'ten geldiği için sabit bir CSS gradyanı yetmiyordu. Satır içi stil olduğu
+  için snapdom klonuna aynen taşınıyor (dışa aktarımda ölçüldü).
 - **Arka plan** katman değil, tuvalin kendi durumudur: `{ kind: 'palette'|'photo', photo, zoom, x, y, blur, dim }`. Fotoğrafta kadraj (pinch/sürükle) tuvalin üstüne binen `.bg-catcher` yüzeyiyle yapılır; bu yüzey yalnızca Arka plan sekmesi açıkken ve katman seçili değilken vardır (`state.bgEditing`).
 - Bulanıklık kenarları saydamlaştırdığı için fotoğraf, blur değeri kadar taşırılıp (`inset: -2×blur`) çerçeve dolu tutulur.
 

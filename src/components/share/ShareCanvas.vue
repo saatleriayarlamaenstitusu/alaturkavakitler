@@ -43,6 +43,43 @@ const canvasStyle = computed(() => ({
   '--accent': editor.snapshot.primary,
 }))
 
+// Fotoğraf yokken tuvalin zemini. 'auto' renk o anki vakit rengine çözülür;
+// böylece varsayılan görünüm vakitle birlikte değişmeye devam eder.
+const resolve = (c) => (c === 'auto' ? editor.snapshot.primary : c)
+
+const fillStyle = computed(() => {
+  const f = state.background.fill
+  const c1 = resolve(f.color1)
+  const c2 = resolve(f.color2)
+  const soft = f.softness ?? 78
+
+  if (f.style === 'duz') return { background: c1 }
+
+  if (f.style === 'gradyan') {
+    return { background: `linear-gradient(${f.angle}deg, ${c1} 0%, ${c2} 100%)` }
+  }
+
+  if (f.style === 'mesh') {
+    // Üst üste binen yumuşak lekeler; sondaki düz renk tabanı doldurur.
+    // Lekeler köşelere dağıtıldı ki tek bir merkezden yayılıyor gibi durmasın.
+    return {
+      background: [
+        `radial-gradient(80% 60% at 18% 12%, ${c1} 0%, transparent ${soft}%)`,
+        `radial-gradient(72% 56% at 88% 26%, ${c2} 0%, transparent ${soft}%)`,
+        `radial-gradient(90% 64% at 32% 92%, ${c2} 0%, transparent ${soft}%)`,
+        `radial-gradient(76% 58% at 86% 86%, ${c1} 0%, transparent ${soft}%)`,
+        `linear-gradient(${f.angle}deg, ${c2} 0%, ${c1} 100%)`,
+      ].join(', '),
+    }
+  }
+
+  // 'vakit': tabandan yükselen vakit rengi — açılış görünümü.
+  return {
+    background: `radial-gradient(120% ${soft}% at 50% 104%, ${c1} 0%,
+      color-mix(in srgb, ${c1} 34%, ${c2}) 46%, ${c2} 100%)`,
+  }
+})
+
 // Bulanıklık kenarlarda saydam hale getirir; fotoğrafı bulanıklık kadar
 // taşırarak çerçevenin dört yanını dolu tutuyoruz.
 const photoStyle = computed(() => {
@@ -125,7 +162,7 @@ function onBgUp(e) {
              klonlarken <html lang> taşınmadığı için dışa aktarımda büyük İ
              noktasını kaybediyordu. Nitelik tuvalin kendisinde olmalı. -->
         <div ref="canvasRef" class="canvas" lang="tr" :style="canvasStyle">
-          <div class="bg" :class="`bg-${state.background.kind}`">
+          <div class="bg" :class="`bg-${state.background.kind}`" :style="state.background.kind === 'palette' ? fillStyle : null">
             <img
               v-if="state.background.kind === 'photo' && state.background.photo"
               class="photo"
@@ -228,11 +265,8 @@ function onBgUp(e) {
   overflow: hidden;
 }
 
-.bg-palette {
-  background:
-    radial-gradient(120% 78% at 50% 104%, var(--accent) 0%,
-      color-mix(in srgb, var(--accent) 34%, #000) 46%, #000 100%);
-}
+/* Dolgu JS'ten gelir (fillStyle); buradaki yalnızca yedek taban. */
+.bg-palette { background: #000; }
 
 .bg-photo { background: #000; }
 

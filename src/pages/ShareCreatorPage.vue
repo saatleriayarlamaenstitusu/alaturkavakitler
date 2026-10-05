@@ -185,7 +185,7 @@ const shareSupported = computed(() => Boolean(navigator.share))
   text-align: center;
   font-size: 0.625rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+
   text-transform: uppercase;
   color: var(--text-muted);
   white-space: nowrap;
@@ -219,6 +219,7 @@ const shareSupported = computed(() => Boolean(navigator.share))
   color: var(--text);
   font-size: 0.8125rem;
   cursor: pointer;
+  border-radius: 4px;
 }
 
 .icon:hover { border-color: var(--text); }
@@ -246,6 +247,7 @@ const shareSupported = computed(() => Boolean(navigator.share))
   text-transform: uppercase;
   padding: 0.45rem 0.8rem;
   cursor: pointer;
+  border-radius: 4px;
 }
 
 .action.solid {

@@ -9,7 +9,13 @@ const STORAGE_KEY = 'shareEditor'
 let idSeq = 0
 const nextId = () => `l${++idSeq}`
 
-const defaultBackground = () => ({ kind: 'palette', photo: null, dim: 0, blur: 0, zoom: 1, x: 0, y: 0 })
+// Fotoğraf seçilmediğinde tuvalin zemini. `fill.style` hangi dolgunun
+// çizileceğini söyler; 'auto' renk vakit rengine (snapshot.primary) çözülür.
+const defaultFill = () => ({ style: 'vakit', color1: 'auto', color2: '#000000', angle: 160, softness: 78 })
+const defaultBackground = () => ({
+  kind: 'palette', photo: null, dim: 0, blur: 0, zoom: 1, x: 0, y: 0,
+  fill: defaultFill(),
+})
 const defaultGrain = () => ({ on: false, opacity: 0.35, size: 400, blend: 'overlay' })
 const defaultGrid = () => ({
   on: false, cols: 3, rows: 3, margin: 72,
@@ -37,7 +43,12 @@ export function createShareEditor(snapshot) {
     ratioId: saved?.ratioId ?? DEFAULT_RATIO,
     layers: saved?.layers ?? [],
     selectedId: null,
-    background: { ...defaultBackground(), ...(saved?.background ?? {}) },
+    background: {
+      ...defaultBackground(),
+      ...(saved?.background ?? {}),
+      // Eski kayıtlarda `fill` yok; varsayılanla birleştir.
+      fill: { ...defaultFill(), ...(saved?.background?.fill ?? {}) },
+    },
     grid: { ...defaultGrid(), ...(saved?.grid ?? {}) },
     grain: { ...defaultGrain(), ...(saved?.grain ?? {}) },
     brand: saved?.brand ?? false,
@@ -262,6 +273,11 @@ export function createShareEditor(snapshot) {
     state.ratioId = id
   }
 
+  function setFill(patch) {
+    record(`fill:${Object.keys(patch).join(',')}`)
+    Object.assign(state.background.fill, patch)
+  }
+
   function setBackground(patch) {
     record(`bg:${Object.keys(patch).join(',')}`)
     Object.assign(state.background, patch)
@@ -340,6 +356,7 @@ export function createShareEditor(snapshot) {
     state.layers = []
     state.selectedId = null
     Object.assign(state.background, defaultBackground())
+    Object.assign(state.background.fill, defaultFill())
     Object.assign(state.grid, defaultGrid())
     Object.assign(state.grain, defaultGrain())
     state.brand = false
@@ -350,7 +367,7 @@ export function createShareEditor(snapshot) {
     state, ratio, selected,
     addLayer, removeLayer, duplicateLayer, select,
     updateLayer, updateProps, resetProps, bringToFront, sendToBack,
-    setRatio, setBackground, setGrid, setGrain, panPhoto, zoomPhoto, resetPhoto,
+    setRatio, setBackground, setFill, setGrid, setGrain, panPhoto, zoomPhoto, resetPhoto,
     refreshPhotoPalette, addCustomColor, removeCustomColor, toggleSnap,
     ensureComposition, resetAll,
     canUndo, undo,

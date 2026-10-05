@@ -149,6 +149,22 @@ function writeField(field, val) {
   else updateProp(field.key, val)
 }
 
+// Zemin dolgusu seçenekleri. 'vakit' açılış görünümü: tabandan yükselen
+// o anki vakit rengi.
+const fillStyles = [
+  { value: 'vakit',   label: 'Vakit' },
+  { value: 'duz',     label: 'Düz renk' },
+  { value: 'gradyan', label: 'Gradyan' },
+  { value: 'mesh',    label: 'Mesh' },
+]
+
+// 'auto' = o anki vakit rengi; zemin için koyu tonlar da hazır dursun.
+const BG_SWATCHES = ['auto', '#000000', '#ffffff', '#0b1020', '#1a1a1a', '#f2f0e6']
+
+const fillColor1Label = computed(() =>
+  state.background.fill.style === 'duz' ? 'Renk' : 'Ana renk'
+)
+
 const hasPhoto = computed(() =>
   state.background.kind === 'photo' && Boolean(state.background.photo)
 )
@@ -283,6 +299,42 @@ function pickPhoto(e) {
             @change="pickPhoto"
           />
         </div>
+
+        <!-- Fotoğraf yokken tuvalin zemini: vakit gradyanı varsayılan,
+             düz renk / gradyan / mesh de seçilebilir. -->
+        <section v-if="!hasPhoto" class="group">
+          <h3 class="group-label">Zemin</h3>
+          <SettingControl
+            :field="{ type: 'select', label: 'Dolgu', options: fillStyles }"
+            :model-value="state.background.fill.style"
+            @update:model-value="editor.setFill({ style: $event })"
+          />
+          <SettingControl
+            :field="{ type: 'color', label: fillColor1Label, swatches: BG_SWATCHES }"
+            :accent="editor.snapshot.primary"
+            :model-value="state.background.fill.color1"
+            @update:model-value="editor.setFill({ color1: $event })"
+          />
+          <SettingControl
+            v-if="state.background.fill.style !== 'duz'"
+            :field="{ type: 'color', label: 'İkinci renk', swatches: BG_SWATCHES }"
+            :accent="editor.snapshot.primary"
+            :model-value="state.background.fill.color2"
+            @update:model-value="editor.setFill({ color2: $event })"
+          />
+          <SettingControl
+            v-if="state.background.fill.style !== 'duz'"
+            :field="{ type: 'range', label: 'Yayılma', min: 30, max: 120, step: 2, unit: '%' }"
+            :model-value="state.background.fill.softness"
+            @update:model-value="editor.setFill({ softness: $event })"
+          />
+          <SettingControl
+            v-if="state.background.fill.style === 'gradyan' || state.background.fill.style === 'mesh'"
+            :field="{ type: 'range', label: 'Açı', min: 0, max: 360, step: 5, unit: '°' }"
+            :model-value="state.background.fill.angle"
+            @update:model-value="editor.setFill({ angle: $event })"
+          />
+        </section>
 
         <section class="group">
           <h3 class="group-label">Ayar</h3>
@@ -425,9 +477,11 @@ function pickPhoto(e) {
      Bu yüzden önce mat --bg, üstüne --surface tonu boyanıyor. */
   background-color: var(--bg);
   background-image: linear-gradient(var(--surface), var(--surface));
-  border-top: 1px solid var(--text);
   padding: 0 1rem calc(0.5rem + env(safe-area-inset-bottom));
+  margin: 0 1em;
+    border-radius: 18px 18px 0 0;
 }
+
 
 /* Editör mobil önceliklidir; geniş ekranda panel tuvalle aynı sütunda kalır. */
 .panel > * {
@@ -471,6 +525,7 @@ function pickPhoto(e) {
   gap: 0.75rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
 }
 
 .title {
@@ -526,16 +581,17 @@ function pickPhoto(e) {
 }
 
 /* ── Ayar grubu ── */
+/* Gruplar arasında ayrı bir ayraç çizgisi YOK: başlığın yanından uzanan
+   `.group-rule` zaten ayracı görevi görüyor. İkisi birlikte olunca, özellikle
+   gruplar kapalıyken, birkaç piksel arayla üst üste çizgiler çıkıyordu. */
 .group {
-  padding: 0.25rem 0 0.75rem;
+  padding: 0 0 1.6rem;
 }
 
-.group + .group {
-  border-top: 1px solid var(--border);
-  padding-top: 0.75rem;
-}
+.group:last-child { padding-bottom: 0.5rem; }
 
-.group.closed { padding-bottom: 0.25rem; }
+/* Kapalıyken içerik yok; boşluğu yine de koru ki başlıklar yapışmasın. */
+.group.closed { padding-bottom: 1.1rem; }
 
 /* Başlık solda, ince çizgi sağa doğru uzanır — klasik Swiss ayraç.
    Tamamı tıklanabilir: uzun listelerde grup kapatılabiliyor. */
@@ -544,7 +600,7 @@ function pickPhoto(e) {
   align-items: center;
   gap: 0.6rem;
   width: 100%;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.7rem;
   padding: 0.15rem 0;
   border: 0;
   background: transparent;
@@ -644,6 +700,7 @@ function pickPhoto(e) {
   font-family: inherit;
   cursor: pointer;
   text-align: left;
+  border-radius: 6px;
 }
 
 .chip.active {
