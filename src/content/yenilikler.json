@@ -1,5 +1,23 @@
 [
   {
+    "id": "kible-pusulasi",
+    "title": "Kıble pusulası",
+    "date": "2026-10-06",
+    "body": "Vakit geri sayımının yanına **kıble pusulası** eklendi.\n\nKadran sade duruyor, üzerine basılı tuttuğunuzda açı ve yön bilgisi çıkıyor. Kısa bir dokunuş canlı pusulayı devreye alıyor: telefonu çevirdikçe iğne gerçek kıbleyi göstermeye başlıyor.\n\nKıbleye döndüğünüzde kadran yeşile dönüyor ve bir kez nabız atıyor, böylece ekrana bakmadan da hizalandığınızı anlayabiliyorsunuz.\n\nYön, seçili ilin merkezine göre hesaplanıyor. İsterseniz tek dokunuşla cihazınızın konumunu kullanabilirsiniz; o zaman il içindeki sapma da ortadan kalkıyor.\n\nCihazınızda pusula yoksa ya da tarayıcı sensörü engelliyorsa kadran kuzey yukarıda sabit kalıyor; açı değerini herhangi bir pusulayla kullanabilirsiniz."
+  },
+  {
+    "id": "hicri-takvim-duzeltmesi",
+    "title": "Hicri tarih artık Diyanet ile aynı",
+    "date": "2026-10-05",
+    "body": "Hicri tarih hesabı baştan yazıldı.\n\nÖnceki hesap aritmetik bir takvime dayanıyordu ve Diyanet'in kullandığı hesabî takvimden kayıyordu. Sapma sabit de değildi: 2026'nın on iki ay başlangıcından dokuzu tutmuyordu, Ramazan'da fark iki güne çıkıyordu.\n\nArtık ay başlangıçları Diyanet'in yayımladığı listeden alınıyor. Gösterilen tarih Diyanet takvimiyle birebir aynı.\n\nBir de **hicri günün ne zaman başlayacağı** ayarlardan seçilebiliyor. Hicri gün güneş batımıyla başladığı için \"Akşam ezanı\" seçeneğinde tarih akşam ezanıyla birlikte dönüyor; \"Gece yarısı\" seçeneğinde eskisi gibi kalıyor."
+  },
+  {
+    "id": "gorsel-olustur-zemin-ve-duzen",
+    "title": "Zemin rengi, geri al ve satır sonları",
+    "date": "2026-10-04",
+    "body": "Görsel Oluştur bölümüne birkaç iyileştirme geldi.\n\n**Zemin özelleştirilebiliyor.** Fotoğraf seçmediğinizde gelen vakit gradyanı artık tek seçenek değil: düz renk, iki renkli gradyan ya da mesh seçebilir, renkleri ve yayılmayı kendiniz ayarlayabilirsiniz. Renk olarak \"vakit rengi\"ni bırakırsanız görsel vakitle birlikte renk değiştirmeye devam eder.\n\n**Geri al düğmesi** eklendi. Yanlışlıkla bir parçayı silerseniz ya da bir ayarı bozarsanız üst çubuktan geri alabilirsiniz.\n\n**Enter artık yeni satır açıyor.** Metin alanlarında satır sonu girebiliyorsunuz ve girdiğiniz satır görselde de aynı şekilde çıkıyor. Arapça metin yazarken imlecin kayması sorunu da düzeltildi.\n\nAyar panelindeki bölüm başlıkları sadeleşti, aralarına boşluk geldi."
+  },
+  {
     "id": "gorsel-olustur-aylik-takvim",
     "title": "Aylık takvim parçası",
     "date": "2026-09-26",

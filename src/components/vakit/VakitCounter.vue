@@ -2,6 +2,7 @@
 import { ref, watch, onUnmounted, computed } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { findVakit, isKerahat } from '@/utils/vakit'
+import QiblaCompass from './QiblaCompass.vue'
 import { DateTime } from 'luxon'
 
 const appStore = useAppStore()
@@ -79,7 +80,11 @@ onUnmounted(() => {
     </div>
 
     <span class="counter-label">Vaktin çıkmasına</span>
-    <div class="counter">{{ counterDisplay }}</div>
+    <!-- Sayaç ve kıble yan yana: ikisi de "şu an" bilgisi. -->
+    <div class="counter-row">
+      <div class="counter">{{ counterDisplay }}</div>
+      <QiblaCompass class="qibla-slot" />
+    </div>
 
     <span v-if="kerahat" class="kerahat">Kerahat</span>
   </div>
@@ -89,6 +94,17 @@ onUnmounted(() => {
 .vakit-counter {
   color: var(--text);
 }
+
+/* Sayaç solda kalır, pusula sağ uca yaslanır; dar ekranda alta iner. */
+.counter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.qibla-slot { flex-shrink: 0; }
 
 .vakit-badges {
   display: flex;

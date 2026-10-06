@@ -338,6 +338,40 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 
 ---
 
+## Kıble Pusulası
+
+- `utils/qibla.js` büyük daire yönünü hesaplar (Kâbe 21.4225°N, 39.8252°E).
+  Düz haritadaki "Mekke'ye doğru" sezgisi yanlıştır; Türkiye'den kıble
+  güneydoğu değil güney-güneydoğudur (İstanbul ~152°, Diyarbakır ~181°).
+  Formül iki bağımsız türevle (genel başlangıç yönü ↔ özelleşmiş hâli)
+  karşılaştırılıp doğrulandı.
+- Konum iki kaynaktan gelir: `data/cityCoords.js` (81 il merkezi, plaka
+  anahtarlı) ya da kullanıcı isterse cihaz GPS'i. GPS varsa o kullanılır.
+- Cihaz pusulası isteğe bağlı: `deviceorientationabsolute` varsa kadran döner
+  ve iğne gerçek kıbleyi gösterir. iOS 13+ `DeviceOrientationEvent.requestPermission()`
+  ister ve bu yalnızca kullanıcı hareketiyle çağrılabilir — tek düğme hem
+  pusula iznini hem konumu ister. Pusula yoksa kadran kuzey yukarıda sabit
+  kalır ve açı değeri okunur bilgi olarak durur.
+- `alpha` saat yönünün TERSİNE artar, iOS'un `webkitCompassHeading`'i ise
+  doğrudan pusula yönüdür — ikisi aynı şekilde ele alınırsa iğne ters döner.
+- Dinleyiciler **açılışta** bağlanır (izin gerekmiyorsa yön çoktan gelmiş olur).
+  "requestPermission varsa iOS'tur" ayrımı yapma — o alan bazı ortamlarda iOS
+  dışında da tanımlı, erken dinleme hiç devreye girmiyordu.
+- Pusula ve konum izni AYNI ANDA istenmez: izin kutusu açıkken sayfa askıya
+  alınabiliyor ve yön zaman aşımı yanlışlıkla "pusula yok" diye hüküm veriyordu.
+  Önce pusula (jest gerektirir), konum kısa bir gecikmeyle.
+- Kadran renkleri `--primary` değil **`--accent-ui`** kullanır; halka/çentik
+  `--text` üzerinden gelir. `canli` paletinde `--bg: var(--primary)` olduğu
+  için iğne zeminle aynı renge düşüp kayboluyordu (on palet × tema
+  kombinasyonu ekran görüntüsüyle tek tek kontrol edildi).
+- Kıbleye dönüldüğünde kadran yeşile döner (`--qibla-ok`, sabit `#2fbf71` —
+  "hizalandı" palete bağlı olmayan bir onay rengi). Eşikte histerezis var:
+  girişte 4°, çıkışta 8°; tek eşik olsaydı pusula gürültüsünde titrerdi.
+- **Brave'in parmak izi koruması yön sensörünü sessizce kapatır** — olay hiç
+  gelmez, hata da vermez. Aynı cihazda Chrome'da çalışıp Brave'de çalışmadığı
+  ölçüldü. `navigator.brave.isBrave()` ile tespit edilip kullanıcıya Kalkanlar
+  uyarısı gösterilir.
+
 ## Hicri Takvim
 
 - Dönüşüm **tablo tabanlıdır**: `src/data/hijriMonths.js` her hicri ayın 1'ine
