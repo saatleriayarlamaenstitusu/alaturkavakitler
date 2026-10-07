@@ -408,3 +408,35 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - Ay fazı SVGleri: `/public/Icons/moon/1.svg` → `29.svg` (hicri gün numarasıyla).
 - `nowPercent` VakitRangeView'da: `(now - imsak_bugün) / (imsak_yarın - imsak_bugün) * 100`.
 - v1 React kodu `_v1/` klasöründe arşivlendi — referans için okunabilir.
+
+---
+
+## Logo Animasyonu
+
+- `brand/logo-animation/` — logonun açılış/kapanış animasyonu. İki tüketicisi var:
+  `src/components/ui/LogoMotion.vue` (üst çubuktaki marka işareti + yükleyici)
+  ve tanıtım videoları (`render.mjs` ile video).
+- **Animasyon iki yerde tanımlı** (`index.html` ve `LogoMotion.vue`); koreografi
+  ve zamanlama aynı, birini değiştirince diğerini de güncelle.
+- Koreografi (video): işaret ortada belirir → sola kayar → kayarken harfler
+  soldan sağa tek tek açılır, her harf biraz sağdan gelir (çekiliyormuş hissi).
+- Sitede kayma YOK (`slide` varsayılan false): logo zaten yerinde dururken onu
+  ortadan getirmek yersiz bir hareket. İşaret yerinde belirir, harfler açılır.
+- Harfler gerçek ayrı yollar: kelime yolundaki alt yollar mutlak koordinata
+  çevrilip x konumuna göre gruplandı (8+8). İki tuzak: kapalı konturda `z`
+  sonrası imleç alt yolun başına döner; `m` sonrası örtük koordinatlar GÖRELİ
+  linetodur (başı `M` yapınca mutlak sayılıp şekil dağılıyor, önüne `l` koy).
+- SVG'de `transform` ÖZNİTELİĞİ ile CSS animasyonunu aynı elemanda birleştirme:
+  CSS `transform` özniteliği eziyor. İşaretin `scale(-1)` taşıyan parçası ayrı
+  bir `<g>` içinde durmalı — yoksa sol parça kayboluyor.
+- Vue scoped stilde `:root` seçicisi `:root[data-v-...]` olur ve hiç eşleşmez;
+  bileşen değişkenleri bileşenin kökünde tanımlanır.
+- SVG'de dönüşüm kullanırken `transform-box: fill-box` şart; yoksa köken
+  tuvalin tamamına göre hesaplanıp parçalar ekrandan uçuyor.
+- `render.mjs` zamanı **Web Animations API** ile sürer (animasyonları
+  duraklatıp kare başına `currentTime` kurar). CDP sanal saati denendi ve
+  çalışmadı: saat tamamen duruyorken `Page.captureScreenshot` hiç dönmüyor,
+  yüklenme payı için bütçe verilince de o süre animasyonun başından yeniyor.
+- Saydam kayıt için komut satırı bayrağı (`--default-background-color`) değil
+  `Emulation.setDefaultBackgroundColorOverride` kullanılır; bayrakla ekran
+  görüntüsü hiç dönmüyordu.

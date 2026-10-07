@@ -4,7 +4,7 @@ import { RouterLink } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { CITIES_LIST } from '@/data/cities'
 import DropdownMenu from './DropdownMenu.vue'
-import LogoWide from '@/components/ui/LogoWide.vue'
+import LogoMotion from '@/components/ui/LogoMotion.vue'
 
 const appStore = useAppStore()
 
@@ -19,8 +19,11 @@ const selectedPlate = computed({
 
 <template>
   <nav class="top-nav">
-    <RouterLink to="/" class="logo-link">
-      <LogoWide class="logo" />
+    <RouterLink to="/" class="logo-link" aria-label="Ana sayfa">
+      <!-- Açılışta bir kez oynar. TopNav uygulama kabuğunda olduğu için
+           sayfa gezintilerinde yeniden kurulmaz; animasyon yalnızca sayfa
+           ilk açıldığında görünür. -->
+      <LogoMotion class="logo" width="140px" :speed="0.9" />
     </RouterLink>
 
     <div class="nav-right">
@@ -70,8 +73,6 @@ const selectedPlate = computed({
 }
 
 .logo {
-  height: 28px;
-  width: auto;
   margin: 0 0.625rem;
 }
 
