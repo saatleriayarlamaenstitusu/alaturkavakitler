@@ -342,8 +342,10 @@ function onTouchEnd(e) {
   color: color-mix(in srgb, var(--text) 35%, transparent);
 }
 
+/* `--primary` DEĞİL `--accent-ui`: `canli` paletinde `--bg: var(--primary)`
+   olduğu için bugünün zemini sayfa zeminiyle aynı renge düşüp kayboluyordu. */
 .hm-cell.is-today {
-  background: var(--primary);
+  background: var(--accent-ui);
 }
 
 .hm-cell.is-today .hm-num,
@@ -353,7 +355,7 @@ function onTouchEnd(e) {
 
 /* Seçili gün (bugün değilse) — halka */
 .hm-cell.is-selected:not(.is-today) {
-  box-shadow: 0 0 0 2px var(--primary);
+  box-shadow: 0 0 0 2px var(--accent-ui);
 }
 
 /* Ay navigasyonu — takvimin üstünde, minik ay adı + ok tuşları */

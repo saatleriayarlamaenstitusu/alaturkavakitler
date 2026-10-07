@@ -49,9 +49,9 @@ const miladiLine = computed(() =>
   justify-content: center;
   width: 4rem;
   height: 4rem;
-  border: 1.5px solid var(--primary);
+  border: 1.5px solid var(--accent-ui);
   border-radius: 6px;
-  color: var(--primary);
+  color: var(--accent-ui);
   font-family: var(--font2);
   font-size: 2.4rem;
   font-weight: 700;

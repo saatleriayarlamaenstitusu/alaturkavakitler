@@ -174,6 +174,15 @@ homeClock         // 'led' | 'normal' — ana sayfa saat görünümü (LedClock 
 ### Arayüz aksanı — `--accent-ui`
 - Düğme, aktif durum ve odak vurguları `--primary` değil **`--accent-ui`** kullanır. Sebebi: bazı paletlerde `--primary` zeminle çakışıyor — `canli`'de `--bg: var(--primary)` (aksan tamamen kaybolur), `mono` açık modda `--primary` ≈ `--surface`. `--accent-ui` normalde `--primary`'ye eşittir, bu iki durumda okunur bir renge düşer.
 - Tuvalin içindeki vakit rengi bundan bağımsızdır (JS'ten `snapshot.primary` olarak gelir).
+- **Arayüzde `--primary`'yi zemin/kenarlık/vurgu olarak KULLANMA.** `canli`'de
+  sayfa zeminiyle aynı renge düşüp kayboluyor. Bu hata birden çok yerde
+  tekrarlandı ve tek tek temizlendi: bugünün takvim hücresi, vakit rozeti,
+  liste noktası, alt gezinme vurgusu, menüde aktif satır, hakkında bağlantıları,
+  şehir seçicinin odak kenarlığı, kıble kadranı. Yeni vurgu eklerken
+  `--accent-ui` kullan ve `canli` paletinde gözle doğrula.
+- İstisna: bir rengin kendisi *içerik* ise `--primary` doğrudur — örn.
+  `VakitRangeView`'daki zaman şeridi bantları vakit rengini temsil eder ve
+  koyu bir panelin üstünde durduğu için `canli`'de de okunur.
 - **`--surface` her palette mat değildir** (`canli`: `color-mix(... transparent)`). Tuvalin/başka bir şeyin üstüne binen bir yüzey `background: var(--surface)` ile bırakılırsa altındaki görünür. Mat gerekiyorsa `background-color: var(--bg)` + `background-image: linear-gradient(var(--surface), var(--surface))`.
 
 ### Renk stilleri (genişletilebilir)

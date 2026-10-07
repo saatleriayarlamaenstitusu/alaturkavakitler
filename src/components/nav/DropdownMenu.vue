@@ -62,7 +62,7 @@ function close() {
 
 .dropdown-content :deep(a:hover),
 .dropdown-content :deep(a.router-link-active) {
-  background: var(--primary);
+  background: var(--accent-ui);
   color: white;
 }
 </style>

@@ -123,8 +123,10 @@ onUnmounted(() => {
 }
 
 .badge--current {
-  background: var(--primary);
-  border-color: var(--primary);
+  /* Arayüz vurgusu: `--primary` DEĞİL. `canli` paletinde `--bg: var(--primary)`
+     olduğu için rozet zeminle aynı renge düşüp kayboluyordu. */
+  background: var(--accent-ui);
+  border-color: var(--accent-ui);
   color: #fff;
   opacity: 1;
 }

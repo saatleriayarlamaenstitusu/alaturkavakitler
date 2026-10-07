@@ -100,6 +100,6 @@ const selectedPlate = computed({
 
 .city-select:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--accent-ui);
 }
 </style>

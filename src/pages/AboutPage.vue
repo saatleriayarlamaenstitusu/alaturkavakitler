@@ -106,7 +106,7 @@ useSeo({
   position: absolute;
   top: -0.5em;
   left: -0.4em;
-  color: var(--primary);
+  color: var(--accent-ui);
   font-family: var(--font2);
   font-size: 100px;
   line-height: 0;
@@ -151,7 +151,7 @@ useSeo({
 }
 
 .links a {
-  background: var(--primary);
+  background: var(--accent-ui);
   padding: 6px;
   border-radius: 4px;
   display: flex;

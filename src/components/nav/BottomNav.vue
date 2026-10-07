@@ -71,7 +71,7 @@ import { RouterLink } from 'vue-router'
   content: "";
   position: absolute;
   z-index: 0;
-  background: var(--primary);
+  background: var(--accent-ui);
   width: 2.5em;
   height: 50%;
   left: 50%;
@@ -84,7 +84,7 @@ import { RouterLink } from 'vue-router'
   content: "";
   position: absolute;
   z-index: 0;
-  background: var(--primary);
+  background: var(--accent-ui);
   transform: translate(-50%, -50%);
   left: 50%;
   border-radius: 50px;
