@@ -48,6 +48,25 @@ const colorGroups = computed(() => [
   { id: 'kendi', label: 'Kendi', colors: editor.state.customColors, removable: true },
 ].filter(g => g.colors.length))
 
+// ── Renk ──
+// Kapalıyken yalnızca seçili renk görünür; palet dokununca açılır.
+const colorOpen = ref(false)
+
+// Seçili renk kullanıcıya ne söylüyor: 'auto' vakit rengi, 'tint' soluk ton,
+// gerisi altı haneli kod.
+const colorName = computed(() => {
+  const v = props.modelValue
+  if (v === 'auto') return 'Vakit rengi'
+  if (v === 'tint') return 'Soluk ton'
+  return String(v ?? '').toUpperCase()
+})
+
+// Renk seçilince palet kapanır: seçim tek dokunuş, sonra panel toparlanır.
+function pickColor(sw) {
+  value.value = sw
+  colorOpen.value = false
+}
+
 // ── Font seçici ──
 // 70 font tek şeritte okunmuyor; gruplar sekmeye ayrıldı. Açılışta seçili
 // fontun sekmesi gelir, sekme değişince o grubun CSS'i indirilir.
@@ -88,7 +107,10 @@ const readout = computed(() => {
   const v = Number(value.value)
   if (!Number.isFinite(v)) return ''
   switch (props.field.unit) {
+    // '%' 0..1 aralığındaki kesirler için (opaklık, karartma): 100 ile çarpılır.
+    // 'pct' zaten yüzde olan değerler için (köşe yuvarlaklığı): olduğu gibi.
     case '%': return `${Math.round(v * 100)}%`
+    case 'pct': return `${Math.round(v)}%`
     case 'em': return v.toFixed(2)
     case '×': return `${v.toFixed(2)}×`
     case 'px': return `${Math.round(v)}`
@@ -107,7 +129,16 @@ const fullWidth = computed(() =>
     <label class="field-label">{{ field.label }}</label>
 
     <div class="field-control">
-      <div v-if="field.type === 'color'" class="swatches">
+      <!-- Renk kapalıyken tek kutu: her renk alanı 14 kutucuk basınca panel
+           okunmaz hâle geliyordu. Dokununca palet açılır, aynı anda yalnızca
+           bir alan açık kalır gerekmez — alanlar zaten az yer kaplıyor. -->
+      <div v-if="field.type === 'color' && !colorOpen" class="color-closed">
+        <button class="swatch current" :style="{ background: swatchColor(value) }"
+          :aria-label="`${field.label}: ${colorName}`" @click="colorOpen = true"></button>
+        <button class="color-name" @click="colorOpen = true">{{ colorName }}</button>
+      </div>
+
+      <div v-else-if="field.type === 'color'" class="swatches">
         <template v-for="group in colorGroups" :key="group.id">
           <span v-if="group.label" class="swatch-label">{{ group.label }}</span>
           <button
@@ -118,7 +149,7 @@ const fullWidth = computed(() =>
             :style="{ background: swatchColor(sw) }"
             :aria-label="sw === 'auto' ? 'Vakit rengi' : sw === 'tint' ? 'Soluk ton' : sw"
             :title="group.removable ? 'Uzun bas: kaldır' : null"
-            @click="value = sw"
+            @click="pickColor(sw)"
             @contextmenu.prevent="group.removable && editor.removeCustomColor(sw)"
           ></button>
         </template>
@@ -127,6 +158,7 @@ const fullWidth = computed(() =>
           <span aria-hidden="true">+</span>
           <input type="color" class="color-input" @input="pickCustom" />
         </label>
+        <button class="color-close" aria-label="Kapat" @click="colorOpen = false">×</button>
       </div>
 
       <div v-else-if="field.type === 'font'" class="font-picker">
@@ -221,6 +253,17 @@ const fullWidth = computed(() =>
         <output class="readout">{{ readout }}</output>
       </template>
 
+      <!-- min/max: hicri tablo dışına çıkılırsa dönüşüm tahmine düşüyor,
+           tarayıcı da elle 4 haneli uçuk yıl yazılmasına izin veriyor. -->
+      <input
+        v-else-if="field.type === 'date'"
+        class="text-input date-input"
+        type="date"
+        :min="field.min"
+        :max="field.max"
+        v-model="value"
+      />
+
       <!-- v-model (:value + @input değil): Vue'nun vModelText direktifi IME
            bestesi sürerken DOM değerine dokunmuyor. Arapça klavye, mobil
            tahmin ve yapıştırma sırasında imlecin sona atlamasının sebebi
@@ -314,6 +357,45 @@ const fullWidth = computed(() =>
   text-transform: uppercase;
   color: var(--text-dim);
   padding: 0 0.1rem 0 0.35rem;
+}
+
+.color-closed {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.swatch.current {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.color-name {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.color-close {
+  flex-shrink: 0;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin-left: 0.15rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .swatch {
@@ -624,6 +706,12 @@ const fullWidth = computed(() =>
   font-size: 0.875rem;
   font-weight: 600;
   padding: 0.25rem 0;
+}
+
+/* Tarih seçici: sistem takvimi açılır, alan diğer metin alanlarıyla aynı görünür. */
+.date-input {
+  color-scheme: dark light;
+  font-variant-numeric: tabular-nums;
 }
 
 .text-input::placeholder { color: var(--text-dim); font-weight: 400; }

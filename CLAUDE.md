@@ -308,6 +308,27 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - **SVG kuralı:** paylaşım widget'larında stroke'lu `<line>` / `<path>` KULLANMA — tek bir tanesi bile export'ta tüm katmanı düşürüyor. Dolgulu `<rect>` / `<circle>` sorunsuz (stroke'lu `<rect>`/`<circle>` de sorunsuz).
 - Yeni widget eklemek: compact bileşeni yaz + `widgets/registry.js`'e bir satır ekle. Seçici, ayar paneli ve tuval aynı tablodan beslenir.
 - Yeni oran eklemek: `src/data/shareRatios.js`'e bir satır.
+- **Ön tanımlar `src/data/widgetPresets.js`'te**, widget kimliğine göre
+  anahtarlanır; `registry.js` onları `presetsFor(id)` ile bağlar. Ayırmanın
+  sebebi: ön tanımlar sık düzenlenir, widget tanımı seyrek değişir. Dosyanın
+  başındaki yorum ekleme yordamını ve tuzakları anlatıyor.
+- Geliştirmede katman başlığında **"Preset"** düğmesi (Ctrl/Cmd + Shift + C)
+  o katmanın biçim alanlarını hazır bir `preset(...)` satırı olarak panoya
+  yazar. Biçim süzgeci iki ölçüte bakar: alan 'icerik' grubunda olmamalı VE
+  tipi içerik taşıyan tiplerden (text/textarea/date/phrase/stepper) olmamalı —
+  takvimin ay başlığı metni 'baslik' grubunda duruyor ama yine de içeriktir.
+- **Ön tanımlar (preset)**: her widget `presets` listesi taşıyabilir. Bir ön
+  tanım YALNIZCA biçim taşır (yazı tipi, kalınlık, ölçü, hizalama, düzen);
+  içerik alanlarına dokunmaz — girdiğin metni/tarihi silmemeli. Uygulanınca
+  `__preset` yazılır ve şeritte işaretlenir; elle bir ayara dokunulduğunda
+  işaret düşer (görünüm artık o ön tanım değildir). Preset bir font
+  değiştiriyorsa kalınlık `nearestWeight` ile o fontta bulunan değere çekilir.
+- **Renk alanı kapalı başlar**: tek kutu + okunur ad (`Vakit rengi`,
+  `Soluk ton`, `#RRGGBB`); dokununca palet açılır, seçince kapanır. Önceden
+  her renk alanı 14 kutucuk basıyordu ve panel yatayda taşıyordu.
+- Sürgü birimi `'%'` 0..1 KESİRLER içindir (opaklık, karartma) ve 100 ile
+  çarpar; zaten yüzde olan değerlerde `'pct'` kullan. Köşe yuvarlaklığı
+  `'%'` ile `1400%` okunuyordu.
 - **Ayar alanları gruplu**: her alanın bir `group` değeri vardır (`FIELD_GROUPS`: içerik / tipografi / boyut / görünüm). Widget kendi `groups` listesini verebilir — takvimde ayarlar metin katmanına göre ayrılır (Takvim / Ay başlığı / Gün adları / Gün sayıları / Görünüm). EditorPanel boş grubu çizmez; yeni alan eklerken `group` vermeyi unutma (yoksa 'görünüm'e düşer).
 - Grup başlıkları **katlanabilir** (uzun listelerde gerekiyor); kapalıyken kaç ayar olduğu sağda görünür. Kapalı gruplar widget tipi bazında hatırlanır.
 - **Hizalama (snap)**: katman taşınırken `src/utils/snap.js` tuval kenar/merkezi, grid kenar boşluğu ve diğer katmanların kenar/merkezlerine yapıştırır. Eşik ekran pikselinde tanımlıdır (7px), tuval birimine çevrilirken `viewScale`'e bölünür — yakınlaştırmadan bağımsız aynı his. Kılavuz çizgiler `state.guides`'ta tutulur, yalnızca sürükleme sırasında çizilir. Katman başlığındaki **Hizala** düğmesiyle kapatılabilir (`state.snap`, kalıcı) — kapalıyken hedefler hiç toplanmaz.
@@ -380,6 +401,23 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
   gelmez, hata da vermez. Aynı cihazda Chrome'da çalışıp Brave'de çalışmadığı
   ölçüldü. `navigator.brave.isBrave()` ile tespit edilip kullanıcıya Kalkanlar
   uyarısı gösterilir.
+
+## Dinî Günler
+
+- `src/data/holyDays.js` — kandiller, bayramlar, arefe ve Aşure hicri takvimden
+  **kural olarak** türetilir; sabit tarih listesi tutulmaz.
+- **Gecelerdeki incelik:** hicri gün güneş batımıyla başlar. "Recep ayının 27.
+  gecesi" 26'sının akşamında başlayıp 27'sine ait olan gecedir — bu yüzden
+  kandiller adı geçen günün BİR ÖNCEKİ hicri gününe işaretlenir. Diyanet'in
+  yayımladığı miladi tarihler de böyle.
+- Diyanet'in 2026 listesindeki 15 tarihin **15'i birebir** tutuyor (ölçüldü).
+  Kadir Gecesi 26 Ramazan'a (27. gece) konur — Ramazan'ın son on gününde gizli
+  olduğu bilinir, 27. gece yaygın olarak idrak edilir.
+- Regaip hafta gününe bağlıdır: Recep'teki ilk perşembe akşamı.
+- Kullanıldığı yerler: takvim sayfasında seçili günün altında rozet + ızgarada
+  nokta; görsel oluşturucuda tarih parçasının etkinlik satırı (anlık görüntüden
+  ön-doldurulur, alan serbest kalır) ve aylık takvim parçasında "Dinî günler"
+  anahtarı.
 
 ## Hicri Takvim
 

@@ -25,7 +25,14 @@ const font = useWidgetFont(s, 700)
 
     <div class="info">
       <div v-if="s.hijriText" class="hijri"><WidgetLines :text="s.hijriText" /></div>
-      <div v-if="s.miladi" class="miladi"><WidgetLines :text="s.miladi" /></div>
+      <!-- Tarih ve ardındaki not tek satırda ama ayrı alanlar: tarih
+           seçiciden gelir, not serbest yazılır. -->
+      <div v-if="s.miladi || s.miladiNote" class="miladi">
+        <span v-if="s.miladi">{{ s.miladi }}</span><span
+          v-if="s.miladi && s.miladiNote"
+          class="miladi-sep"
+        >{{ s.miladiSep || ' · ' }}</span><span v-if="s.miladiNote">{{ s.miladiNote }}</span>
+      </div>
       <div v-if="s.event" class="event" :style="{ color: eventColor }">
         <span class="event-rule" aria-hidden="true"></span>
         <span class="event-text"><WidgetLines :text="s.event" /></span>
@@ -83,6 +90,7 @@ const font = useWidgetFont(s, 700)
 
 .miladi {
   font-size: 26px;
+  white-space: nowrap;
   font-weight: var(--w-soft);
   letter-spacing: var(--ls, 0em);
   opacity: 0.62;

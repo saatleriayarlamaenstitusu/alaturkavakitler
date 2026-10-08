@@ -1,10 +1,13 @@
 <script setup>
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 import { useShareEditor } from '@/composables/useShareEditor'
 import { SHARE_WIDGETS, getWidget, FIELD_GROUPS } from './widgets/registry'
 import { SHARE_RATIOS } from '@/data/shareRatios'
 import { getFont, nearestWeight } from '@/data/shareFonts'
 import { getPhraseFrom } from '@/data/phraseSets'
+import { DateTime } from 'luxon'
+import { toHijri } from '@/utils/hijri'
+import { holyDayLabel } from '@/data/holyDays'
 import { convertMonth } from '@/utils/calendarGrid'
 import SettingControl from './SettingControl.vue'
 
@@ -44,6 +47,8 @@ function updateProp(key, value) {
   const layer = selected.value
   if (!layer) return
   const patch = { [key]: value }
+  // Elle bir ayara dokunulduğunda görünüm artık o ön tanım değildir.
+  if (layer.props.__preset) patch.__preset = null
   if (key === 'font') {
     patch.weight = nearestWeight(value, layer.props.weight)
     if (!getFont(value).italic) patch.italic = false
@@ -86,6 +91,23 @@ function updateProp(key, value) {
 
   if (key === 'system') {
     Object.assign(patch, convertMonth(layer.props.system, value, layer.props.year, layer.props.month))
+  }
+
+  // Tarih seçilince tarihe bağlı bütün alanlar birlikte güncellenir: hicri
+  // gün/ay/yıl, miladi satır, ay fazı ve o güne denk gelen dinî gün.
+  // Sonrasında her biri yine elle değiştirilebilir.
+  if (key === 'date' && value) {
+    const d = DateTime.fromISO(value).setLocale('tr')
+    if (d.isValid) {
+      const js = d.toJSDate()
+      const h = toHijri(js)
+      patch.hijriDay = String(h.day).padStart(2, '0')
+      patch.hijriText = `${h.monthName} ${h.year}`
+      patch.miladi = `${d.day} ${d.monthLong} ${d.year}`
+      patch.miladiNote = d.weekdayLong
+      patch.moonDay = Math.min(h.day, 29)
+      patch.event = holyDayLabel(js)
+    }
   }
 
   // Hazır metin seçimi iki satırı da doldurur; sonrasında ikisi de serbest.
@@ -138,6 +160,95 @@ function toggleGroup(id) {
   const key = groupKey(id)
   closedGroups.value = { ...closedGroups.value, [key]: !closedGroups.value[key] }
 }
+
+// ── Ön tanım kopyalama (yalnızca geliştirme) ──
+// Arayüzde bir görünüm kurup bunu `src/data/widgetPresets.js`'e yapıştırmak
+// için: o katmanın BİÇİM alanlarını hazır bir `preset(...)` satırı olarak
+// panoya yazar. İçerik alanları (`group: 'icerik'`) dışarıda bırakılır —
+// bir ön tanım kullanıcının metnini/tarihini taşımamalı.
+const isDev = Boolean(import.meta.env?.DEV)
+const copied = ref(false)
+
+function formatValue(v) {
+  if (typeof v === 'string') return `'${v.replace(/'/g, "\\'")}'`
+  if (typeof v === 'number') return String(Math.round(v * 1000) / 1000)
+  return String(v)
+}
+
+function presetSnippet() {
+  const layer = selected.value
+  const def = selectedDef.value
+  if (!layer || !def) return ''
+
+  // Biçim alanı: 'icerik' grubunda OLMAYAN ve tipi doğası gereği içerik
+  // taşımayan alanlar. Tip kontrolü şart — takvimdeki ay başlığı metni
+  // 'baslik' grubunda duruyor ama yine de kullanıcının yazdığı bir içerik.
+  const CONTENT_TYPES = ['text', 'textarea', 'date', 'phrase', 'stepper']
+  const styleKeys = def.settings
+    .filter(f => (f.group ?? 'gorunum') !== 'icerik'
+      && !CONTENT_TYPES.includes(f.type)
+      && !f.layerLevel)
+    .map(f => f.key)
+
+  const entries = styleKeys
+    .filter(k => layer.props[k] !== undefined)
+    .map(k => `    ${k}: ${formatValue(layer.props[k])},`)
+
+  return [
+    `  // ${def.label} — widgetPresets.js içindeki '${def.id}' listesine ekle`,
+    `  preset('yeni', 'Yeni', {`,
+    ...entries,
+    `  }),`,
+  ].join('\n')
+}
+
+async function copyPreset() {
+  const text = presetSnippet()
+  if (!text) return
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    // Pano reddedilirse (izin/güvenli bağlam) en azından konsola bırak.
+    console.log(text)
+  }
+  copied.value = true
+  setTimeout(() => { copied.value = false }, 1600)
+}
+
+// Kısayol: katman seçiliyken Ctrl/Cmd + Shift + C.
+function onKey(e) {
+  if (!isDev || !selected.value) return
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyC') {
+    e.preventDefault()
+    copyPreset()
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onKey))
+onUnmounted(() => window.removeEventListener('keydown', onKey))
+
+// Preset uygulanınca yazı tipi değişiyor olabilir; kalınlık o fontta
+// bulunan en yakın değere çekilir, yoksa tarayıcı sahte kalın çiziyor.
+function applyPreset(p) {
+  const layer = selected.value
+  if (!layer) return
+  const patch = { ...p.props }
+  for (const key of Object.keys(patch)) {
+    if (!key.toLowerCase().endsWith('font')) continue
+    const weightKey = key === 'font' ? 'weight' : key.replace(/Font$/, 'Weight')
+    if (weightKey in patch) patch[weightKey] = nearestWeight(patch[key], patch[weightKey])
+    if (!getFont(patch[key]).italic) {
+      const italicKey = key === 'font' ? 'italic' : key.replace(/Font$/, 'Italic')
+      if (italicKey in layer.props) patch[italicKey] = false
+    }
+  }
+  patch.__preset = p.id
+  editor.updateProps(layer.id, patch)
+}
+
+// Hangi ön tanım seçili: uygulandığında işaretlenir, sonradan bir ayara
+// dokununca işaret düşer — görünüm artık o ön tanım değil.
+const activePreset = computed(() => selected.value?.props.__preset ?? null)
 
 function fieldValue(field) {
   if (field.layerLevel) return selected.value?.opacity ?? 1
@@ -218,11 +329,36 @@ function pickPhoto(e) {
           <button class="ghost" @click="editor.bringToFront(selected.id)">Öne</button>
           <button class="ghost" @click="editor.duplicateLayer(selected.id)">Çoğalt</button>
           <button class="ghost" @click="editor.resetProps(selected.id)">Sıfırla</button>
+          <!-- Yalnızca geliştirmede: görünümü ön tanım satırı olarak kopyalar. -->
+          <button
+            v-if="isDev"
+            class="ghost dev"
+            title="Ön tanım olarak kopyala (Ctrl/Cmd + Shift + C)"
+            @click="copyPreset"
+          >{{ copied ? 'Kopyalandı' : 'Preset' }}</button>
           <button class="ghost primary" @click="editor.select(null)">Bitti</button>
         </div>
       </header>
 
       <div class="sheet-body fields">
+        <!-- Ön tanımlar: tek dokunuşla tutarlı bir görünüm. Yalnızca biçim
+             değişir, girdiğin içerik olduğu gibi kalır. -->
+        <section v-if="selectedDef.presets?.length" class="group presets">
+          <div class="group-label static">
+            <span>Ön tanım</span>
+            <span class="group-rule" aria-hidden="true"></span>
+          </div>
+          <div class="preset-strip">
+            <button
+              v-for="p in selectedDef.presets"
+              :key="p.id"
+              class="preset-chip"
+              :class="{ active: activePreset === p.id }"
+              @click="applyPreset(p)"
+            >{{ p.label }}</button>
+          </div>
+        </section>
+
         <section
           v-for="group in groupedFields"
           :key="group.id"
@@ -324,7 +460,7 @@ function pickPhoto(e) {
           />
           <SettingControl
             v-if="state.background.fill.style !== 'duz'"
-            :field="{ type: 'range', label: 'Yayılma', min: 30, max: 120, step: 2, unit: '%' }"
+            :field="{ type: 'range', label: 'Yayılma', min: 30, max: 120, step: 2, unit: 'pct' }"
             :model-value="state.background.fill.softness"
             @update:model-value="editor.setFill({ softness: $event })"
           />
@@ -581,6 +717,41 @@ function pickPhoto(e) {
 }
 
 /* ── Ayar grubu ── */
+.group-label.static { cursor: default; }
+
+.ghost.dev { color: var(--accent-ui); }
+
+.preset-strip {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.1rem;
+}
+
+.preset-strip::-webkit-scrollbar { display: none; }
+
+.preset-chip {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+}
+
+.preset-chip:hover { border-color: var(--text-muted); color: var(--text); }
+
+.preset-chip.active {
+  background: var(--accent-ui);
+  border-color: var(--accent-ui);
+  color: var(--bg);
+}
+
 /* Gruplar arasında ayrı bir ayraç çizgisi YOK: başlığın yanından uzanan
    `.group-rule` zaten ayracı görevi görüyor. İkisi birlikte olunca, özellikle
    gruplar kapalıyken, birkaç piksel arayla üst üste çizgiler çıkıyordu. */

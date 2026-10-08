@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { getFont, nearestWeight } from '@/data/shareFonts'
 import { monthGrid, WEEKDAYS_SHORT, WEEKDAYS_NARROW } from '@/utils/calendarGrid'
+import { holyDaysOn } from '@/data/holyDays'
 import { localizeNumerals } from '@/utils/numerals'
 import WidgetLines from './WidgetLines.vue'
 
@@ -30,6 +31,23 @@ const grid = computed(() => monthGrid(s.value.system, Number(s.value.year), Numb
 // Tek satır: ayın tamamı yan yana. Öndeki boş hücreler atılır, gün adı
 // her hücrenin kendi üstünde durur (sabit bir başlık satırı anlamsız olurdu).
 const isRow = computed(() => s.value.layout === 'row')
+// Dinî günler hücrenin `iso` tarihinden bulunur; ızgara mı tek satır mı
+// olduğundan bağımsız çalışır.
+const holyOf = (cell) => (cell?.iso ? holyDaysOn(new Date(cell.iso)) : [])
+const hasHoly = (cell) => s.value.holyDays && holyOf(cell).length > 0
+
+// Takvimin altındaki liste: ayın dinî günleri, gün numarasıyla birlikte.
+// Izgaradaki elmas işareti "bir şey var" der; ad burada okunur.
+const holyList = computed(() => {
+  if (!s.value.holyDays || !s.value.holyList) return []
+  const out = []
+  for (const cell of grid.value.cells) {
+    if (!cell) continue
+    for (const h of holyOf(cell)) out.push({ day: cell.day, name: h.name, id: `${cell.day}-${h.id}` })
+  }
+  return out
+})
+
 const cells = computed(() =>
   isRow.value ? grid.value.cells.filter(Boolean) : grid.value.cells
 )
@@ -78,6 +96,25 @@ const box = computed(() => Math.round(s.value.daySize * (s.value.rowHeight ?? 2.
 // genişliği sütuna göre değişiyor, tamamı boyansa daire elips olurdu.
 // Izgarada kutu sabit kare; tek satırda sütun genişliğine oturur (31 gün
 // yan yana geldiğinde sabit ölçü taşardı).
+// Nokta boyutu gün sayısıyla ölçeklenir, küçük takvimde orantısız kalmasın.
+const holyStyle = computed(() => ({
+  width: `${Math.max(4, Math.round(s.value.daySize * 0.16))}px`,
+  height: `${Math.max(4, Math.round(s.value.daySize * 0.16))}px`,
+  background: resolve(s.value.holyColor),
+}))
+
+// Liste tipografisi gün sayılarını izler ama bir tık küçük: takvimin altında
+// ikincil bilgi, başlıkla yarışmamalı.
+const listStyle = computed(() => {
+  const f = getFont(s.value.dayFont)
+  return {
+    fontFamily: f.family,
+    fontWeight: nearestWeight(s.value.dayFont, s.value.dayWeight),
+    fontSize: `${Math.round(s.value.daySize * 0.62)}px`,
+    marginTop: `${Math.round(s.value.daySize * 0.5)}px`,
+  }
+})
+
 const boxStyle = computed(() => (isRow.value
   ? { width: '100%', aspectRatio: '1', borderRadius: `${s.value.dayRadius}%` }
   : { width: `${box.value}px`, height: `${box.value}px`, borderRadius: `${s.value.dayRadius}%` }))
@@ -155,8 +192,19 @@ const title = computed(() => {
           <span class="cal-box" :class="{ filled: s.dayBg }" :style="boxFill(cell)">
             <span class="cal-day" :style="dayStyle">{{ num(cell.day) }}</span>
             <span v-if="s.showAlt" class="cal-alt" :style="altStyle">{{ num(cell.alt) }}</span>
+            <!-- Dinî gün işareti: dolgulu <circle> yerine <span>, export
+                 kuralına uygun ve ölçeklenebilir. -->
+            <span v-if="hasHoly(cell)" class="cal-holy" :style="holyStyle"></span>
           </span>
         </template>
+      </div>
+    </div>
+
+    <!-- Dinî günler listesi: ad + hangi gün. Izgarada yalnızca işaret var. -->
+    <div v-if="holyList.length" class="cal-list" :style="listStyle">
+      <div v-for="item in holyList" :key="item.id" class="cal-list-row">
+        <span class="cal-list-day" :style="{ color: resolve(s.holyColor) }">{{ num(item.day) }}</span>
+        <span class="cal-list-name">{{ item.name }}</span>
       </div>
     </div>
   </div>
@@ -211,6 +259,40 @@ const title = computed(() => {
 }
 
 .cal-day { line-height: 1; }
+
+/* Elmas belirteç: bugünün dolu hücresinden ve gün zemininden ayrışsın. */
+/* ── Dinî gün listesi ── */
+.cal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28em;
+  line-height: 1.25;
+}
+
+.cal-list-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+}
+
+.cal-list-day {
+  flex-shrink: 0;
+  min-width: 1.6em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.cal-list-name { opacity: 0.82; }
+
+.cal-holy {
+  position: absolute;
+  left: 50%;
+  bottom: -0.12em;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.cal-cell { position: relative; }
 
 .cal-alt {
   line-height: 1;

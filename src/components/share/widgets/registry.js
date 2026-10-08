@@ -9,6 +9,8 @@ import PhraseWidget from './PhraseWidget.vue'
 import { DEFAULT_FONT, getFont, weightOptions, isColorFont } from '@/data/shareFonts'
 import { defaultPhrase } from '@/data/phraseSets'
 import { currentMonthOf, GREGORIAN_MONTHS, HIJRI_MONTHS } from '@/utils/calendarGrid'
+import { presetsFor } from '@/data/widgetPresets'
+import { TABLE_RANGE } from '@/utils/hijri'
 
 // Paylaşım widget'ları — uygulama bileşenlerinden ayrı, export için yazılmış
 // saf/compact bileşenler. Kurallar:
@@ -65,7 +67,11 @@ const alignField = {
   options: [{ value: 'left', label: 'Sol' }, { value: 'center', label: 'Orta' }, { value: 'right', label: 'Sağ' }],
 }
 
-export const SHARE_WIDGETS = [
+
+// `presets` ayrı bir dosyada tutulur (`src/data/widgetPresets.js`) ve burada
+// kimliğe göre bağlanır: ön tanımlar sık düzenlenen, widget tanımı ise seyrek
+// değişen bir şey — ikisini ayırmak ön tanım eklemeyi kolaylaştırıyor.
+const WIDGETS = [
   {
     id: 'clock-digital',
     label: 'Alaturka Saat',
@@ -156,10 +162,18 @@ export const SHARE_WIDGETS = [
     hint: 'Hicri + miladi',
     component: DateWidget,
     defaultProps: (snap) => ({
+      // `date` tek kaynak: seçiciden değişince hicri gün/ay/yıl, miladi
+      // satır, ay fazı ve dinî gün birlikte güncellenir (EditorPanel'deki
+      // `date` dalı). Sonrasında her alan yine elle değiştirilebilir.
+      date: snap.miladi.iso,
       hijriDay: String(snap.hijri.date).padStart(2, '0'),
       hijriText: `${snap.hijri.monthName} ${snap.hijri.year}`,
-      miladi: `${snap.miladi.day} ${snap.miladi.monthLong} ${snap.miladi.year} · ${snap.miladi.weekdayLong}`,
-      event: '',
+      miladi: `${snap.miladi.day} ${snap.miladi.monthLong} ${snap.miladi.year}`,
+      miladiNote: snap.miladi.weekdayLong,
+      miladiSep: ' · ',
+      // O güne denk gelen dinî gün varsa etkinlik satırı hazır gelir;
+      // alan serbest, silinince satır çizilmez.
+      event: snap.holyDay ?? '',
       eventColor: 'auto',
       moonDay: snap.hijri.date,
       showMoon: true,
@@ -168,9 +182,14 @@ export const SHARE_WIDGETS = [
       ...typographyDefaults(700),
     }),
     settings: [
+      { key: 'date', type: 'date', label: 'Gün / ay / yıl', group: 'icerik',
+        min: TABLE_RANGE.start, max: TABLE_RANGE.end },
       { key: 'hijriDay', type: 'text', label: 'Hicri gün', group: 'icerik', singleLine: true },
       { key: 'hijriText', type: 'text', label: 'Hicri ay/yıl', group: 'icerik' },
       { key: 'miladi', type: 'text', label: 'Miladi tarih', group: 'icerik' },
+      { key: 'miladiNote', type: 'text', label: 'Tarihten sonrası', group: 'icerik' },
+      { key: 'miladiSep', type: 'text', label: 'Ayraç', group: 'icerik',
+        singleLine: true, hidden: (p) => !p.miladi || !p.miladiNote },
       { key: 'event', type: 'text', label: 'Etkinlik', group: 'icerik' },
       { key: 'eventColor', type: 'color', label: 'Etkinlik rengi', swatches: COLOR_SWATCHES,
         group: 'gorunum', hidden: (p) => !p.event || isColorFont(p.font) },
@@ -313,6 +332,9 @@ export const SHARE_WIDGETS = [
         dayBg: false,
         dayBgColor: 'tint',
         dayRadius: 50,
+        holyDays: false,
+        holyList: true,
+        holyColor: 'auto',
       }
     },
     settings: [
@@ -366,8 +388,13 @@ export const SHARE_WIDGETS = [
       // ── Görünüm ──
       { key: 'width', type: 'range', label: 'Genişlik', group: 'gorunum', min: 380, max: 1040, step: 20, unit: 'px' },
       textColorField('color', 'Renk'),
+      { key: 'holyDays', type: 'toggle', label: 'Dinî günler', group: 'gorunum' },
+      { key: 'holyList', type: 'toggle', label: 'Takvimin altında listele', group: 'gorunum',
+        hidden: (p) => !p.holyDays },
+      { key: 'holyColor', type: 'color', label: 'Dinî gün rengi', swatches: COLOR_SWATCHES,
+        group: 'gorunum', hidden: (p) => !p.holyDays },
       { key: 'dayBg', type: 'toggle', label: 'Gün zemini', group: 'gorunum' },
-      { key: 'dayRadius', type: 'range', label: 'Köşe yuvarlaklığı', group: 'gorunum', min: 0, max: 50, step: 2, unit: '%',
+      { key: 'dayRadius', type: 'range', label: 'Köşe yuvarlaklığı', group: 'gorunum', min: 0, max: 50, step: 2, unit: 'pct',
         hidden: (p) => !p.dayBg },
       { key: 'dayBgColor', type: 'color', label: 'Zemin rengi', group: 'gorunum',
         swatches: ['tint', ...COLOR_SWATCHES], hidden: (p) => !p.dayBg },
@@ -398,6 +425,8 @@ export const SHARE_WIDGETS = [
     ],
   },
 ]
+
+export const SHARE_WIDGETS = WIDGETS.map(w => ({ ...w, presets: presetsFor(w.id) }))
 
 export function getWidget(id) {
   return SHARE_WIDGETS.find(w => w.id === id) || null

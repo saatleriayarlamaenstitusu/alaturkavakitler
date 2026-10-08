@@ -19,13 +19,24 @@ const isoToUTC = (iso) => {
 
 const STARTS = MONTH_STARTS.map(isoToUTC)
 
-// Tablodaki satır sırası → hicri yıl/ay
+// Tablodaki satır sırası → hicri yıl/ay.
+// `%` JavaScript'te negatif girdide negatif döner; tablo ÖNCESİNE düşen
+// tarihlerde ay numarası 0 ve altına inip `HIJRI_MONTHS[ay-1]` undefined
+// veriyordu (ekranda "undefined 849" olarak göründü). Kalan pozitife çekilir.
 const indexToYM = (i) => {
   const n = FIRST_MONTH.month - 1 + i
-  return { year: FIRST_MONTH.year + Math.floor(n / 12), month: (n % 12) + 1 }
+  const m = ((n % 12) + 12) % 12
+  return { year: FIRST_MONTH.year + Math.floor(n / 12), month: m + 1 }
 }
 const ymToIndex = (year, month) =>
   (year - FIRST_MONTH.year) * 12 + (month - FIRST_MONTH.month)
+
+/** Tablonun kapsadığı miladi aralık (ISO). Arayüzde tarih seçiciyi
+ *  sınırlamak için: dışına çıkılırsa dönüşüm tahmine düşer. */
+export const TABLE_RANGE = {
+  start: MONTH_STARTS[0],
+  end: MONTH_STARTS[MONTH_STARTS.length - 1],
+}
 
 /** Tarih tablonun kapsadığı aralıkta mı? Dışındaysa sonuç tahminidir. */
 export function inTable(date = new Date()) {

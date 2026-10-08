@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { hijriMonth } from '@/utils/hijri'
+import { holyDaysOn } from '@/data/holyDays'
 import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
 
@@ -26,6 +27,21 @@ const selectedGregLine = computed(() =>
 )
 // Seçili hicri güne göre ay fazı görseli (görseller 1–29; 30. gün 29'a sabitlenir)
 const moonSrc = computed(() => `/Icons/moon/${Math.min(selected.value.day, 29)}.svg`)
+
+// Seçili günün dinî günü — başlıkta rozet olarak görünür.
+const selectedHoly = computed(() => holyDaysOn(selected.value.greg.toJSDate()))
+
+// Izgarada işaretlemek için: hangi hicri günlerde dinî gün var.
+const holyDays = computed(() => {
+  const first = info.value.firstGregorian
+  const map = {}
+  for (let i = 0; i < info.value.daysInMonth; i++) {
+    const d = new Date(first.getFullYear(), first.getMonth(), first.getDate() + i)
+    const list = holyDaysOn(d)
+    if (list.length) map[i + 1] = list
+  }
+  return map
+})
 
 function selectDay(cell) {
   const greg = DateTime.fromJSDate(info.value.firstGregorian).plus({ days: cell.day - 1 })
@@ -141,6 +157,13 @@ function onTouchEnd(e) {
         <div class="hm-weekday">{{ selectedWeekday }}</div>
       </div>
       <div class="hm-greg-line">{{ selectedGregLine }}</div>
+      <!-- Dinî gün varsa tarihin hemen altında; yoksa satır hiç çizilmez. -->
+      <div v-if="selectedHoly.length" class="hm-holy">
+        <span v-for="h in selectedHoly" :key="h.id" class="hm-holy-tag" :class="`is-${h.kind}`">
+          {{ h.name }}
+        </span>
+        <span v-if="selectedHoly[0].note" class="hm-holy-note">{{ selectedHoly[0].note }}</span>
+      </div>
     </div>
 
     <div class="hm-divider"></div>
@@ -164,12 +187,18 @@ function onTouchEnd(e) {
           v-for="cell in cells"
           :key="cell.key"
           class="hm-cell"
-          :class="[cell.empty ? 'is-empty' : `is-${cell.state}`, { 'is-selected': !cell.empty && isSelected(cell) }]"
+          :class="[
+            cell.empty ? 'is-empty' : `is-${cell.state}`,
+            { 'is-selected': !cell.empty && isSelected(cell), 'has-holy': !cell.empty && holyDays[cell.day] },
+          ]"
+          :title="!cell.empty && holyDays[cell.day] ? holyDays[cell.day].map(h => h.name).join(' · ') : null"
           @click="onCellClick(cell, $event)"
         >
           <template v-if="!cell.empty">
             <span class="hm-num">{{ cell.day }}</span>
             <span class="hm-greg">{{ cell.gregDay }}</span>
+            <!-- Dinî gün işareti: hücre zaten dolu, nokta en az yer kaplayanı. -->
+            <span v-if="holyDays[cell.day]" class="hm-dot" aria-hidden="true"></span>
           </template>
         </span>
       </div>
@@ -178,6 +207,58 @@ function onTouchEnd(e) {
 </template>
 
 <style scoped>
+/* ── Dinî gün ── */
+.hm-holy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.hm-holy-tag {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--accent-ui);
+  color: var(--bg);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Bayram ve arefe günleri kandillerden ayrışsın: içi boş halka. */
+.hm-holy-tag.is-arefe {
+  background: transparent;
+  color: var(--accent-ui);
+  box-shadow: inset 0 0 0 1px var(--accent-ui);
+}
+
+.hm-holy-note {
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* Izgaradaki işaret: hücrenin altına küçük bir nokta. */
+.hm-cell { position: relative; }
+
+/* Belirteç daire değil elmas: "bugün" vurgusu zaten daire/dolu hücre,
+   dinî gün işareti ondan ayırt edilebilmeli. */
+.hm-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 0.16rem;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  transform: rotate(45deg);
+  background: var(--accent-ui);
+}
+
+.hm-cell.is-selected .hm-dot,
+.hm-cell.is-today .hm-dot { background: var(--bg); }
+
 .hijri-month {
 
   display: flex;

@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { calculateAlaturka } from '@/utils/clock'
 import { nowHijri } from '@/utils/hijri'
 import { aksamCutoff } from '@/composables/useHijriToday'
+import { holyDayLabel } from '@/data/holyDays'
 import { VAKIT_COLORS } from '@/utils/vakit'
 
 const VAKIT_ORDER = ['imsak', 'gunes', 'ogle', 'ikindi', 'aksam', 'yatsi']
@@ -38,6 +39,7 @@ export function createSnapshot({ city, vakitler, currentVakit, hijriOffset = fal
     currentVakit,
     primary: VAKIT_COLORS[currentVakit] ?? '#ae002e',
     miladi: {
+      iso: todayISO,
       day: now.day,
       monthLong: now.monthLong,
       year: now.year,
@@ -45,6 +47,8 @@ export function createSnapshot({ city, vakitler, currentVakit, hijriOffset = fal
       short: now.toFormat('dd.MM.yyyy'),
     },
     hijri,
+    // O güne denk gelen dinî gün; tarih parçasının etkinlik satırını doldurur.
+    holyDay: holyDayLabel(now.toJSDate()),
     vakitler: list,
     current,
     next,
