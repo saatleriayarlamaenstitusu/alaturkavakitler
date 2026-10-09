@@ -3,6 +3,7 @@ import { ref, watch, onUnmounted, computed } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { findVakit, isKerahat } from '@/utils/vakit'
 import QiblaCompass from './QiblaCompass.vue'
+import MosqueIcon from '@/components/ui/MosqueIcon.vue'
 import { DateTime } from 'luxon'
 
 const appStore = useAppStore()
@@ -17,6 +18,23 @@ const counterDisplay = computed(() => {
   const { hours, minutes, seconds } = counter.value
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
 })
+
+// Cuma rozeti: cuma günü imsaktan ikindiye kadar. İmsaktan önce (gece yarısı
+// ile imsak arası) henüz perşembe gecesidir; ikindi girdiğinde de cuma namazı
+// geçmiştir, hatırlatmanın işi biter.
+const isCuma = computed(() => {
+  const vakit = appStore.vakit
+  if (!vakit?.imsak || !vakit?.ikindi) return false
+  const now = DateTime.now()
+  if (now.weekday !== 5) return false
+  return now >= vakit.imsak.valueDateObj && now < vakit.ikindi.valueDateObj
+})
+
+// Cuma günü güneş vaktindeyken sayaç öğleye (cuma namazına) iniyor:
+// "vaktin çıkması" ile "cumaya kalan" aynı an, etiketi buna göre söyle.
+const counterLabel = computed(() =>
+  isCuma.value && appStore.currentVakit === 'gunes' ? 'Cumaya kalan' : 'Vaktin çıkmasına'
+)
 
 const kerahat = computed(() => {
   if (!appStore.vakit || !appStore.currentVakit) return false
@@ -79,14 +97,20 @@ onUnmounted(() => {
       <span class="badge">{{ appStore.vakit[appStore.vakit[appStore.currentVakit].next].name }}</span>
     </div>
 
-    <span class="counter-label">Vaktin çıkmasına</span>
+    <span class="counter-label">{{ counterLabel }}</span>
     <!-- Sayaç ve kıble yan yana: ikisi de "şu an" bilgisi. -->
     <div class="counter-row">
       <div class="counter">{{ counterDisplay }}</div>
       <QiblaCompass class="qibla-slot" />
     </div>
 
-    <span v-if="kerahat" class="kerahat">Kerahat</span>
+    <div class="flags">
+      <span v-if="kerahat" class="kerahat">Kerahat</span>
+      <span v-if="isCuma" class="cuma">
+        <span class="cuma-icon"><MosqueIcon /></span>
+        Cuma
+      </span>
+    </div>
   </div>
 </template>
 
@@ -157,6 +181,45 @@ onUnmounted(() => {
   margin-top: 0.4rem;
   font-family: var(--font2);
   font-variant-numeric: tabular-nums;
+}
+
+.flags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Kerahat ile aynı kalıp: beyaz işaret sol üst köşeye BİNER, rozetin
+   `overflow: hidden` kenarı onu kırpar. Renk yeşil — uyarı değil, hatırlatma. */
+.cuma {
+  display: inline-block;
+  background: #15803d;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem 0.25rem 1.75em;
+  border-radius: 5px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  position: relative;
+  overflow: hidden;
+}
+
+.cuma-icon {
+  position: absolute;
+  left: -2px;
+  top: -5px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65em;
+  height: 1.65em;
+  padding: 0.4em 0.34em 0.3em;
+  background: #fff;
+  color: #15803d;
+  border-radius: 10px;
 }
 
 .kerahat {
