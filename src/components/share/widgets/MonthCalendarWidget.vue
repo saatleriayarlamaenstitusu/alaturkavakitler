@@ -97,11 +97,18 @@ const box = computed(() => Math.round(s.value.daySize * (s.value.rowHeight ?? 2.
 // Izgarada kutu sabit kare; tek satırda sütun genişliğine oturur (31 gün
 // yan yana geldiğinde sabit ölçü taşardı).
 // Nokta boyutu gün sayısıyla ölçeklenir, küçük takvimde orantısız kalmasın.
-const holyStyle = computed(() => ({
-  width: `${Math.max(4, Math.round(s.value.daySize * 0.16))}px`,
-  height: `${Math.max(4, Math.round(s.value.daySize * 0.16))}px`,
-  background: resolve(s.value.holyColor),
-}))
+const holyStyle = computed(() => {
+  const size = Math.max(4, Math.round(s.value.daySize * 0.15))
+  const c = resolve(s.value.holyColor)
+  return {
+    width: `${size}px`,
+    height: `${size}px`,
+    background: c,
+    // Hafif hale: nokta tek başına küçük takvimde kayboluyor.
+    boxShadow: `0 0 ${size}px ${Math.round(size * 0.3)}px color-mix(in srgb, ${c} 65%, transparent),`
+      + ` 0 0 ${size * 2}px ${Math.round(size * 0.7)}px color-mix(in srgb, ${c} 30%, transparent)`,
+  }
+})
 
 // Liste tipografisi gün sayılarını izler ama bir tık küçük: takvimin altında
 // ikincil bilgi, başlıkla yarışmamalı.
@@ -285,11 +292,13 @@ const title = computed(() => {
 
 .cal-list-name { opacity: 0.82; }
 
+/* Hafif parlayan nokta. Renk kullanıcı ayarından gelir (`holyColor`). */
 .cal-holy {
   position: absolute;
   left: 50%;
   bottom: -0.12em;
-  transform: translateX(-50%) rotate(45deg);
+  transform: translateX(-50%);
+  border-radius: 50%;
 }
 
 .cal-cell { position: relative; }

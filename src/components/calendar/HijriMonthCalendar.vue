@@ -243,21 +243,35 @@ function onTouchEnd(e) {
 /* Izgaradaki işaret: hücrenin altına küçük bir nokta. */
 .hm-cell { position: relative; }
 
-/* Belirteç daire değil elmas: "bugün" vurgusu zaten daire/dolu hücre,
-   dinî gün işareti ondan ayırt edilebilmeli. */
+/* Dinî gün belirteci: hafif parlayan nokta.
+   Renk HÜCRENİN zeminine göre seçilir, sayfanınkine göre değil. Önce
+   `--accent-ui` kullanılıyordu; `canli` paletinde hem hücre zemini (`--text`)
+   hem aksan siyah olduğu için belirteç tamamen kayboluyordu. */
+/* Nokta HER durumda `--bg`: geleceğin hücresi dolu `--text`, bugünün hücresi
+   aksan, geçmişin hücresi ise aşağıda koyulaştırılıyor — üçünde de arkada
+   `--text` tonlu bir zemin var ve `--bg` ona karşı okunuyor.
+   Önce geçmiş için `--text` denendi; `canli` paletinde hem `--text` hem
+   hücre zemini koyu olduğu için nokta kayboluyordu. */
 .hm-dot {
+  --dot: var(--bg);
   position: absolute;
   left: 50%;
-  bottom: 0.16rem;
-  width: 5px;
-  height: 5px;
-  margin-left: -2.5px;
-  transform: rotate(45deg);
-  background: var(--accent-ui);
+  bottom: 0.14rem;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow:
+    0 0 4px 1px color-mix(in srgb, var(--dot) 70%, transparent),
+    0 0 9px 3px color-mix(in srgb, var(--dot) 35%, transparent);
 }
 
-.hm-cell.is-selected .hm-dot,
-.hm-cell.is-today .hm-dot { background: var(--bg); }
+/* Geçmiş günlerin hücresi neredeyse saydam (%14); dinî gün olanda zemin
+   koyulaştırılır ki noktanın arkasında tanımlı bir renk olsun. */
+.hm-cell.is-past.has-holy {
+  background: color-mix(in srgb, var(--text) 60%, transparent);
+}
 
 .hijri-month {
 
