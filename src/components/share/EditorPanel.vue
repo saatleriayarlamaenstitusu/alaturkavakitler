@@ -183,11 +183,12 @@ function presetSnippet() {
   // Biçim alanı: 'icerik' grubunda OLMAYAN ve tipi doğası gereği içerik
   // taşımayan alanlar. Tip kontrolü şart — takvimdeki ay başlığı metni
   // 'baslik' grubunda duruyor ama yine de kullanıcının yazdığı bir içerik.
-  const CONTENT_TYPES = ['text', 'textarea', 'date', 'phrase', 'stepper']
+  const CONTENT_TYPES = ['text', 'textarea', 'date', 'phrase', 'stepper', 'image']
   const styleKeys = def.settings
     .filter(f => (f.group ?? 'gorunum') !== 'icerik'
       && !CONTENT_TYPES.includes(f.type)
-      && !f.layerLevel)
+      && !f.layerLevel
+      && !f.noPreset)
     .map(f => f.key)
 
   const entries = styleKeys

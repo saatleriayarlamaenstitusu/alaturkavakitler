@@ -92,19 +92,28 @@ export function createShareEditor(snapshot) {
         customColors: state.customColors,
         snap: state.snap,
       }
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-      } catch {
-        // Fotoğraf data URI'si kotayı aşabiliyor — düzeni fotoğrafsız sakla.
+      // Görsel data URI'leri kotayı aşabiliyor. Önce tamamı denenir; olmazsa
+      // sırayla arka plan fotoğrafı ve görsel katmanlarının kaynağı düşürülür.
+      // Düzenin kendisi (katmanlar, ölçüler, renkler) her durumda korunur.
+      const withoutPhoto = {
+        ...data,
+        background: { ...data.background, kind: 'palette', photo: null },
+      }
+      const withoutImages = {
+        ...withoutPhoto,
+        layers: data.layers.map(l => (
+          l.props?.src ? { ...l, props: { ...l.props, src: '' } } : l
+        )),
+      }
+      for (const candidate of [data, withoutPhoto, withoutImages]) {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            ...data,
-            background: { ...data.background, kind: 'palette', photo: null },
-          }))
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(candidate))
+          return
         } catch {
-          // Saklanamıyorsa sessizce vazgeç; editör çalışmaya devam eder.
+          // Sonraki, daha hafif sürümle devam et.
         }
       }
+      // Hiçbiri sığmadıysa sessizce vazgeç; editör çalışmaya devam eder.
     }, 400)
   }
 
@@ -126,7 +135,7 @@ export function createShareEditor(snapshot) {
   let lastAt = 0
 
   function snapshotState() {
-    return JSON.parse(JSON.stringify({
+    const snap = JSON.parse(JSON.stringify({
       ratioId: state.ratioId,
       layers: state.layers,
       background: state.background,
@@ -135,6 +144,15 @@ export function createShareEditor(snapshot) {
       brand: state.brand,
       customColors: state.customColors,
     }))
+    // Görsel data URI'leri megabaytlarca olabiliyor; JSON kopyası her adımda
+    // yenisini üretince kırk adımlık geçmiş belleği şişiriyordu. Dize zaten
+    // değişmez — kopya yerine aynı dizeye işaret etmesi yeterli.
+    snap.layers.forEach((l, i) => {
+      const src = state.layers[i]?.props?.src
+      if (typeof src === 'string' && l.props) l.props.src = src
+    })
+    if (state.background.photo) snap.background.photo = state.background.photo
+    return snap
   }
 
   // Varsayılan kompozisyonu kurmak bir kullanıcı eylemi değil; bu sırada

@@ -6,6 +6,7 @@ import TextWidget from './TextWidget.vue'
 import LogoWidget from './LogoWidget.vue'
 import MonthCalendarWidget from './MonthCalendarWidget.vue'
 import PhraseWidget from './PhraseWidget.vue'
+import ImageWidget from './ImageWidget.vue'
 import { DEFAULT_FONT, getFont, weightOptions, isColorFont } from '@/data/shareFonts'
 import { defaultPhrase } from '@/data/phraseSets'
 import { currentMonthOf, GREGORIAN_MONTHS, HIJRI_MONTHS } from '@/utils/calendarGrid'
@@ -24,6 +25,29 @@ import { TABLE_RANGE } from '@/utils/hijri'
 //
 // Yeni widget eklemek: bileşeni yaz + buraya bir satır ekle.
 // Seçici, ayar paneli ve tuval üçü de bu tablodan beslenir.
+
+// Karıştırma modları. CSS `mix-blend-mode` değerleri; katmanın tamamına
+// `CanvasLayer` uygular. Ayırıcı kümeler: ayrıştırıcı (koyultan), aydınlatan,
+// kontrast, fark ve bileşen modları. Liste segment şeridine sığmaz, açılır
+// menü olarak sunulur (`compact`).
+export const BLEND_MODES = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'multiply', label: 'Çarp (multiply)' },
+  { value: 'darken', label: 'Koyult (darken)' },
+  { value: 'color-burn', label: 'Renk yak (color burn)' },
+  { value: 'screen', label: 'Perde (screen)' },
+  { value: 'lighten', label: 'Aydınlat (lighten)' },
+  { value: 'color-dodge', label: 'Renk aç (color dodge)' },
+  { value: 'overlay', label: 'Kaplama (overlay)' },
+  { value: 'soft-light', label: 'Yumuşak ışık' },
+  { value: 'hard-light', label: 'Sert ışık' },
+  { value: 'difference', label: 'Fark (difference)' },
+  { value: 'exclusion', label: 'Dışlama (exclusion)' },
+  { value: 'hue', label: 'Renk tonu' },
+  { value: 'saturation', label: 'Doygunluk' },
+  { value: 'color', label: 'Renk' },
+  { value: 'luminosity', label: 'Parlaklık' },
+]
 
 const COLOR_SWATCHES = ['#ffffff', '#000000', 'auto', '#ffd733', '#ff8c33', '#0491fb']
 
@@ -407,6 +431,28 @@ const WIDGETS = [
     ],
   },
   {
+    id: 'image',
+    label: 'Görsel',
+    hint: 'Karıştırmalı katman',
+    component: ImageWidget,
+    defaultProps: () => ({
+      src: '',
+      width: 540,
+      radius: 0,
+      grayscale: false,
+      invert: false,
+      contrast: 100,
+    }),
+    settings: [
+      { key: 'src', type: 'image', label: 'Görsel', group: 'icerik' },
+      { key: 'width', type: 'range', label: 'Genişlik', min: 80, max: 1080, step: 10, unit: 'px', group: 'boyut' },
+      { key: 'radius', type: 'range', label: 'Köşe yuvarlaklığı', min: 0, max: 200, step: 4, unit: 'px', group: 'gorunum' },
+      { key: 'contrast', type: 'range', label: 'Kontrast', min: 0, max: 300, step: 5, unit: 'pct', group: 'gorunum' },
+      { key: 'grayscale', type: 'toggle', label: 'Gri ton', group: 'gorunum' },
+      { key: 'invert', type: 'toggle', label: 'Ters çevir', group: 'gorunum' },
+    ],
+  },
+  {
     id: 'logo',
     label: 'Logo',
     hint: 'Alaturka Vakitler',
@@ -426,7 +472,22 @@ const WIDGETS = [
   },
 ]
 
-export const SHARE_WIDGETS = WIDGETS.map(w => ({ ...w, presets: presetsFor(w.id) }))
+// Karıştırma her katmanda var: tipe özgü değil, katmanın tuvale nasıl
+// oturduğuyla ilgili. Bu yüzden widget tanımlarına tek tek yazılmaz, hepsine
+// buradan eklenir — yeni bir widget da kendiliğinden kazanır.
+// `noPreset`: ön tanımlar biçim taşır, karıştırma ise kompozisyon kararıdır;
+// kopyalanan her presete `blend: 'normal'` gürültüsü düşmesin diye dışarıda.
+const blendField = {
+  key: 'blend', type: 'select', compact: true, label: 'Karıştırma',
+  group: 'gorunum', options: BLEND_MODES, noPreset: true,
+}
+
+export const SHARE_WIDGETS = WIDGETS.map(w => ({
+  ...w,
+  presets: presetsFor(w.id),
+  defaultProps: (snap) => ({ blend: 'normal', ...w.defaultProps(snap) }),
+  settings: [...w.settings, blendField],
+}))
 
 export function getWidget(id) {
   return SHARE_WIDGETS.find(w => w.id === id) || null

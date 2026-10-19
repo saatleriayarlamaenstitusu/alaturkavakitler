@@ -118,9 +118,23 @@ const readout = computed(() => {
   }
 })
 
+// ── Görsel ──
+// Dosya data URI olarak okunur: düzen localStorage'da saklandığı ve export
+// aynı belgeden rasterize edildiği için harici bir URL'e güvenilemez.
+const imageInput = ref(null)
+
+function pickImage(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''        // aynı dosya ikinci kez seçilebilsin
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = () => { value.value = reader.result }
+  reader.readAsDataURL(file)
+}
+
 // Etiket + denetim aynı ızgarada; textarea ve şeritler tam genişlik ister.
 const fullWidth = computed(() =>
-  ['textarea', 'font', 'phrase'].includes(props.field.type)
+  ['textarea', 'font', 'phrase', 'image'].includes(props.field.type)
 )
 </script>
 
@@ -132,7 +146,17 @@ const fullWidth = computed(() =>
       <!-- Renk kapalıyken tek kutu: her renk alanı 14 kutucuk basınca panel
            okunmaz hâle geliyordu. Dokununca palet açılır, aynı anda yalnızca
            bir alan açık kalır gerekmez — alanlar zaten az yer kaplıyor. -->
-      <div v-if="field.type === 'color' && !colorOpen" class="color-closed">
+      <div v-if="field.type === 'image'" class="image-field">
+        <button class="image-pick" @click="imageInput.click()">
+          <img v-if="value" class="image-thumb" :src="value" alt="" />
+          <span v-else class="image-thumb empty" aria-hidden="true"></span>
+          <span class="image-text">{{ value ? 'Değiştir' : 'Görsel seç' }}</span>
+        </button>
+        <button v-if="value" class="image-clear" aria-label="Görseli kaldır" @click="value = ''">✕</button>
+        <input ref="imageInput" class="file" type="file" accept="image/*" @change="pickImage" />
+      </div>
+
+      <div v-else-if="field.type === 'color' && !colorOpen" class="color-closed">
         <button class="swatch current" :style="{ background: swatchColor(value) }"
           :aria-label="`${field.label}: ${colorName}`" @click="colorOpen = true"></button>
         <button class="color-name" @click="colorOpen = true">{{ colorName }}</button>
@@ -307,6 +331,59 @@ const fullWidth = computed(() =>
 </template>
 
 <style scoped>
+.image-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.image-pick {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+}
+
+.image-thumb {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  object-fit: cover;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+.image-thumb.empty { border: 1px dashed var(--border); background: none; }
+
+.image-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.image-clear {
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.45rem 0.5rem;
+  cursor: pointer;
+}
+
+.file { display: none; }
+
 /* Swiss ızgara: etiket sabit bir kolonda, denetim ikinci kolonda sola
    dayalı. Böylece panel boyunca kesintisiz bir dikey hiza oluşur. */
 .field {

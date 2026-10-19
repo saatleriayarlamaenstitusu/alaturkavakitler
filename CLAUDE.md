@@ -363,6 +363,30 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
   kuralı değil, `ShareCanvas`'taki `fillStyle` computed'ı çizer — ayarlar
   JS'ten geldiği için sabit bir CSS gradyanı yetmiyordu. Satır içi stil olduğu
   için snapdom klonuna aynen taşınıyor (dışa aktarımda ölçüldü).
+- **Karıştırma (`blend`) her katmanda var**: widget tipine değil, katmanın
+  tuvale nasıl oturduğuna ait bir ayar. Bu yüzden widget tanımlarına tek tek
+  yazılmaz, `registry.js`'te `SHARE_WIDGETS` kurulurken hepsine eklenir
+  (`blendField` + `defaultProps`'a `blend: 'normal'`) — yeni bir widget
+  kendiliğinden kazanır. Mod listesi `BLEND_MODES`.
+- Karıştırma widget'ın İÇİNDE değil `CanvasLayer`'da `.layer` elemanına
+  uygulanır: `.layer` dönüşüm taşıdığı için yığın bağlamı açar ve içeride
+  verilen bir `mix-blend-mode` yalnızca o katmanın içinde karışır, tuvale hiç
+  ulaşmaz. Dışa aktarımda korunuyor (difference/multiply ile indirilen PNG'den
+  piksel örneklenerek ölçüldü).
+- **Seçim arayüzü katmanın İÇİNDE duramaz**: karıştırma katmanın tamamına
+  uygulandığı için çerçeve ve tutamaklar da karışır, 'fark' modunda renk
+  değiştirip okunmaz hâle gelirlerdi. Bu yüzden `.chrome` kardeş bir kutudur;
+  katmanın kutusu `ResizeObserver` ile ölçülüp aynı dönüşümle taklit edilir.
+  Kardeş kutuda `.layer` sınıfı YOK — `measureOthers()` hizalama hedeflerini
+  `.layer` seçicisiyle topluyor, olsaydı katman kendi çerçevesine yapışırdı.
+- **Görsel widget'ı** (`ImageWidget.vue`) kullanıcının kendi görselini katman
+  olarak koyar; karıştırmanın asıl müşterisi odur (doku/desen bindirmeleri).
+- Görsel data URI olarak saklanır; harici URL'e güvenilemez (düzen
+  localStorage'da duruyor, export aynı belgeden rasterize ediliyor). İki yan
+  etkisi var ve ikisi de ele alındı: kayıt kotası aşılırsa önce arka plan
+  fotoğrafı, sonra katman görselleri düşürülerek saklanır (düzenin kendisi
+  korunur); geri al yığınında ise JSON kopyası her adımda yeni bir dize
+  üretmesin diye `src` aynı dizeye işaret ettirilir.
 - **Arka plan** katman değil, tuvalin kendi durumudur: `{ kind: 'palette'|'photo', photo, zoom, x, y, blur, dim }`. Fotoğrafta kadraj (pinch/sürükle) tuvalin üstüne binen `.bg-catcher` yüzeyiyle yapılır; bu yüzey yalnızca Arka plan sekmesi açıkken ve katman seçili değilken vardır (`state.bgEditing`).
 - Bulanıklık kenarları saydamlaştırdığı için fotoğraf, blur değeri kadar taşırılıp (`inset: -2×blur`) çerçeve dolu tutulur.
 

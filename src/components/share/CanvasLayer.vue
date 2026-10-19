@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useShareEditor } from '@/composables/useShareEditor'
 import { getWidget } from './widgets/registry'
 import { applySnap, collectTargets } from '@/utils/snap'
@@ -18,11 +18,45 @@ const isSelected = computed(() => state.selectedId === props.layer.id && !state.
 // ekranda her zaman aynı boyutta görünsün diye ters ölçekleniyor.
 const chromeScale = computed(() => 1 / Math.max(props.layer.scale * (state.viewScale || 1), 0.001))
 
+// Karıştırma modu katmanın KENDİSİNE verilir, widget'ın içine değil:
+// `.layer` dönüşüm taşıdığı için yığın bağlamı açar ve içeride verilen bir
+// `mix-blend-mode` yalnızca o bağlamın içinde karışır — altındaki tuvale hiç
+// ulaşmaz. Props'unda `blend` taşıyan her widget böylece karışabilir.
+const blend = computed(() => props.layer.props?.blend || 'normal')
+
+// Seçim arayüzü katmanın İÇİNDE duramaz: karıştırma katmanın tamamına
+// uygulandığı için çerçeve ve tutamaklar da karışır, 'fark' modunda renk
+// değiştirip okunmaz hâle gelirlerdi. Bu yüzden kardeş bir kutuya alındılar
+// ve katmanın ekrandaki kutusu ölçülüp birebir taklit ediliyor.
+const boxW = ref(0)
+const boxH = ref(0)
+let ro = null
+
+onMounted(() => {
+  if (!rootRef.value || typeof ResizeObserver === 'undefined') return
+  ro = new ResizeObserver(() => {
+    boxW.value = rootRef.value?.offsetWidth ?? 0
+    boxH.value = rootRef.value?.offsetHeight ?? 0
+  })
+  ro.observe(rootRef.value)
+})
+onBeforeUnmount(() => ro?.disconnect())
+
+const chromeStyle = computed(() => ({
+  left: `${props.layer.x}px`,
+  top: `${props.layer.y}px`,
+  width: `${boxW.value}px`,
+  height: `${boxH.value}px`,
+  transform: `translate(-50%, -50%) rotate(${props.layer.rotation}deg) scale(${props.layer.scale})`,
+  '--k': chromeScale.value,
+}))
+
 const boxStyle = computed(() => ({
   left: `${props.layer.x}px`,
   top: `${props.layer.y}px`,
   zIndex: props.layer.z,
   transform: `translate(-50%, -50%) rotate(${props.layer.rotation}deg) scale(${props.layer.scale})`,
+  mixBlendMode: blend.value,
   // Seçim arayüzü ve dokunma payı bu değişkenle ekran birimine sabitlenir.
   '--k': chromeScale.value,
 }))
@@ -228,22 +262,22 @@ function onHandleUp() {
       />
     </div>
 
-    <template v-if="isSelected">
-      <div class="chrome">
-        <div class="frame" aria-hidden="true"></div>
-        <button
-          class="handle"
-          aria-label="Ölçekle ve döndür"
-          @pointerdown="onHandleDown"
-          @pointermove="onHandleMove"
-          @pointerup="onHandleUp"
-          @pointercancel="onHandleUp"
-        ></button>
-        <button class="remove" aria-label="Katmanı sil" @pointerdown.stop @click.stop="editor.removeLayer(layer.id)">
-          ✕
-        </button>
-      </div>
-    </template>
+  </div>
+
+  <!-- Seçim arayüzü: katmanın kardeşi, karıştırmanın dışında. -->
+  <div v-if="isSelected" class="chrome" :style="chromeStyle">
+    <div class="frame" aria-hidden="true"></div>
+    <button
+      class="handle"
+      aria-label="Ölçekle ve döndür"
+      @pointerdown="onHandleDown"
+      @pointermove="onHandleMove"
+      @pointerup="onHandleUp"
+      @pointercancel="onHandleUp"
+    ></button>
+    <button class="remove" aria-label="Katmanı sil" @pointerdown.stop @click.stop="editor.removeLayer(layer.id)">
+      ✕
+    </button>
   </div>
 </template>
 
@@ -273,9 +307,11 @@ function onHandleUp() {
 /* Seçim arayüzü ekran biriminde çizilir: --k, katman ve önizleme
    ölçeklerini geri alarak tutamakların her zaman aynı büyüklükte
    görünmesini sağlar. */
+/* Katmanın ekrandaki kutusunu taklit eder; tüm katmanların üstünde durur. */
 .chrome {
   position: absolute;
-  inset: 0;
+  transform-origin: center center;
+  z-index: 9000;
   pointer-events: none;
 }
 
