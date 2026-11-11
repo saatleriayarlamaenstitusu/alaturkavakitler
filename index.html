@@ -34,12 +34,80 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Alaturka Vakitler" />
 
+
+    <!-- Site geneli yapısal veri. Sayfa bazlı olanlar (Article, BreadcrumbList)
+         `composables/useSeo.js` ile çalışma anında eklenir ve `data-seo-jsonld`
+         işaretini taşır; buradaki blok o işareti TAŞIMAZ, böylece sayfa
+         değişirken silinmez. Statik durmasının sebebi: uygulama tek sayfa
+         (SSR yok), betiği çalıştırmayan tarayıcılar bu grafı yine de görür.
+         `sameAs` resmî hesapların listesidir — arama motorları marka ile
+         hesapları bu alanla eşleştirir, bağlantıların "Hakkında" sayfasıyla
+         aynı kalması gerekir. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://alaturkavakitler.com/#kurulus",
+            "name": "Alaturka Vakitler",
+            "alternateName": "Alaturka Saat",
+            "url": "https://alaturkavakitler.com",
+            "email": "info@alaturkavakitler.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://alaturkavakitler.com/logo512.png",
+              "width": 512,
+              "height": 512
+            },
+            "sameAs": [
+              "https://twitter.com/alaturkasaat",
+              "https://instagram.com/alaturkavakitler",
+              "https://youtube.com/@alaturka-vakitler",
+              "https://github.com/saatleriayarlamaenstitusu/alaturkavakitler"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://alaturkavakitler.com/#site",
+            "name": "Alaturka Vakitler",
+            "alternateName": "Alaturka Saat",
+            "url": "https://alaturkavakitler.com",
+            "inLanguage": "tr-TR",
+            "description": "Türkiye'ye özel alaturka (ezani) saat, namaz vakitleri, hicri ve rumi takvim.",
+            "publisher": { "@id": "https://alaturkavakitler.com/#kurulus" }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://alaturkavakitler.com/#uygulama",
+            "name": "Alaturka Vakitler",
+            "url": "https://alaturkavakitler.com",
+            "applicationCategory": "LifestyleApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "JavaScript gerektirir",
+            "inLanguage": "tr-TR",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" },
+            "featureList": [
+              "Alaturka (ezani) saat",
+              "Namaz vakitleri ve kalan süre",
+              "Hicri takvim ve dinî günler",
+              "Kıble pusulası",
+              "Kaza sayacı",
+              "Paylaşılabilir görsel oluşturma"
+            ],
+            "publisher": { "@id": "https://alaturkavakitler.com/#kurulus" }
+          }
+        ]
+      }
+    </script>
+
     <title>Alaturka Vakitler</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100..900&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/assets/index-B1Hue2L8.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-JReGl8N0.css">
+    <script type="module" crossorigin src="/assets/index-CAHcYE0P.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CvNgFh4e.css">
   <script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
     <div id="app"></div>
