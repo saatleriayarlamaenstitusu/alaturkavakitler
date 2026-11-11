@@ -6,6 +6,8 @@ import { clickOutside } from './directives/clickOutside'
 import { initAnalytics, trackPageView } from './analytics'
 import './assets/css/base.css'
 import './assets/css/typography.css'
+// Masaüstü düzeni — yalnızca 900px üstünde konuşur, mobile dokunmaz.
+import './assets/css/desktop.css'
 
 const app = createApp(App)
 app.use(createPinia())

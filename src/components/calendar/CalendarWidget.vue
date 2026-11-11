@@ -126,4 +126,36 @@ const miladiLine = computed(() =>
   border-radius: 50%;
   border: 1px solid black;
 }
+
+/* ── Masaüstü ──
+   Ana sayfanın "bugün" bloğu. Mobilde saatin altında ince bir satır;
+   geniş ekranda sol kolonun tabanında tek başına kalınca aynı ölçü cılız
+   duruyor. Takvim sayfasındaki bugün bloğuyla aynı ağırlığa çıkar.
+   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
+@media (min-width: 1024px) {
+  .calendar-widget { gap: 1.5rem; }
+
+  .hijri-day {
+    width: 5.5rem;
+    height: 5.5rem;
+    font-size: 3.25rem;
+    border-width: 2px;
+    border-radius: 8px;
+  }
+
+  .cal-label { font-size: 0.65rem; }
+
+  /* Akışkan: dar masaüstünde sabit 1.75rem'de uzun ay adları
+     ("Cemaziyelahir 1448") iki satıra düşüyor. */
+  .hijri-date { font-size: clamp(1.25rem, 1.6vw, 1.75rem); }
+
+  .divider { margin: 0.65rem 0; }
+
+  .miladi-line { font-size: 0.95rem; }
+
+  .moon img {
+    width: 76px;
+    height: 76px;
+  }
+}
 </style>

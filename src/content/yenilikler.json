@@ -1,5 +1,41 @@
 [
   {
+    "id": "masaustu-duzeni",
+    "title": "Masaüstü için yeni düzen",
+    "date": "2026-11-11",
+    "body": "Site **geniş ekranlar** için baştan düzenlendi.\n\nAna sayfada saat ve günün tarihi solda, kalan süre ile vakit listesi sağda duruyor. Vakitler sayfasında günün zaman şeridi sayfanın altında boydan boya uzanıyor. Saat sayfasında kadran solda, okunan saat sağda.\n\nSaatler, vakit listesi ve tarih blokları geniş ekranda büyüdü; küçük ekranda her şey olduğu gibi kaldı.\n\nGörsel Oluştur bölümünde ayarlar alt sayfadan çıkıp yanda uzun bir sütuna taşındı, tasarım alanı diğer tarafta tam boy duruyor."
+  },
+  {
+    "id": "gorsel-katmani-ve-karistirma",
+    "title": "Kendi görseliniz ve karıştırma",
+    "date": "2026-10-19",
+    "body": "Görsel Oluştur bölümüne **görsel katmanı** eklendi: kendi fotoğrafınızı ya da bir dokuyu tuvale katman olarak koyabiliyorsunuz.\n\nHer katmana ayrıca bir **karıştırma** biçimi verilebiliyor — çarp, ekran, fark ve diğerleri. Doku bindirmek, yazıyı zeminle kaynaştırmak ya da ters renk etkisi vermek böyle yapılıyor.\n\nSeçtiğiniz karıştırma indirdiğiniz görselde de aynen duruyor."
+  },
+  {
+    "id": "cuma-hatirlatmasi",
+    "title": "Cuma hatırlatması",
+    "date": "2026-10-09",
+    "body": "Cuma günleri sayacın altında yeşil bir **Cuma** rozeti çıkıyor.\n\nRozet imsakta beliriyor, ikindi girince kalkıyor. Güneş ile öğle arasında sayaç da \"vaktin çıkmasına\" yerine cuma namazına kalan süreyi okuyor."
+  },
+  {
+    "id": "dini-gunler",
+    "title": "Dinî günler takvimde",
+    "date": "2026-10-08",
+    "body": "Kandiller, bayramlar, arefe günleri ve Aşure takvime girdi.\n\nTakvim sayfasında bu günler ızgarada küçük bir noktayla işaretleniyor; güne dokunduğunuzda adıyla birlikte görünüyor. Görsel Oluştur'daki tarih parçası da o güne denk gelen günü kendiliğinden yazıyor, dilerseniz değiştirebiliyorsunuz.\n\nGünler sabit bir listeden okunmuyor, hicri takvimden hesaplanıyor. Kandiller adı geçen günün bir önceki akşamında başladığı için o güne işaretleniyor — Diyanet'in yayımladığı tarihlerle aynı."
+  },
+  {
+    "id": "hazir-gorunumler",
+    "title": "Hazır görünümler",
+    "date": "2026-10-08",
+    "body": "Görsel Oluştur'da her parçanın ayarlarının üstünde **hazır görünümler** şeridi var.\n\nBirine dokununca yazı tipi, kalınlık, ölçü ve hizalama birlikte değişiyor. Yazdığınız metne, tarihe ya da seçtiğiniz ibareye dokunmuyor — yalnızca biçim. Sonradan bir ayarı elle değiştirirseniz işaret kalkıyor, çünkü görünüm artık o hazır görünüm değil."
+  },
+  {
+    "id": "kaza-sayaci",
+    "title": "Kaza sayacı",
+    "date": "2026-10-07",
+    "body": "Vakit listesinde herhangi bir vakte **basılı tuttuğunuzda** kaza bandı açılıyor.\n\nHer vakit için ayrı ayrı artırıp azaltabiliyorsunuz. Band kapalıyken de borcu olan vakitlerin üstünde küçük bir sayı duruyor. Sayılar cihazınızda saklanıyor, bir yere gönderilmiyor."
+  },
+  {
     "id": "kible-pusulasi",
     "title": "Kıble pusulası",
     "date": "2026-10-06",

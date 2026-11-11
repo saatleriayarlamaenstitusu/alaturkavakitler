@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { DateTime } from 'luxon'
 import { useRoute } from 'vue-router'
 import { getItem } from '@/content'
-import { useSeo, SEO_SITE } from '@/composables/useSeo'
+import { useSeo, seoBreadcrumb, SEO_SITE } from '@/composables/useSeo'
 
 const route = useRoute()
 const item = computed(() => getItem(route.params.page, route.params.id))
@@ -42,21 +42,19 @@ const jsonLd = computed(() => {
     description: description.value,
     mainEntityOfPage: url.value,
     inLanguage: 'tr-TR',
-    publisher: { '@type': 'Organization', name: SEO_SITE.name, url: SEO_SITE.url },
+    // Kurum `index.html`teki @graph'ta tarif edilmiştir; burada yalnızca
+    // ona bağlanılır, yeniden tarif edilmez.
+    publisher: { '@id': SEO_SITE.orgId },
+    isPartOf: { '@id': SEO_SITE.siteId },
   }
   if (item.value.author) article.author = { '@type': 'Person', name: item.value.author }
   if (item.value.date) article.datePublished = item.value.date
   if (item.value.cover) article.image = item.value.cover
 
-  const breadcrumb = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: `${SEO_SITE.url}/` },
-      { '@type': 'ListItem', position: 2, name: pageLabel.value, item: `${SEO_SITE.url}/${route.params.page}` },
-      { '@type': 'ListItem', position: 3, name: item.value.title, item: url.value },
-    ],
-  }
+  const breadcrumb = seoBreadcrumb([
+    { name: pageLabel.value, path: `/${route.params.page}` },
+    { name: item.value.title, path: `/detay/${route.params.page}/${route.params.id}` },
+  ])
   return [article, breadcrumb]
 })
 

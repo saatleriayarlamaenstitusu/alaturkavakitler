@@ -298,4 +298,48 @@ function formatTime(dateObj) {
 }
 
 .kaza-dash { color: var(--text-dim); }
+
+/* ── Masaüstü ──
+   Mobilde bu liste altı sütuna bölünmüş dar bir şerit; 1200px'lik kabukta
+   aynı ölçüler (9px etiket, 14px saat) sayfanın içinde kaybolup okunmaz
+   hâle geliyor. Yalnızca ölçüler büyür, düzen aynı kalır — kaza bandı
+   listeyle aynı flex yapısını paylaştığı için hizası kendiliğinden korunur.
+   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
+@media (min-width: 1024px) {
+  .vakit-item { padding: 0.5rem 0; }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    margin-bottom: 0.55rem;
+  }
+
+  .label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+  }
+
+  .value {
+    font-size: 1.375rem;
+    margin-top: 0.35rem;
+  }
+
+  .kaza-badge {
+    transform: translateX(2.1rem);
+    min-width: 1.1rem;
+    font-size: 10px;
+    line-height: 1.25rem;
+  }
+
+  .kaza-title,
+  .kaza-close { font-size: 10px; }
+
+  .kaza-step {
+    width: 2.6rem;
+    height: 1.9rem;
+    font-size: 1rem;
+  }
+
+  .kaza-count { font-size: 1.125rem; }
+}
 </style>

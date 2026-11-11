@@ -1,12 +1,13 @@
 <script setup>
 import HijriMonthCalendar from '@/components/calendar/HijriMonthCalendar.vue'
-import { useSeo } from '@/composables/useSeo'
+import { useSeo, seoBreadcrumb } from '@/composables/useSeo'
 
 useSeo({
   title: 'Hicri Takvim',
   description:
     'Aylık hicri takvim, miladi karşılıkları ve ay fazları. Hicri ve miladi tarihleri bir arada görün.',
   path: '/takvim',
+  jsonLd: seoBreadcrumb([{ name: 'Hicri Takvim', path: '/takvim' }]),
 })
 </script>
 

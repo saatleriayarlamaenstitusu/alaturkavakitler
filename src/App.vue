@@ -14,6 +14,12 @@ const route = useRoute()
 // Görsel oluşturucu kendi tam ekran kabuğuyla gelir.
 const chromeless = computed(() => route.path === '/gorsel-olustur')
 
+// Masaüstünde iki kolona bölünen sayfalar daha geniş bir kabuk ister.
+// İşaret burada veriliyor çünkü yalnızca içerik değil, üst ve alt çubuk da
+// aynı ölçüye hizalanmalı — CSS tek başına rotayı bilemez.
+const WIDE_ROUTES = ['/', '/saat', '/vakitler', '/takvim']
+const wide = computed(() => WIDE_ROUTES.includes(route.path))
+
 let systemMediaQuery = null
 
 function applyTheme(mode) {
@@ -53,7 +59,7 @@ watch(() => settings.colorStyle, applyPalette)
 </script>
 
 <template>
-  <div class="app">
+  <div class="app" :class="{ wide }">
     <div class="hat-watermark" aria-hidden="true"></div>
     <TopNav v-if="!chromeless" />
     <div class="app-content">

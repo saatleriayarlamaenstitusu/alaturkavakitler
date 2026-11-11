@@ -500,4 +500,78 @@ function onTouchEnd(e) {
   letter-spacing: 0.04em;
   color: var(--text-muted);
 }
+
+/* ── Masaüstü: iki kolon ──
+   Seçili gün başlığı solda, ay ızgarası sağda. Tek kolonda ızgara
+   sayfanın tamamına yayılıyordu ve hücreler kareliğini sütun
+   genişliğinden aldığı için (`aspect-ratio: 1`) 127px'lik devasa
+   daireler çıkıyordu; iki kolonda hücre kendiliğinden makul boyda kalır.
+   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
+@media (min-width: 1024px) {
+  .hijri-month {
+    display: grid;
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+    column-gap: 3.5rem;
+    align-items: start;
+  }
+
+  /* İlk ayraç iki kolonun üstünde tek çizgi olarak kalır; ikincisi
+     mobilde başlıkla takvimi ayırıyordu, yan yana dizilince anlamsız. */
+  .hm-divider:first-child { grid-column: 1 / -1; }
+  .hm-divider ~ .hm-divider { display: none; }
+
+  .hm-head { grid-column: 1; }
+  .hm-cal  { grid-column: 2; }
+
+  /* Seçili gün bloğu dikey yığılır. Mobilde iki satır yan yana durur
+     (`space-between`) ve orada doğrudur; dar kolonda ay fazıyla hafta
+     günü sayının yanına sığar. Masaüstünde aynı kural ikisini kolonun
+     iki ucuna fırlatıyor, sayfanın ortasında bağlamsız duruyorlardı. */
+  .hm-headtop {
+    flex-direction: column-reverse;   /* ay fazı büyük sayının üstünde */
+    align-items: flex-start;
+    gap: 1.1rem;
+  }
+
+  .hm-titlerow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  /* Izgara yine de sınırsız büyümesin: 1200px'lik kabukta sağ kolon
+     ~640px, hücreler oradan sonra tekrar şişmeye başlıyor. */
+  .hm-nav,
+  .hm-weekrow,
+  .hm-grid {
+    max-width: 620px;
+  }
+
+  /* Seçili gün bloğu sayfanın başlığıdır: sol kolonun tamamı onundur ve
+     yanındaki ızgara kadar ağırlık taşır. Mobil ölçüler (5.5rem sayı,
+     64px ay fazı) bu kolonun içinde küçük kalıyordu. Ölçüler akışkan —
+     1024px'te sol kolon ~400px, sabit değerler taşardı. */
+  .hm-headtop { gap: 1.4rem; }
+
+  .hm-day { font-size: clamp(6rem, 9vw, 10rem); }
+
+  .hm-moon {
+    width: clamp(72px, 7.5vw, 104px);
+    height: clamp(72px, 7.5vw, 104px);
+  }
+
+  .hm-title { font-size: clamp(1.75rem, 2.2vw, 2.5rem); }
+
+  .hm-weekday { font-size: clamp(1.25rem, 1.6vw, 1.75rem); }
+
+  .hm-greg-line {
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
+  }
+
+  .hm-holy { margin-top: 0.9rem; }
+
+  .hm-holy-tag,
+  .hm-holy-note { font-size: 0.8125rem; }
+}
 </style>

@@ -190,4 +190,17 @@ onUnmounted(() => {
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
+
+/* ── Masaüstü ──
+   Nokta matrisi yüksekliğini viewport'tan alır; geniş ekranda sol kolon
+   boyunca uzanabildiği için üst sınır yükseltiliyor. Etiket satırı da
+   matrisin yeni ağırlığına göre büyür.
+   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
+@media (min-width: 1024px) {
+  .led-matrix { height: clamp(260px, 42vh, 460px); }
+
+  .clock-label { font-size: 0.6rem; }
+
+  .normal-clock { font-size: 2rem; }
+}
 </style>

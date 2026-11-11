@@ -916,4 +916,66 @@ function pickPhoto(e) {
 }
 
 .file { display: none; }
+
+/* ── Masaüstü: alt sayfa yerine yan sütun ──
+   Panel mobilde tuvalin üstüne binen, tutamakla katlanan bir alt
+   sayfadır. Geniş ekranda tuvali örtmesi için bir sebep yok: akışa
+   girer, tam boy bir sütun olur ve kendi içinde kayar.
+   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
+@media (min-width: 1024px) {
+  .panel {
+    position: relative;
+    inset: auto;
+    flex: 0 0 24rem;
+    margin: 0;
+    border-radius: 0;
+    border-left: 1px solid var(--border);
+    padding: 1rem 1.25rem 1.5rem;
+    overflow-y: auto;
+  }
+
+  /* Mobilde panel tuvalle aynı sütunda kalsın diye daraltılıyordu;
+     yan sütunda zaten dar. */
+  .panel > * { max-width: none; }
+
+  /* Tutamak bir alt sayfa işareti. */
+  .grab { display: none; }
+
+  /* Katlanma da öyle: katman sürüklenirken panel kendiliğinden
+     katlanıyor çünkü mobilde tuvalin üstünü kapatıyor. Yan sütunda
+     kapatmıyor, dolayısıyla sürükledikçe ayarların kaybolması
+     yalnızca rahatsız edici olurdu. */
+  .panel.collapsed .sheet-body {
+    max-height: none !important;
+    opacity: 1;
+    overflow: visible;
+  }
+
+  /* İç kaydırma kutuları: artık sütunun kendisi kayıyor. Bunlar
+     kalsaydı sayfa içinde üç ayrı kaydırma alanı olurdu. */
+  .fields,
+  .bg-tab {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .strip.sheet-body { max-height: none; }
+
+  /* Parça şeridi dar sütunda yatay kaydırmak yerine alt alta sarsın;
+     yoksa "Ekle" altındaki parçaların çoğu görünmez kalıyor. */
+  .strip {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .chip { min-width: 0; flex: 1 1 8rem; }
+
+  /* Parmakla kaydırılan şeritlerin kaydırma çubuğu mobilde gizli; farede
+     kaydırmanın başka yolu olmadığı için masaüstünde ince bir çubuk
+     gösterilir. */
+  .preset-strip { scrollbar-width: thin; }
+  .preset-strip::-webkit-scrollbar { display: block; height: 6px; }
+  .preset-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+}
 </style>

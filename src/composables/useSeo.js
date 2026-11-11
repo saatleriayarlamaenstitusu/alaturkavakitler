@@ -81,4 +81,29 @@ export function useSeo(opts = {}) {
   })
 }
 
-export const SEO_SITE = { name: SITE_NAME, url: SITE_URL }
+export const SEO_SITE = {
+  name: SITE_NAME,
+  url: SITE_URL,
+  // `index.html`teki statik @graph'ta tanımlı düğümler. Sayfa bazlı veri
+  // kurumu/siteyi yeniden tarif etmez, bu kimliklere BAĞLANIR — aynı varlık
+  // iki kez tarif edilirse arama motorları onları ayrı varlıklar sayabilir.
+  orgId: `${SITE_URL}/#kurulus`,
+  siteId: `${SITE_URL}/#site`,
+}
+
+/**
+ * Kırıntı yolu (BreadcrumbList). Ana sayfa her zaman ilk basamaktır.
+ * @param {Array<{name: string, path: string}>} trail ana sayfadan SONRAKİ basamaklar
+ */
+export function seoBreadcrumb(trail) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [{ name: 'Ana Sayfa', path: '/' }, ...trail].map((step, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: step.name,
+      item: SITE_URL + step.path,
+    })),
+  }
+}

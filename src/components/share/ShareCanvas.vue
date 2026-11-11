@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useShareEditor } from '@/composables/useShareEditor'
 import CanvasLayer from './CanvasLayer.vue'
 import GridOverlay from './GridOverlay.vue'
@@ -31,6 +31,13 @@ onMounted(() => {
   observer.observe(frameRef.value)
 })
 onUnmounted(() => observer?.disconnect())
+
+// Ölçek orana da bağlı, ama çerçevenin boyu oran değişince değişmiyor:
+// yalnızca ResizeObserver'a bırakılırsa eski ölçek olduğu gibi kalır.
+// Kare → story geçişinde tuval çerçeveyi taşıp alttan kırpılıyordu
+// (ölçüldü: 803px'lik çerçevede 1427px'lik tuval), ters yönde de
+// gereğinden küçük kalıyordu.
+watch(ratio, measure)
 
 const scaledSize = computed(() => ({
   width: `${ratio.value.width * state.viewScale}px`,

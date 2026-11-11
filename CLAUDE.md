@@ -39,7 +39,7 @@ Alaturka saat: son akşam (güneş batımı) ezanından geçen süre.
 ### Analytics & SEO
 - Google Analytics 4 (VITE_GA_ID ile) — henüz eklenmedi
 - `@unhead/vue` (head/SEO yönetimi) — henüz eklenmedi
-- JSON-LD: WebSite, BreadcrumbList yapısal verisi — henüz eklenmedi
+- JSON-LD yapısal veri — eklendi (aşağıdaki "Yapısal Veri" bölümü)
 - Sitemap, robots.txt — robots.txt public'te var, sitemap üretimi bekleniyor
 
 ---
@@ -207,6 +207,61 @@ homeClock         // 'led' | 'normal' — ana sayfa saat görünümü (LedClock 
 - **Renk değiştirilebilir SVG için `<img>` yetersiz** — inline Vue bileşeni gerekir (bkz. `src/components/ui/LogoWide.vue`).
 - Inline SVG'de `fill:currentColor` kullan, parent'a `color: var(--primary)` ver.
 
+### Masaüstü düzeni
+- Uygulama mobil için tasarlandı; masaüstü kuralları `src/assets/css/desktop.css`
+  ve ilgili bileşenlerin scoped bloklarındadır. **Mobil düzene dokunulmaz** —
+  her masaüstü kuralı bir `@media (min-width: …)` içinde durur.
+- **İki eşik var.** `900px`: kabuk — içerik ortalanır, üst çubuk ve alt
+  gezinme aynı kolona hizalanır. `1024px`: iki kolon — ana sayfa, vakitler
+  ve takvim yatay düzene geçer.
+- Ölçü tek bir değişkenden sürülür: `--shell` (880px, okunan sayfalar) ve
+  `--shell-wide` (1200px, iki kolona bölünenler). Kabuk `--shell-now`'u
+  okur; `App.vue` geniş rotalarda `.app`'e `wide` sınıfı verir ve
+  `--shell-now` değişir. Rota bilgisi CSS'e böyle taşınır — içerik, üst
+  çubuk ve alt gezinme birlikte genişlesin diye (biri 880, diğeri 1200
+  olunca logo içerikten 160px kayıyordu).
+- **Sayfa düzenleri bileşenin kendi scoped bloğunda** yazılır, global
+  dosyada değil: scoped seçiciler (`[data-v-…]`) özgüllük yarışı
+  çıkarıyor. Global dosya yalnızca kabuğu kurar.
+- Gerilen mobil düzenin iki ölçülmüş yan etkisi vardı: takvim hücreleri
+  kareliğini sütun genişliğinden aldığı için (`aspect-ratio: 1`) 880px
+  yediye bölününce 127px'lik daireler çıkıyordu; zaman şeridi 75px sabit
+  yükseklikte olduğundan sayfanın alt yarısı boş kalıyordu. İkisi de
+  masaüstüne özel sınırlarla çözüldü (`VakitRangeView` boyunu `--range-h`
+  değişkeninden alır).
+- **Ölçüler masaüstünde büyür.** Bileşenlerin mobil ölçüleri (9px etiket,
+  14px saat, 3rem sayaç) 1200px'lik kabukta okunmaz kalıyordu; her bileşen
+  kendi scoped bloğunda bir masaüstü ölçeği taşır (`VakitList`,
+  `VakitCounter`, `CalendarWidget`, `LedClock`, `VakitRangeView` ve
+  `HijriMonthCalendar`in seçili gün bloğu — sol kolonun tamamı onundur,
+  yanındaki ızgara kadar ağırlık taşır). Kaza
+  bandı listeyle aynı flex yapısını paylaştığı için ölçek büyüdüğünde
+  hizası kendiliğinden korunur.
+- Dar masaüstünde (1024px) sabit büyük ölçüler taşıyor: sayaç ve uzun ay
+  adları `clamp()` ile akışkan. Sayaç sabit 5.25rem iken pusula alt satıra
+  düşüyordu.
+- **Sayfa dikeyde de dolar.** Ana sayfada ızgara `align-content: center`
+  (başlık yok, kompozisyon ortalanır). Vakitlerde satırlar
+  `auto 1fr auto`: başlık üstte, sayaç ve liste yan yana ortada, zaman
+  şeridi sayfanın dibinde. Yukarı yaslandığında 1080p'de sayfanın alt
+  yarısı boş kalıyordu.
+- Zaman şeridi masaüstünde **yatay** durur, iki kolonu birden kaplar.
+  Sağ kolonda tek başına dikine uzatmak denendi: kolonun boyunu
+  dolduruyor ama bir gün çizelgesinden çok dolu bir sütuna benziyor.
+  Bandın üstündeki etiket payı ayrı bir değişkendir (`--range-gap`),
+  yoksa bant uzadıkça boşluk da aynı oranda uzuyordu.
+- Yazı listeleri (`saat üzerine`, `yenilikler`) 900px'ten sonra kart
+  ızgarasına geçer. Kart zemini mat kurulur (`--bg` + `--surface`
+  gradyanı); doğrudan `--surface` verilseydi `canli` paletinde altındaki
+  sayfa gradyanı kartın içinden görünürdü.
+- Bir ızgara öğesi iki satırı birden kaplıyor ve her ikisinden uzunsa,
+  artan yükseklik diğer kolonun satırlarına dağılır: blokların alt
+  çizgileri içeriklerinden yüzlerce piksel aşağıda kalıyordu. Kolon
+  içeriklerine açık `align-self` ver.
+- Saat sayfası da geniş rotalardandır (`WIDE_ROUTES`): kadran solda,
+  okunan saat sağda, tarihler altta tam genişlikte.
+- Boşluk doldurulmaz: zemin gradyanı ve hat filigranı zaten oradadır.
+
 ### Kural
 - Her component `<style scoped>` kullanır.
 - Global stiller `src/assets/css/` altında; açık mod override'ları `base.css`'te.
@@ -340,6 +395,25 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - **Harf aralığı** mutlak değil, tasarımdaki değere eklenen bir kaymadır (`--ls`): `letter-spacing: calc(0.42em + var(--ls, 0em))`. Böylece widget içindeki tracking hiyerarşisi korunur. Arap harfleri bitişik yazıldığı ve letter-spacing bağlantıları kopardığı için Arapça/Osmanlıca widget'larında bu alan sunulmaz (`typographyFieldsNoTracking`).
 - **Opaklık katman seviyesindedir** (`layer.opacity`), widget tipinden bağımsız. Yalnızca içerik sarmalayıcısına uygulanır — katmanın tamamına verilseydi yığın bağlamı oluşup seçim tutamakları da soluklaşırdı. Seçim, widget'ın iki satırını da doldurur, sonrası serbest düzenlenebilir (`EditorPanel.updateProp`'taki `preset` dalı).
 - **Düzen localStorage'da saklanır** (`shareEditor`): oran, katmanlar, arka plan, grid, marka satırı. Seçim/sürükleme gibi anlık durumlar saklanmaz. Yazma 400ms geciktirilir; fotoğraf data URI'si kotayı aşarsa düzen fotoğrafsız kaydedilir (katmanlar kaybolmaz). Üst çubuktaki **Sıfırla** iki dokunuşla onaylanır ve varsayılan kompozisyonu kurar.
+- **Masaüstünde (≥1024px) panel alt sayfa değil yan sütundur**: akışa girer,
+  tam boy olur ve kendi içinde kayar. Tutamak ve katlanma gizlenir — ikisi de
+  panelin tuvali örtmesinden doğan davranışlar, yan sütunda örtmüyor. İç
+  kaydırma kutuları (`.fields`, `.bg-tab`) serbest bırakılır, yoksa tek
+  sayfada üç ayrı kaydırma alanı oluyor.
+- **Önizleme ölçeği orana da bağlıdır.** `ShareCanvas.measure()` hem çerçeveyi
+  hem oranı okur ama yalnızca `ResizeObserver` tetikliyordu; oran değişince
+  çerçevenin boyu değişmediği için eski ölçek olduğu gibi kalıyordu. Kare →
+  story geçişinde tuval çerçeveyi taşıp kırpılıyor (ölçüldü: 803px'lik
+  çerçevede 1427px'lik tuval), ters yönde gereğinden küçük kalıyordu.
+  `watch(ratio, measure)` ile çözüldü — yeni bir oran alanı eklerken bu
+  bağımlılığı unutma.
+- **Tuvalin nefes payı dolguyla değil kenar boşluğuyla verilir.** Ölçek
+  `.canvas-frame`in DIŞ ölçüsünden hesaplanıyor (`getBoundingClientRect`),
+  dolgu eklenince tuval o kadar taşıp kırpılıyor (ölçüldü: 1.5rem dolgu
+  tuvalin altını kesti).
+- Tam ekran editör kabuğun ortalama kuralının dışındadır
+  (`.app-content > .creator { max-width: none }`): `position: fixed` olmasına
+  rağmen `max-width` uygulanıyor ve editör 880px'lik bir kutuya hapsoluyordu.
 - **Ayar paneli tuvali itmez**, üstüne binen bir alt sayfadır (`position: absolute`). Tuval alanı her zaman panelin KATLANMIŞ yüksekliğine göre ölçülür (`.stage` padding-bottom), böylece panel açılıp kapandıkça tuval ölçeği hiç değişmez. Tutamağa basınca gövde katlanır; katman sürüklenirken (`state.dragging`) kendiliğinden katlanır, bırakınca açılır.
 - Katmanların görünmez bir dokunma payı vardır (`.layer::before`, `--k` ile ekran birimine sabitlenmiş ±22px); küçültülmüş widget'lar da parmakla tutulabilir.
 - **Gren doku** (`state.grain`) arka planın hemen üstünde, grid ve widget'ların altındadır: fotoğrafa/gradyana doku verir ama metni kumlamaz. Doku kaynağı `base.css`'teki uygulama grain'iyle aynı (`feTurbulence` data URI) — tuval ve uygulama aynı karakterde. `mix-blend-mode` ve SVG filtresi export'ta ölçülerek doğrulandı (komşu piksel farkı 0.25 → 2.73).
@@ -391,6 +465,30 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - Bulanıklık kenarları saydamlaştırdığı için fotoğraf, blur değeri kadar taşırılıp (`inset: -2×blur`) çerçeve dolu tutulur.
 
 ---
+
+## Yapısal Veri (JSON-LD)
+
+- **Site geneli graf `index.html`de STATİKTİR**: Organization + WebSite +
+  WebApplication, tek bir `@graph` içinde. Uygulama tek sayfa ve SSR yok;
+  betiği çalıştırmayan tarayıcılar yalnızca burayı görür.
+- `sameAs` resmî hesapların listesidir (Twitter, Instagram, YouTube,
+  GitHub) — arama motorları markayı hesaplarla bu alandan eşleştirir.
+  Hakkında sayfasındaki bağlantılarla aynı kalmalı; biri değişirse ikisi
+  birden değişir.
+- **Sayfa bazlı veri kurumu/siteyi yeniden TARİF ETMEZ**, `@id` ile ona
+  bağlanır (`SEO_SITE.orgId`, `SEO_SITE.siteId`). Aynı varlık iki kez
+  tarif edilirse ayrı varlıklar sayılabilir.
+- Sayfa bazlı bloklar `useSeo({ jsonLd })` ile çalışma anında eklenir ve
+  `data-seo-jsonld` işaretini taşır; rota değişince yalnızca o işaretli
+  olanlar silinir, statik graf yerinde kalır.
+- Kırıntı yolu tek yerden üretilir: `seoBreadcrumb([{ name, path }])` —
+  ana sayfa basamağını kendisi ekler. Hangi sayfada ne var: ana sayfa
+  WebPage; saat/vakitler/takvim/hakkında/amentü BreadcrumbList; yazı
+  listeleri BreadcrumbList + ItemList; yazı detayı Article +
+  BreadcrumbList.
+- Kontrol: sayfayı açıp `document.querySelectorAll('script[type="application/ld+json"]')`
+  çıktısına bak — bir statik graf + sayfanın kendi blokları olmalı,
+  tekrar eden `@type` olmamalı.
 
 ## Kıble Pusulası
 

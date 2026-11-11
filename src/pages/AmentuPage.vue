@@ -211,12 +211,13 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useSeo } from '@/composables/useSeo'
+import { useSeo, seoBreadcrumb } from '@/composables/useSeo'
 
 useSeo({
   title: 'Amentü',
   description: 'Amentü — İsmet Özel şiiri, sesli dinleme ve metin.',
   path: '/amentu',
+  jsonLd: seoBreadcrumb([{ name: 'Amentü', path: '/amentu' }]),
 })
 
 const audioEl = ref(null)

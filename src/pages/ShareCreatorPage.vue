@@ -258,6 +258,38 @@ const shareSupported = computed(() => Boolean(navigator.share))
 
 .action:disabled { opacity: 0.5; cursor: default; }
 
+/* ── Masaüstü: tuval solda, ayarlar sağda bir sütun ──
+   Mobilde panel tuvalin ÜSTÜNE binen bir alt sayfadır ve tuval alanı
+   panelin katlanmış yüksekliğine göre ölçülür. Geniş ekranda örtüşmeye
+   gerek yok: panel yan sütuna geçer, tuval kalan alanı alır. Tuval
+   ölçeği `ResizeObserver` ile kendiliğinden yeniden hesaplanır.
+   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
+@media (min-width: 1024px) {
+  .stage {
+    flex-direction: row;
+    align-items: stretch;
+    /* Katlanmış panele ayrılan pay artık gerekmiyor. */
+    padding-bottom: 0;
+  }
+
+  /* Satır yönünde `min-height: 0` yetmez; tuval sütunu kendi içeriğinden
+     daha dar olamıyor ve paneli ekrandan taşırıyordu.
+     Nefes payı DOLGUYLA değil kenar boşluğuyla verilir: tuval ölçeği
+     çerçevenin dış ölçüsünden hesaplanıyor (`getBoundingClientRect`),
+     dolgu eklenince tuval o kadar taşıp kırpılıyor. Kenar boşluğu o
+     ölçüye girmediği için kırpma olmaz. */
+  .stage :deep(.canvas-frame) {
+    min-width: 0;
+    padding: 0;
+    margin: 1.5rem;
+  }
+
+  .error {
+    right: auto;
+    bottom: 1rem;
+  }
+}
+
 .error {
   position: absolute;
   left: 1rem;

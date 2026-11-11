@@ -1,0 +1,84 @@
+/* ════════════════════════════════════════════════════════════
+   Masaüstü düzeni
+
+   Uygulama mobil için tasarlandı ve orada iyi çalışıyor; bu dosya
+   MOBİLE HİÇ DOKUNMAZ. Buradaki her kural tek bir eşiğin üstünde
+   (--desk breakpoint, 900px) devreye girer; altında dosya hiç
+   konuşmaz. Bileşenlerin kendi stilleri olduğu gibi kalır.
+
+   Yapılan iş tek bir fikre dayanıyor: geniş ekranda arayüzü GERMEK
+   yerine okunur bir ölçüde ORTALAMAK. 1440px'de mobil düzen
+   gerildiğinde ince çizgiler kenardan kenara 1400px gidiyor,
+   ayarlardaki düğmeler siyah bir boşlukta adacık kalıyor ve LED
+   saatin nokta matrisi pencere boyunca uzanıyordu.
+
+   Kenarlarda kalan boşluk doldurulmaz: zemin gradyanı ve hat
+   filigranı zaten oradadır, boşluk İsviçre düzeninde bir öğedir.
+
+   ── İKİ EŞİK ──
+   900px   kabuk: içerik ortalanır, üst/alt çubuk aynı kolona hizalanır.
+           Bu dosyanın işi burada biter.
+   1024px  iki kolon: ana sayfa, vakitler ve takvim yatay düzene geçer.
+           Bu kurallar İLGİLİ BİLEŞENİN kendi `<style scoped>` bloğunda
+           durur — sayfa düzeni sayfanın kendi meselesidir ve buradan
+           yazılsaydı scoped seçicilerle özgüllük yarışına girilirdi.
+           Yeni bir sayfayı yatay düzene geçirirken aynı eşiği kullan.
+   ════════════════════════════════════════════════════════════ */
+
+@media (min-width: 900px) {
+  :root {
+    /* İki ölçü var, çünkü iki farklı iş yapılıyor:
+       --shell       okunan sayfalar (ayarlar, hakkında, blog). Vakit
+                     listesi altı sütun olduğu için metin genişliğinden
+                     (~65ch) geniş tutuldu; 880px altısını rahat taşıyor.
+       --shell-wide  iki kolona bölünen sayfalar (ana sayfa, vakitler,
+                     takvim). Ayarları da 1200px'e açmak satırları
+                     okunmaz uzunluğa çıkarırdı. */
+    --shell: 880px;
+    --shell-wide: 1200px;
+    /* Yürürlükteki ölçü. Kabuk hep bunu okur; `.app.wide` aşağıda
+       değerini değiştirince içerik, üst çubuk ve alt gezinme birlikte
+       genişler — biri diğerinden 160px kaymasın diye. */
+    --shell-now: var(--shell);
+  }
+
+  /* ── İçerik kolonu ──
+     `.app-content` TAM GENİŞLİKTE kalır: kaydırma kabı odur, daraltılsaydı
+     fare imleci kolonun dışındayken tekerlek çalışmazdı. Ortalanan, onun
+     içindeki sayfa kökü. */
+  .app-content > * {
+    max-width: var(--shell-now);
+    margin-inline: auto;
+  }
+
+  /* Görsel oluşturucu kendi tam ekran kabuğudur (`position: fixed`).
+     `max-width` sabit konumlu elemana da uygulanıyor: kural dışı
+     bırakılmazsa editör ekranın ortasında 880px'lik bir kutuya
+     hapsoluyor. */
+  .app-content > .creator {
+    max-width: none;
+  }
+
+  /* Üst ve alt çubuk da aynı kolona hizalanır; yoksa logo ve şehir
+     seçici içerikten 300px uzakta, ekranın köşelerinde kalıyor. */
+  .top-nav {
+    width: 100%;
+    max-width: calc(var(--shell-now) + 1rem);
+    margin-inline: auto;
+  }
+
+  .bottom-nav {
+    max-width: var(--shell-now);
+    margin-inline: auto;
+  }
+
+}
+
+/* ── İki kolon eşiği ──
+   Sayfa düzenlerinin kendisi bileşenlerin scoped bloklarında; burada
+   yalnızca kabuğun ölçüsü büyür. */
+@media (min-width: 1024px) {
+  .app.wide {
+    --shell-now: var(--shell-wide);
+  }
+}

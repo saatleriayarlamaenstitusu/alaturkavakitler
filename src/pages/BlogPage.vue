@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { DateTime } from 'luxon'
 import { getList } from '@/content'
-import { useSeo } from '@/composables/useSeo'
+import { useSeo, seoBreadcrumb, SEO_SITE } from '@/composables/useSeo'
 
 const props = defineProps({
   page: { type: String, default: '' },
@@ -20,6 +20,22 @@ useSeo({
       : 'Alaturka saat, zaman ve takvim üzerine yazılar ve alıntılar.'
   ),
   path: computed(() => `/${props.page}`),
+  // Kırıntı yolu + yazı listesi. Liste `ItemList` olarak verilir: arama
+  // sonucunda yazıların sırası ve bağlantıları böyle anlaşılıyor.
+  jsonLd: computed(() => [
+    seoBreadcrumb([{ name: isYenilikler.value ? 'Yenilikler' : 'Saat Üzerine', path: `/${props.page}` }]),
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: isYenilikler.value ? 'Yenilikler' : 'Saat Üzerine',
+      itemListElement: items.value.map((item, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: item.title,
+        url: `${SEO_SITE.url}/detay/${props.page}/${item.id}`,
+      })),
+    },
+  ]),
 })
 
 // Üst satırda tek bir bilgi var: yazarı varsa yazar, yoksa tarih.
@@ -115,5 +131,60 @@ function excerpt(body) {
   font-size: 0.85rem;
   line-height: 1.5;
   color: var(--text-muted);
+}
+
+/* ── Masaüstü: kart ızgarası ──
+   Mobilde yazılar tek kolonda, ince çizgiyle ayrılmış satırlar. Geniş
+   ekranda aynı satır 880px boyunca uzuyor ve kapak görseli sayfanın
+   yarısını kaplıyordu; yazılar yan yana kart olarak duruyor.
+   Kart zemini mat kurulur: `--surface` her palette opak değil
+   (`canli`de yarı saydam), doğrudan verilseydi altındaki gradyan
+   kartın içinden görünürdü.
+   Eşik 900px — bu sayfa iki kolona bölünen geniş rotalardan değil,
+   kabuk ölçüsünde kalır (bkz. `assets/css/desktop.css`). */
+@media (min-width: 900px) {
+  .blog-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .blog-item {
+    border-top: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background-color: var(--bg);
+    background-image: linear-gradient(var(--surface), var(--surface));
+    transition: border-color 160ms ease, transform 160ms ease;
+  }
+
+  .blog-item:hover {
+    border-color: var(--accent-ui);
+    transform: translateY(-2px);
+  }
+
+  .blog-link {
+    height: 100%;
+    gap: 0.4rem;
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  /* Görsel kartın kenarlarına yapışır: satır düzeninde metinle aynı
+     hizada duruyordu, kartta ise kapaktır. */
+  .blog-cover {
+    width: calc(100% + 2.5rem);
+    margin-left: -1.25rem;
+    height: 11rem;
+    border-radius: 0;
+    margin-bottom: 1rem;
+  }
+
+  .blog-author { margin-top: 1.25rem; }
+
+  .blog-cover + .blog-author { margin-top: 0; }
+
+  .blog-title { font-size: 1.375rem; }
 }
 </style>

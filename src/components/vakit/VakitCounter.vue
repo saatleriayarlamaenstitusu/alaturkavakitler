@@ -250,4 +250,36 @@ onUnmounted(() => {
   z-index: 3;
   border-radius: 10px;
 }
+
+/* ── Masaüstü ──
+   Sayaç sayfanın ana bilgisi; geniş ekranda mobildeki 3rem ölçüsüyle
+   kolonun içinde küçük kalıyor. Pusula da onunla birlikte büyür, yoksa
+   sayaç büyüyünce yanında düğme gibi duruyor.
+   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
+@media (min-width: 1024px) {
+  .badge {
+    font-size: 0.8125rem;
+    padding: 0.3rem 0.9rem;
+  }
+
+  .counter-label {
+    font-size: 0.7rem;
+    margin-top: 1.5rem;
+  }
+
+  .counter {
+    font-size: 4.25rem;
+    margin-top: 0.5rem;
+  }
+
+  .vakit-counter :deep(.dial) {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  .flags { gap: 0.5rem; }
+
+  .kerahat,
+  .cuma { font-size: 0.8125rem; }
+}
 </style>

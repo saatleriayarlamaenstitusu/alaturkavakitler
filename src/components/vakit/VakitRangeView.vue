@@ -97,6 +97,14 @@ onUnmounted(() => clearInterval(intervalId))
 
 <style scoped>
 .vakit-range-view {
+  /* Şeridin boyu tek yerden sürülür: masaüstünde sağ kolona girince
+     ince bir bant orada yapayalnız kalıyor, yükseklik oradan büyütülüyor.
+     Mobildeki değer değişmedi. */
+  --range-h: 75px;
+  /* Bandın üstündeki boşluk döndürülmüş etiketler içindir. Mobilde bandın
+     boyuyla aynı; masaüstünde bant büyüyünce aynı oranda büyütülürse
+     şeridin yarısı boş kalıyor, bu yüzden ayrı bir değişken. */
+  --range-gap: var(--range-h);
   display: flex;
   color: var(--text);
   position: relative;
@@ -105,9 +113,9 @@ onUnmounted(() => clearInterval(intervalId))
 .vakit-segment {
   display: block;
   background: var(--primary);
-  height: 75px;
+  height: var(--range-h);
   position: relative;
-  margin-top: 75px;
+  margin-top: var(--range-gap);
   opacity: 0.35;
 }
 
@@ -167,7 +175,7 @@ onUnmounted(() => clearInterval(intervalId))
   left: 0;
   right: 0;
   bottom: 0;
-  height: 75px;
+  height: var(--range-h);
   z-index: 5;
   pointer-events: none;
   background-image:
@@ -181,11 +189,22 @@ onUnmounted(() => clearInterval(intervalId))
 .now-line {
   position: absolute;
   bottom: 0;
-  height: 75px;
+  height: var(--range-h);
   width: 1.5px;
   background: #e53e3e;
   z-index: 20;
   pointer-events: none;
   box-shadow: 0 0 4px rgba(229, 62, 62, 0.6);
+}
+
+/* ── Masaüstü ──
+   Şerit boydan boya uzanır; boyu `--range-h` ile verilir. Etiketler bandın
+   değil ÜSTÜNDEKİ BOŞLUĞUN tepesine göre konumlanır: `top: -40%` bant
+   büyüdükçe etiketi boşluğun dışına taşıyordu. */
+@media (min-width: 1024px) {
+  .label {
+    top: calc(3.5rem - var(--range-gap));
+    font-size: 0.8125rem;
+  }
 }
 </style>

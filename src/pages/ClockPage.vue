@@ -5,13 +5,14 @@ import { calculateAlaturka } from '@/utils/clock'
 import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
 import AnalogClock from '@/components/clock/AnalogClock.vue'
-import { useSeo } from '@/composables/useSeo'
+import { useSeo, seoBreadcrumb } from '@/composables/useSeo'
 
 useSeo({
   title: 'Alaturka Saat',
   description:
     'Alaturka (ezani) saati dijital ve analog olarak canlı görün. Son akşam ezanından itibaren geçen süreyi anlık takip edin.',
   path: '/saat',
+  jsonLd: seoBreadcrumb([{ name: 'Alaturka Saat', path: '/saat' }]),
 })
 
 const appStore = useAppStore()
@@ -163,5 +164,48 @@ onUnmounted(() => clearInterval(intervalId))
   font-weight: 400;
   letter-spacing: 0.01em;
   color: var(--text);
+}
+
+/* ── Masaüstü: iki kolon ──
+   Mobilde kadran, dijital saat ve tarihler alt alta. Geniş ekranda aynı
+   dizilim sayfanın ortasında dar bir şerit bırakıyor: kadran solda,
+   okunan saat sağda, tarihler ikisinin altında tam genişlikte durur.
+   Kadran da büyür — 280px'lik çizim 1200px'lik kabukta madalyon gibi
+   kalıyordu. Eşik `assets/css/desktop.css`te açıklanan 1024px. */
+@media (min-width: 1024px) {
+  .clock-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    column-gap: 3.5rem;
+    row-gap: 2rem;
+    align-items: center;
+    padding: 2rem 0 1.5rem;
+  }
+
+  .analog-section {
+    grid-area: 1 / 1;
+    max-width: none;
+    justify-self: center;
+  }
+
+  .analog-section :deep(.analog-clock) { max-width: 420px; }
+
+  .digital-section { grid-area: 1 / 2; }
+
+  /* Kolonları ayıran boşluk zaten var; yatay çizgi ikisini ayırmıyor. */
+  .clock-divider { display: none; }
+
+  .date-block { grid-area: 2 / 1 / 3 / -1; }
+
+  .clock-label { font-size: 0.7rem; }
+
+  .alaturka-time { font-size: 7rem; }
+
+  .normal-time { font-size: 1.75rem; }
+
+  .date-label { font-size: 0.62rem; }
+
+  .date-value { font-size: 1.125rem; }
 }
 </style>

@@ -816,4 +816,30 @@ const fullWidth = computed(() =>
 }
 
 .textarea:focus { outline: none; border-color: var(--accent-ui); }
+
+/* ── Masaüstü ──
+   Yazı tipi ve ibare şeritleri 70'e yakın öğe taşıyor; sarmak yerine
+   yatay kaydırmalı kalmaları doğru. Ama kaydırma çubuğu mobil için
+   gizlenmişti ve farede yatay kaydırmanın başka yolu yok — geniş
+   ekranda ince bir çubuk gösterilir.
+   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
+@media (min-width: 1024px) {
+  .fonts,
+  .phrases {
+    scrollbar-width: thin;
+    padding-bottom: 0.45rem;
+  }
+
+  .fonts::-webkit-scrollbar,
+  .phrases::-webkit-scrollbar {
+    display: block;
+    height: 6px;
+  }
+
+  .fonts::-webkit-scrollbar-thumb,
+  .phrases::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+}
 </style>
