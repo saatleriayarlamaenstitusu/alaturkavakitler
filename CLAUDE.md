@@ -502,3 +502,38 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - Saydam kayıt için komut satırı bayrağı (`--default-background-color`) değil
   `Emulation.setDefaultBackgroundColorOverride` kullanılır; bayrakla ekran
   görüntüsü hiç dönmüyordu.
+
+## Sosyal Medya Kartları
+
+- `brand/social/` — özellikleri tanıtan Instagram story (1080×1920) ve 4:5
+  gönderi (1080×1350) kareleri ve ~10 sn videolar. Ayrıntı:
+  `brand/social/README.md`.
+- **Karttaki telefonun içinde uygulamanın kendisi çalışır** (iframe, `dist/`).
+  Arayüz kart için yeniden ÇİZİLMEZ. Bir kez çizildi ve hemen yanlış oldu:
+  kaza sayacı gerçekte vakte basılı tutunca açılan tam genişlikte bir bant,
+  elle çizilen sürümde yan yana +/− düğmeleri olan bir satır listesiydi.
+  Taklit edilen arayüz, uygulama değiştikçe sessizce yalan söyler.
+- Hareket de taklit değil: her belgeye kendi betikleri çalışmadan önce sahte
+  bir saat enjekte edilir (`Date`, `setTimeout`, `setInterval` sanal zamana
+  bağlanır) ve kare başına zaman ilerletilir. Sayaç gerçekten sayar, basılı
+  tutma gerçekten bandı açar, palet gerçekten değişir.
+- Kart ve uygulama **aynı kökenden** sunulmalı, yoksa karttan iframe'e
+  erişilemez. `dist/sw.js` yayınlanmamalı: kayıtlı bir servis çalışanı
+  gezinme isteklerine app shell'i döndürüp `/_card.html`'i de uygulamayla
+  değiştiriyor.
+- Ölçekleme `transform: scale()` ile yapılır. Kök elemana `zoom` vermek
+  viewport'u küçültmüyor — uygulama 559px genişlikte bir tablet gibi
+  yerleşiyor, alt gezinme ekran dışında kalıyordu.
+- Kartta `--accent` ile `--grad` AYRI: aksan koyu zeminin üstünde okunmak
+  için parlaktır, aynı rengi kartın tepesine koyunca beyaz başlık okunmuyor
+  (sarı/turuncu vakitlerde ölçüldü). `--primary` / `--accent-ui` ayrımının
+  aynısı.
+- Kart çerçevesinin yazı tipi siteyle aynı (Inter Tight); monospace
+  kullanılmaz.
+- `node render.mjs --youtube` aynı sahnelerden YouTube için tek parça
+  1920×1080 film basar (~86 sn): giriş + yedi özellik + çıkış. Yatayda
+  metin solda bir kolonda, telefon sağda durur — dikeydeki gibi üst üste
+  dizilince telefon 1080px'e sığmak için okunmaz hâle geliyor. Bölümler
+  siyaha düşerek (`.veil`) birleşir; her bölüm kendi MP4'üne basılıp akış
+  kopyalanarak birleştirilir (tek dizi hâlinde PNG tutmak birkaç GB eder).
+  Film sessizdir, müzik sonradan bindirilir.

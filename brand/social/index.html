@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<title>Alaturka Vakitler — sosyal medya kartı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100..900&display=swap" rel="stylesheet" />
+<!--
+  Sosyal medya tanıtım kartı.
+
+  Kartın içindeki telefon UYGULAMANIN KENDİSİDİR — bir iframe'de gerçek
+  uygulama çalışır. Arayüz burada yeniden çizilmez; çizilseydi uygulama
+  değiştikçe kartlar sessizce yalan söylemeye başlardı.
+
+  Hareket de taklit değil: `render.mjs` uygulamanın içine sahte bir saat
+  enjekte eder (`Date` + `setTimeout`/`setInterval` sanal zamana bağlanır) ve
+  kare başına zamanı ilerletir. Sayaç gerçekten sayar, basılı tutma gerçekten
+  bandı açar, ay gerçekten değişir.
+
+  Her özelliğin bir SAHNESİ var (aşağıda `SCENES`): hangi rota, hangi an,
+  zamanın kaç katı hızla aktığı ve hangi anda hangi düğmeye basıldığı.
+
+  Elle bakmak için:  python3 -m http.server → index.html?feature=kaza&size=story
+  (iframe'in dolması için render.mjs'in sunucusu gerekir; tek başına açılınca
+  yalnızca kabuk görünür.)
+-->
+<style id="base">
+:root {
+  --w: 1080px;
+  --h: 1920px;
+  --pad: 88px;
+  --title: 116px;
+  --deck: 34px;
+  --eyebrow: 21px;
+  --dur: 10s;
+
+  --bg: #000;
+  --accent: #0491fb;
+  --grad: #0a5fa8;
+  --text: #fff;
+  --hair-strong: rgba(255, 255, 255, 0.3);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: #0c0c0c;
+  font-family: 'Inter Tight', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+body { display: flex; align-items: flex-start; justify-content: center; }
+body.bare { background: transparent; }
+
+.card {
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  overflow: hidden;
+  color: var(--text);
+  /* Uygulamanın kendi zemini: vakit rengi tepeden iner, zemine karışır. */
+  background: linear-gradient(180deg, var(--grad) 0%, var(--bg) 44%);
+  display: flex;
+  flex-direction: column;
+  padding: var(--pad);
+}
+
+/* base.css'teki gren dokusunun aynısı. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  font-size: var(--eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  padding-bottom: 0.9em;
+  border-bottom: 1px solid var(--hair-strong);
+}
+.eyebrow .no { color: rgba(255, 255, 255, 0.5); }
+
+.title {
+  font-size: var(--title);
+  font-weight: 600;
+  line-height: 0.94;
+  letter-spacing: -0.038em;
+  padding-top: 0.42em;
+}
+.title em { font-style: normal; font-weight: 200; }
+.deck {
+  font-size: var(--deck);
+  font-weight: 300;
+  line-height: 1.32;
+  letter-spacing: -0.012em;
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 20ch;
+  padding-top: 0.72em;
+}
+
+.stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+
+/* Yakın çekim kadrajı — kartın kenarına taşmak yerine kendi çerçevesi olsun. */
+.crop {
+  width: 100%;
+  height: 84%;
+  overflow: hidden;
+  border-radius: 34px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 46px 120px rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.crop .phone { border: 0; border-radius: 0; box-shadow: none; }
+.card.land .crop { height: 100%; }
+
+/* Telefon çerçevesi — içindeki iframe gerçek uygulamadır. */
+.phone {
+  position: relative;
+  flex: none;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--phone-r, 58px);
+  background: #000;
+  overflow: hidden;
+  box-shadow: 0 46px 120px rgba(0, 0, 0, 0.65);
+  transform: scale(var(--k, 1));
+  transform-origin: center center;
+}
+.phone iframe { display: block; border: 0; width: 100%; height: 100%; }
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.9em;
+  border-top: 1px solid var(--hair-strong);
+  font-size: var(--eyebrow);
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.66);
+}
+.foot svg { height: calc(var(--eyebrow) * 1.5); width: auto; display: block; color: #fff; }
+
+/* ═══ Yatay düzen (YouTube) ═══
+   Dikey kartlarda metin telefonun ÜSTÜNDE durur; 16:9'da yan yana durmalı,
+   yoksa telefon 1080px yüksekliğe sığmak için küçülüp okunmaz hâle geliyor. */
+.card.land { flex-direction: row; gap: 72px; align-items: stretch; }
+.card.land .col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.card.land .head { margin-bottom: auto; }
+.card.land .deck { max-width: 26ch; }
+.card.land .stage { flex: none; width: 44%; }
+
+/* Hangi bölümde olduğumuzu gösteren şerit — 80 saniyelik filmde gerekiyor. */
+.steps { display: flex; gap: 7px; padding-bottom: 1.7em; }
+.steps i { height: 3px; flex: 1; background: rgba(255, 255, 255, 0.2); }
+.steps i.on { background: var(--accent); }
+
+/* Bölüm geçişleri siyaha düşerek yapılır: kareler ayrı ayrı basılıp
+   birleştirildiği için ffmpeg tarafında bir geçiş süzgecine gerek kalmıyor. */
+.veil { position: absolute; inset: 0; z-index: 95; background: #000; pointer-events: none; }
+
+/* Giriş kartının sağ kolonu: özelliklerin numaralı dizini. */
+.index { flex: none; width: 44%; display: flex; flex-direction: column; justify-content: center; gap: 0.52em; }
+.index div { display: flex; gap: 1.1em; align-items: baseline; font-size: calc(var(--deck) * 1.18); font-weight: 300; letter-spacing: -0.01em; border-bottom: 1px solid rgba(255, 255, 255, 0.14); padding-bottom: 0.46em; }
+.index b { font-size: var(--eyebrow); font-weight: 500; letter-spacing: 0.16em; color: rgba(255, 255, 255, 0.46); }
+
+/* Çıkış kartı: tek bir ortalanmış blok. `land` sınıfı VERİLMEZ — ikisi de
+   .card'ın yönünü belirliyor, birlikte verilince satır/sütun çakışıyor. */
+.card.solo .mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 0.5em; }
+.card.solo .mid svg { width: 28%; height: auto; color: #fff; margin-bottom: 0.5em; }
+.card.solo .mid .lines { font-size: calc(var(--deck) * 1.08); font-weight: 300; line-height: 1.6; color: rgba(255, 255, 255, 0.72); }
+.card.solo .mid .url { font-size: calc(var(--deck) * 1.6); font-weight: 400; letter-spacing: -0.025em; }
+</style>
+</head>
+<body>
+<div class="card" id="card"></div>
+<script>
+/* ═══════════════ yardımcılar ═══════════════ */
+
+const Q = new URLSearchParams(location.search)
+const SIZE = Q.get('size') || 'story'
+const FEATURE = Q.get('feature') || 'saat'
+
+/* `k`: telefon çerçevesinin kart içindeki ölçeği. iframe GERÇEK telefon
+   ölçüsünde (402×844 CSS px) açılır — uygulamanın mobil düzenini görmesi
+   için şart — ve çerçeve `transform: scale()` ile büyütülür. Kök elemana
+   `zoom` vermek denendi: viewport'u küçültmüyor, uygulama 559px genişlikte
+   bir tablet gibi yerleşiyordu. */
+const SIZES = {
+  story: { w: 1080, h: 1920, pad: 88, title: 116, deck: 34, eyebrow: 21, k: 1.40 },
+  post:  { w: 1080, h: 1350, pad: 76, title: 90,  deck: 29, eyebrow: 19, k: 0.90 },
+  /* 16:9 — tek parça tanıtım filmi. Telefon 844px; 1080 - 2*72 = 936,
+     yani k = 1.06 çerçeveyi kadrajın yüksekliğine oturtur. */
+  yt:    { w: 1920, h: 1080, pad: 72, title: 104, deck: 31, eyebrow: 20, k: 1.06, land: true },
+}
+const PHONE = { w: 402, h: 844, r: 42 }
+
+const frag = (html) => {
+  const t = document.createElement('template')
+  t.innerHTML = html.trim()
+  return t.content.firstElementChild
+}
+
+/* Logo — src/components/ui/LogoWide.vue ile aynı yollar. */
+const LOGO = `<svg viewBox="0 0 60.931 12.166" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><g transform="translate(-30.049 -474.358)"><path d="M49.414 478.203q-.781 0-1.344-.563-.562-.563-.562-1.344 0-.813.562-1.375.563-.563 1.344-.563.813 0 1.375.563.563.562.563 1.344 0 .812-.563 1.375-.562.563-1.375.563zm-2.47 2.687q.407.844.407 1.72 0 .5-.125 1.03-.375 1.439-1.594 2.251l-5.813-11.533h3.844q1.094 2.188 3.282 6.532z"/><g transform="scale(-1)"><path d="M-31.986-482.68q-.782 0-1.344-.563-.563-.562-.563-1.343 0-.813.563-1.376.562-.562 1.344-.562.812 0 1.375.562.562.563.562 1.344 0 .813-.562 1.375-.563.563-1.375.563zm-2.47 2.688q.407.844.407 1.719 0 .5-.125 1.031-.375 1.438-1.594 2.25l-5.814-11.532h3.845q1.094 2.188 3.281 6.532z"/></g><path d="M88.26 477.743h1.823l-.054-.635h-1.71zm.902-1.517.488 1.118-.03.212.414.852h.946l-1.818-3.665-1.813 3.665h.941l.429-.886-.04-.183zm-6.334-1.266v3.448h.863v-3.448zm2.035 0-1.414 1.64 1.453 1.808h1.01l-1.473-1.832 1.4-1.616zm-5.812 1.887.971 1.561h.975l-1.078-1.561zm-.857-1.887v3.448h.833v-3.448zm.522.704h.675q.168 0 .286.055.123.054.187.157.064.099.064.242t-.064.246q-.064.099-.187.153-.118.049-.286.049h-.675v.645h.735q.443 0 .738-.142.296-.143.449-.395.152-.256.152-.586 0-.335-.152-.586-.153-.256-.449-.4-.295-.142-.738-.142h-.735zm-5.447-.704v2.315q0 .326.104.567.108.241.296.399.192.153.443.231.251.08.542.08.29 0 .542-.08.256-.078.443-.231.192-.158.296-.4.108-.24.108-.566v-2.315h-.833v2.256q0 .261-.137.424-.138.163-.42.163-.275 0-.413-.163-.138-.163-.138-.424v-2.256zm-4.53.744h.946v2.704h.832v-2.704h.951v-.744h-2.73zm-3.836 2.04h1.822l-.054-.636h-1.71zm.901-1.518.488 1.118-.03.212.414.852h.946l-1.818-3.665-1.813 3.665h.941l.429-.886-.04-.183zm-5.639-1.266v3.448h2.217v-.714h-1.384v-2.734zm-4.526 2.783h1.823l-.054-.635h-1.71zm.902-1.517.488 1.118-.03.212.414.852h.946l-1.818-3.665-1.813 3.665h.94l.43-.886-.04-.183z"/><path d="m79.114 483.665 1.016 1.463h.297l-1.046-1.463zm-.522-1.603v3.066h.241v-3.066zm.127.215h.574q.232 0 .412.079.18.079.28.228.105.148.105.367 0 .22-.1.373-.101.149-.285.227-.18.075-.412.075h-.574v.215h.574q.298 0 .53-.101.236-.105.372-.307.136-.201.136-.481 0-.285-.136-.482t-.372-.302q-.232-.106-.53-.106h-.574zm-3.624 2.851h1.52v-.228h-1.52zm0-2.838h1.52v-.228h-1.52zm0 1.27h1.432v-.227h-1.432zm-.127-1.498v3.066h.24v-3.066zm-3.222 0v3.066h1.506v-.228h-1.266v-2.838zm-3.568.228h.806v2.838h.24v-2.838h.806v-.228h-1.852zm-1.948-.228v3.066h.241v-3.066zm-.044-.477q0 .066.049.114.048.048.113.048.07 0 .119-.048.048-.048.048-.114 0-.07-.048-.118-.048-.048-.119-.048-.065 0-.113.048-.049.048-.049.118zm-3.524.477v3.066h.241v-3.066zm1.511 0-1.34 1.441 1.406 1.625h.307l-1.415-1.63 1.349-1.436zm-5.328 2.037h1.572l-.079-.228h-1.414zm.78-1.599.604 1.463.022.057.455 1.108h.272l-1.354-3.184-1.353 3.184h.272l.46-1.125.026-.053zm-3.722 2.186-1.082-2.624h-.271l1.353 3.184 1.353-3.184h-.271z"/></g></svg>`
+
+/* Sahnelerde kullanılan küçük yardımcılar. */
+const ms = (iso) => new Date(iso).getTime()
+const $ = (doc, sel) => doc.querySelector(sel)
+const $$ = (doc, sel) => [...doc.querySelectorAll(sel)]
+
+/* Editördeki "Ekle" şeridinden etiketiyle bir parça bulur. */
+const chip = (d, label) =>
+  $$(d, '.chip').find(c => c.querySelector('.chip-label')?.textContent.trim() === label)
+
+function tap(node) {
+  if (!node) return
+  const o = { bubbles: true, cancelable: true, composed: true, clientX: 0, clientY: 0, pointerId: 1, isPrimary: true }
+  node.dispatchEvent(new PointerEvent('pointerdown', o))
+  node.dispatchEvent(new PointerEvent('pointerup', o))
+  node.click()
+}
+
+/* ═══════════════ özellikler ve sahneleri ═══════════════
+
+   route   — uygulamanın hangi rotası
+   at      — sahnenin başladığı an (uygulamanın göreceği "şimdi")
+   speed   — sanal zamanın gerçek zamana oranı. 1 = gerçek zaman.
+             Zaman şeridinde çizginin kayması için güne hızlandırılır.
+   seed    — iframe'e enjekte edilecek ek localStorage anahtarları
+   setup   — uygulama hazır olunca bir kez çalışır
+   at(t)   — her karede çalışır; `once` ile zamanlanmış dokunuşlar yapılır
+*/
+
+const FEATURES = [
+  {
+    id: 'saat', no: '01',
+    title: ['Alaturka', '<em>saat</em>'],
+    deck: 'Gün, güneşin battığı anda başlar. Asırlarca böyle sayıldı.',
+    accent: '#0491fb', grad: '#0a5fa8',
+    route: '/', at: ms('2026-11-07T23:43:40'), speed: 1,
+    focus: '.led-clock, .alaturka-clock',
+    seed: { settings_homeClock: '"led"' },
+  },
+  {
+    id: 'sayac', no: '02',
+    title: ['Vakte', '<em>kalan süre</em>'],
+    deck: 'Bir günün tamamı, altı vakit, tek bir şeritte.',
+    accent: '#ff8c33', grad: '#b4551a',
+    /* Gün 10 saniyeye sığsın diye zaman hızlandırılır: çizgi gerçekten
+       kayar, sayaç gerçekten azalır — hiçbiri taklit değil. */
+    route: '/vakitler', at: ms('2026-11-07T05:40:00'), speed: 5400,
+    focus: '.vakit-range-view',
+  },
+  {
+    id: 'takvim', no: '03',
+    title: ['Hicri', '<em>takvim</em>'],
+    deck: 'Hicri ve miladi yan yana. Ay başlangıçları Diyanet ile aynı gün.',
+    accent: '#6b7ae8', grad: '#2e3b83',
+    /* Akşam saati: uygulamanın vakit rengi de kartın zeminiyle aynı
+       aileye düşsün. */
+    route: '/takvim', at: ms('2026-11-07T20:30:00'), speed: 1,
+    focus: '.hm-nav',
+    frame: (t, w, d, once) => {
+      /* Sonraki ay düğmesi: Cemâziye'l-evvel → Cemâziye'l-âhir → Recep
+         (Recep'te iki kandil işaretli). */
+      ;[2600, 5200].forEach((when, i) =>
+        once('ay' + i, when, () => tap($$(d, '.hm-arrow')[1])))
+    },
+  },
+  {
+    id: 'kaza', no: '04',
+    title: ['Kaza namazı', '<em>sayacı</em>'],
+    deck: 'Geride kalanı bilmek, tamamlamanın ilk adımı.',
+    accent: '#e0003c', grad: '#8e0025',
+    route: '/vakitler', at: ms('2026-11-07T20:10:00'), speed: 1,
+    focus: '.vakit-block',
+    seed: { kazaCounts: JSON.stringify({ imsak: 31, ogle: 24, ikindi: 26, aksam: 19, yatsi: 22 }) },
+    frame: (t, w, d, once) => {
+      /* Gerçek etkileşim: vakte basılı tut → bant açılır (bileşenin kendi
+         400 ms'lik zamanlayıcısı sanal saatle işler) → artır → Bitti. */
+      once('bas', 1200, () => {
+        const list = $(d, '.vakit-list')
+        list && list.dispatchEvent(new w.PointerEvent('pointerdown',
+          { bubbles: true, cancelable: true, clientX: 120, clientY: 300, pointerId: 1, isPrimary: true }))
+      })
+      once('birak', 1900, () => {
+        const list = $(d, '.vakit-list')
+        list && list.dispatchEvent(new w.PointerEvent('pointerup',
+          { bubbles: true, cancelable: true, clientX: 120, clientY: 300, pointerId: 1, isPrimary: true }))
+      })
+      ;[2800, 3700, 4600, 5500].forEach((when, i) =>
+        once('arti' + i, when, () => {
+          const col = $$(d, '.kaza-col')[i % 2 ? 4 : 3]
+          col && tap(col.querySelector('.kaza-step'))
+        }))
+      once('bitti', 7000, () => tap($(d, '.kaza-close')))
+    },
+  },
+  {
+    id: 'gorsel', no: '05',
+    title: ['Görsel', '<em>oluşturucu</em>'],
+    deck: 'Vakti, tarihi, bir ibareyi kendi tasarımınıza dönüştürün.',
+    accent: '#ffbd33', grad: '#8a6414',
+    route: '/gorsel-olustur', at: ms('2026-11-07T18:30:00'), speed: 1,
+    frame: (t, w, d, once) => {
+      /* Editörün kendi "Ekle" şeridine basılır; katmanlar tuvale gerçekten
+         eklenir, değerleri o anki vakit ve tarihten dolar. */
+      ;[['Vakit', 1300], ['Arapça Metin', 2900], ['Logo', 4400]].forEach(([ad, when]) =>
+        once('ekle-' + ad, when, () => tap(chip(d, ad))))
+      /* Paneli katlayıp tuvali tamamen göster — eklenenler panelin
+         arkasında kalıyordu. */
+      once('katla', 5800, () => tap($(d, '.panel .grab')))
+      /* Sonra bir katmana dokunup seçim tutamaklarını göster. */
+      once('sec', 7800, () => tap($$(d, '.layer')[0]))
+    },
+  },
+  {
+    id: 'kible', no: '06',
+    title: ['Kıble', '<em>pusulası</em>'],
+    deck: 'Nerede olursanız olun, yönünüz belli.',
+    accent: '#00b7ff', grad: '#0a6d9e',
+    route: '/vakitler', at: ms('2026-11-08T06:30:00'), speed: 1,
+    focus: '.qibla',
+    /* Kadran 402px'lik ekranda 52px; kart ona ayrılmışsa yaklaşmak gerek.
+       Kırpma gerçek ekranın üzerinde yapılır. */
+    detail: { sel: '.qibla', scale: 2.0 },
+    frame: (t, w, d, once) => {
+      /* Cihaz pusulası yokmuş gibi değil, varmış gibi: gerçek
+         DeviceOrientationEvent üretilir, kadran gerçekten döner.
+         52° → 0°, sönümlenerek yerine oturur. */
+      const p = Math.min(1, t / 5500)
+      const e = 1 - Math.pow(1 - p, 3)
+      const heading = 52 * (1 - e) + Math.sin(p * Math.PI * 3) * 5 * (1 - e)
+      w.dispatchEvent(new w.DeviceOrientationEvent('deviceorientationabsolute', {
+        alpha: (360 - heading + 360) % 360, beta: 0, gamma: 0, absolute: true,
+      }))
+      /* Kadrana basılı tutunca uygulama açıklama balonunu açar. */
+      once('tut', 6600, () => {
+        const q = $(d, '.qibla')
+        q && q.dispatchEvent(new w.PointerEvent('pointerdown',
+          { bubbles: true, cancelable: true, pointerId: 1, isPrimary: true }))
+      })
+    },
+  },
+  {
+    id: 'palet', no: '07',
+    title: ['Beş renk', '<em>stili</em>'],
+    deck: 'Açık ya da koyu, hangisi size iyi geliyorsa.',
+    /* Zemin nötr: renk kartın değil, telefonun konusu. */
+    accent: '#ff6d00', grad: '#1f1f22',
+    route: '/ayarlar', at: ms('2026-11-07T18:30:00'), speed: 1,
+    focus: '.style-scroller',
+    frame: (t, w, d, once) => {
+      /* Ayarlardaki renk stili kartlarına sırayla basar. */
+      ;[1500, 3200, 4900, 6600, 8300].forEach((when, i) =>
+        once('p' + i, when, () => tap($$(d, '.style-card')[i])))
+    },
+  },
+]
+
+/* ═══════════════ giriş ve çıkış bölümleri ═══════════════
+
+   Yalnızca yatay filmde kullanılır. `phoneless`: içinde uygulama yok, bu
+   yüzden render.mjs'in hazır-olma kontrolü iframe beklemez. */
+
+const FEATURE_NAMES = FEATURES.map(x => x.title.join(' ').replace(/<\/?em>/g, ''))
+
+const CHAPTERS = {
+  intro: {
+    id: 'intro', no: '00', kind: 'intro', phoneless: true,
+    eyebrow: 'Tanıtım',
+    title: ['Gün, güneşin', '<em>battığı anda başlar</em>'],
+    deck: 'Alaturka saat, namaz vakitleri, hicri takvim. Tarayıcıda çalışır, kurulum istemez.',
+    accent: '#0491fb', grad: '#0a5fa8',
+  },
+  outro: {
+    id: 'outro', no: '08', kind: 'outro', phoneless: true,
+    eyebrow: 'Son',
+    accent: '#0491fb', grad: '#0a5fa8',
+    lines: ['Ücretsiz ve reklamsız.', 'Ana ekrana ekleyin, çevrimdışı da çalışır.'],
+  },
+}
+
+/* ═══════════════ kurulum ═══════════════ */
+
+const f = CHAPTERS[FEATURE] || FEATURES.find(x => x.id === FEATURE) || FEATURES[0]
+const sz = SIZES[SIZE] || SIZES.story
+const r = document.documentElement.style
+r.setProperty('--w', sz.w + 'px')
+r.setProperty('--h', sz.h + 'px')
+r.setProperty('--pad', sz.pad + 'px')
+r.setProperty('--title', sz.title + 'px')
+r.setProperty('--deck', sz.deck + 'px')
+r.setProperty('--eyebrow', sz.eyebrow + 'px')
+r.setProperty('--accent', f.accent)
+r.setProperty('--grad', f.grad)
+r.setProperty('--phone-r', PHONE.r + 'px')
+r.setProperty('--k', String(sz.k))
+if (Q.get('chrome') === '0') document.body.classList.add('bare')
+
+/* Bölümün süresi: perdenin ne zaman kapanacağını bilmesi için gerekiyor. */
+const DUR = Number(Q.get('dur') || 10) * 1000
+const LAND = !!sz.land
+
+const card = document.getElementById('card')
+if (LAND) card.classList.add('land')
+
+const eyebrowRight = f.eyebrow || `${f.no} / ${String(FEATURES.length).padStart(2, '0')}`
+const eyebrow = frag(`<div class="eyebrow"><span>Alaturka Vakitler</span><span class="no">${eyebrowRight}</span></div>`)
+const head = f.title
+  ? frag(`<div class="head"><div class="title">${f.title[0]}<br>${f.title[1]}</div>${f.deck ? `<div class="deck">${f.deck}</div>` : ''}</div>`)
+  : null
+const foot = frag(`<div class="foot">${LOGO}<span>alaturkavakitler.com</span></div>`)
+
+/* Yatay filmde hangi bölümde olduğumuzu gösteren şerit. */
+const steps = LAND && !f.phoneless
+  ? frag(`<div class="steps">${FEATURES.map(x => `<i class="${x.id === f.id ? 'on' : ''}"></i>`).join('')}</div>`)
+  : null
+
+let stage = null, phone = null, iframe = null
+
+if (f.kind === 'outro') {
+  card.classList.remove('land')
+  card.classList.add('solo')
+  card.appendChild(eyebrow)
+  stage = frag(`<div class="mid">${LOGO}<div class="url">alaturkavakitler.com</div><div class="lines">${f.lines.join('<br>')}</div></div>`)
+  card.appendChild(stage)
+} else {
+  /* Hem özellik hem giriş bölümü aynı iki kolonlu düzeni kullanır: solda
+     metin, sağda ya telefon ya özellik dizini. */
+  const left = LAND ? frag('<div class="col"></div>') : card
+  left.appendChild(eyebrow)
+  left.appendChild(head)
+  if (steps) left.appendChild(steps)
+
+  if (f.kind === 'intro') {
+    stage = frag(`<div class="index">${FEATURE_NAMES
+      .map((n, i) => `<div><b>${String(i + 1).padStart(2, '0')}</b><span>${n}</span></div>`).join('')}</div>`)
+  } else {
+    stage = frag('<div class="stage"></div>')
+    phone = frag(`<div class="phone" style="width:${PHONE.w}px;height:${PHONE.h}px"></div>`)
+    iframe = document.createElement('iframe')
+    iframe.src = f.route
+    phone.appendChild(iframe)
+    if (f.detail) {
+      const crop = frag('<div class="crop"></div>')
+      crop.appendChild(phone)
+      stage.appendChild(crop)
+    } else {
+      stage.appendChild(phone)
+    }
+  }
+
+  if (LAND) {
+    left.appendChild(foot)
+    card.appendChild(left)
+    card.appendChild(stage)
+  } else {
+    card.appendChild(stage)
+    card.appendChild(foot)
+  }
+}
+
+/* ── Açılış hareketi ve bölüm perdesi ──
+   Kart öğeleri CSS keyframe'i yerine kare başına elle konumlandırılır:
+   render belirlenebilir kalsın ve telefonun kendi `transform`'u (ölçek +
+   yakın çekim ötelemesi) ezilmesin diye. */
+const veil = frag('<div class="veil"></div>')
+card.appendChild(veil)
+
+const clamp01 = (v) => Math.min(1, Math.max(0, v))
+const REVEAL = []
+const reveal = (el, from, len, dy) => { if (el) REVEAL.push({ el, from, len, dy }) }
+reveal(eyebrow, 0, 520, 14)
+reveal(head, 120, 760, 26)
+reveal(steps, 420, 620, 10)
+reveal(stage, f.phoneless ? 360 : 240, 820, 0)
+reveal(foot, 620, 700, 10)
+if (f.kind === 'intro') {
+  /* Dizin satırları tek tek düşer. */
+  ;[...stage.children].forEach((row, i) => reveal(row, 900 + i * 180, 620, 18))
+}
+
+function applyReveal(t) {
+  for (const r of REVEAL) {
+    const e = 1 - Math.pow(1 - clamp01((t - r.from) / r.len), 3)
+    r.el.style.opacity = String(e)
+    if (r.dy) r.el.style.transform = `translateY(${((1 - e) * r.dy).toFixed(2)}px)`
+  }
+  /* Yalnızca yatay filmde: bölüm siyahtan açılır, siyaha kapanır. */
+  if (!LAND) { veil.style.opacity = '0'; return }
+  const fade = 380
+  veil.style.opacity = String(Math.max(1 - clamp01(t / fade), clamp01((t - (DUR - fade)) / fade)))
+}
+
+/* ═══════════════ render.mjs ile sözleşme ═══════════════ */
+
+function focusOn() {
+  if (!f.focus || !iframe) return
+  const el = iframe.contentDocument.querySelector(f.focus)
+  if (el) el.scrollIntoView({ block: 'center' })
+}
+
+/* Yakın çekim: odak elemanının merkezi telefon kutusunun merkezine
+   getirilir, sonra kutu ölçeklenir. `scale(S) translate(dx,dy)` sırası
+   önemli — öteleme ölçekli uzayda olur, yani dx telefonun kendi CSS
+   pikselindedir. */
+function applyDetail() {
+  if (!f.detail || !iframe) return
+  const el = iframe.contentDocument.querySelector(f.detail.sel)
+  if (!el) return
+  const r = el.getBoundingClientRect()
+  const box = phone.parentElement.getBoundingClientRect()
+  /* Yatay kadraj dikeyden dar: istenen oran telefonun enini kırpıyorsa
+     ölçek kadrajın enine çekilir, yoksa ekranın iki yanı kesiliyor. */
+  const S = sz.land
+    ? Math.min(sz.k * f.detail.scale, box.width / PHONE.w)
+    : sz.k * f.detail.scale
+  /* Görünen pencere telefon kutusunun DIŞINA taşmasın: taşarsa ekranın
+     kenarı kadrajın ortasında bir dikiş gibi görünüyor. */
+  const halfW = Math.min(box.width / (2 * S), PHONE.w / 2)
+  const halfH = Math.min(box.height / (2 * S), PHONE.h / 2)
+  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi)
+  const cx = clamp(r.left + r.width / 2, halfW, PHONE.w - halfW)
+  const cy = clamp(r.top + r.height / 2, halfH, PHONE.h - halfH)
+  phone.style.transform = `scale(${S}) translate(${PHONE.w / 2 - cx}px, ${PHONE.h / 2 - cy}px)`
+}
+
+const fired = new Set()
+const once = (key, when, fn) => {
+  if (fired.has(key) || when > window.__t) return
+  fired.add(key)
+  fn()
+}
+
+window.CARD = {
+  feature: f.id,
+  at: f.at,
+  speed: f.speed || 1,
+  seed: f.seed || {},
+  zoom: sz.k,
+
+  /* Uygulama ayağa kalktı mı? Giriş/çıkış bölümlerinde uygulama yok. */
+  ready() {
+    if (f.phoneless) return true
+    const d = iframe.contentDocument
+    return !!(d && d.readyState === 'complete' && d.querySelector('#app')?.children.length)
+  },
+
+  /* İlk kare alınmadan önce: iframe'i telefon ölçeğine kur ve ilgili
+     bölümü ekrana getir. Uygulama bir telefon ekranından uzun; kart hangi
+     özelliği anlatıyorsa onu ortalamak gerekiyor. */
+  prepare() {
+    focusOn()
+    applyDetail()
+    return true
+  },
+
+  /* Kare: sanal zamanı ilerlet, sahneyi işlet, CSS animasyonlarını hizala. */
+  async step(t) {
+    window.__t = t
+    applyReveal(t)
+    const anims = [...document.getAnimations()]
+    if (iframe) {
+      const w = iframe.contentWindow
+      const d = iframe.contentDocument
+      const vt = f.at + t * (f.speed || 1)
+      w.__advance(vt)
+      if (f.frame) { try { f.frame(t, w, d, once) } catch (e) { console.error(e) } }
+      w.__advance(vt)
+      focusOn()
+      applyDetail()
+      anims.push(...d.getAnimations())
+    }
+    for (const a of anims) {
+      a.pause()
+      try { a.currentTime = t } catch {}
+    }
+    await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)))
+  },
+}
+window.__t = 0
+document.title = `${f.no} ${f.id} ${SIZE}`
+</script>
+</body>
+</html>
