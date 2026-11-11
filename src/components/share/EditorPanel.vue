@@ -10,6 +10,7 @@ import { toHijri } from '@/utils/hijri'
 import { holyDayLabel } from '@/data/holyDays'
 import { convertMonth } from '@/utils/calendarGrid'
 import SettingControl from './SettingControl.vue'
+import SectionIcon from './SectionIcon.vue'
 
 const editor = useShareEditor()
 const { state, selected } = editor
@@ -316,7 +317,7 @@ function pickPhoto(e) {
     <!-- ── Katman seçiliyken: o katmanın ayarları ── -->
     <template v-if="selected && selectedDef">
       <header class="panel-head">
-        <span class="title">{{ selectedDef.label }}</span>
+        <span class="title"><SectionIcon name="katman" />{{ selectedDef.label }}</span>
         <div class="head-actions">
           <button
             class="ghost toggle"
@@ -346,6 +347,7 @@ function pickPhoto(e) {
              değişir, girdiğin içerik olduğu gibi kalır. -->
         <section v-if="selectedDef.presets?.length" class="group presets">
           <div class="group-label static">
+            <SectionIcon name="preset" />
             <span>Ön tanım</span>
             <span class="group-rule" aria-hidden="true"></span>
           </div>
@@ -371,6 +373,7 @@ function pickPhoto(e) {
             :aria-expanded="!isCollapsed(group.id)"
             @click="toggleGroup(group.id)"
           >
+            <SectionIcon :name="group.id" />
             <span>{{ group.label }}</span>
             <span class="group-rule" aria-hidden="true"></span>
             <span class="group-count">{{ group.fields.length }}</span>
@@ -393,9 +396,15 @@ function pickPhoto(e) {
     <!-- ── Seçim yokken: ekle / arka plan / oran ── -->
     <template v-else>
       <nav class="tabs">
-        <button :class="{ active: tab === 'add' }" @click="tab = 'add'">Ekle</button>
-        <button :class="{ active: tab === 'bg' }" @click="tab = 'bg'">Arka plan</button>
-        <button :class="{ active: tab === 'ratio' }" @click="tab = 'ratio'">Oran</button>
+        <button :class="{ active: tab === 'add' }" @click="tab = 'add'">
+          <SectionIcon name="ekle" /><span>Ekle</span>
+        </button>
+        <button :class="{ active: tab === 'bg' }" @click="tab = 'bg'">
+          <SectionIcon name="arkaplan" /><span>Arka plan</span>
+        </button>
+        <button :class="{ active: tab === 'ratio' }" @click="tab = 'ratio'">
+          <SectionIcon name="oran" /><span>Oran</span>
+        </button>
       </nav>
 
       <div v-if="tab === 'add'" class="sheet-body strip">
@@ -440,7 +449,11 @@ function pickPhoto(e) {
         <!-- Fotoğraf yokken tuvalin zemini: vakit gradyanı varsayılan,
              düz renk / gradyan / mesh de seçilebilir. -->
         <section v-if="!hasPhoto" class="group">
-          <h3 class="group-label">Zemin</h3>
+          <h3 class="group-label static">
+            <SectionIcon name="zemin" />
+            <span>Zemin</span>
+            <span class="group-rule" aria-hidden="true"></span>
+          </h3>
           <SettingControl
             :field="{ type: 'select', label: 'Dolgu', options: fillStyles }"
             :model-value="state.background.fill.style"
@@ -474,7 +487,11 @@ function pickPhoto(e) {
         </section>
 
         <section class="group">
-          <h3 class="group-label">Ayar</h3>
+          <h3 class="group-label static">
+            <SectionIcon name="ayar" />
+            <span>Ayar</span>
+            <span class="group-rule" aria-hidden="true"></span>
+          </h3>
           <template v-if="hasPhoto">
             <SettingControl
               :field="{ type: 'range', label: 'Yakınlaştır', min: 1, max: 4, step: 0.05, unit: '×' }"
@@ -501,7 +518,11 @@ function pickPhoto(e) {
         </section>
         <!-- Film grain: arka planın üstünde, grid ve widget'ların altında -->
         <section class="group">
-          <h3 class="group-label">Doku</h3>
+          <h3 class="group-label static">
+            <SectionIcon name="doku" />
+            <span>Doku</span>
+            <span class="group-rule" aria-hidden="true"></span>
+          </h3>
           <SettingControl
             :field="{ type: 'toggle', label: 'Gren doku' }"
             :model-value="state.grain.on"
@@ -533,7 +554,11 @@ function pickPhoto(e) {
 
         <!-- Swiss ızgara: tuvalin tamamına yayılan hatlar, widget'ların altında -->
         <section class="group">
-          <h3 class="group-label">Izgara</h3>
+          <h3 class="group-label static">
+            <SectionIcon name="izgara" />
+            <span>Izgara</span>
+            <span class="group-rule" aria-hidden="true"></span>
+          </h3>
           <SettingControl
             :field="{ type: 'toggle', label: 'Grid' }"
             :model-value="state.grid.on"
@@ -666,9 +691,12 @@ function pickPhoto(e) {
 }
 
 .title {
-  font-size: 0.6875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -766,27 +794,35 @@ function pickPhoto(e) {
 .group.closed { padding-bottom: 1.1rem; }
 
 /* Başlık solda, ince çizgi sağa doğru uzanır — klasik Swiss ayraç.
-   Tamamı tıklanabilir: uzun listelerde grup kapatılabiliyor. */
+   Tamamı tıklanabilir: uzun listelerde grup kapatılabiliyor.
+   Başlıklar panelin omurgasıdır: 9px'lik soluk bir satır ayarların
+   arasında kayboluyordu, bölüm nerede başlıyor okunmuyordu. Tam
+   kontrastta, bir adım büyük ve yanında çizgi ikonuyla duruyor. */
 .group-label {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   width: 100%;
-  margin: 0 0 0.7rem;
+  margin: 0 0 0.85rem;
   padding: 0.15rem 0;
   border: 0;
   background: transparent;
   font-family: inherit;
-  font-size: 0.5625rem;
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: var(--text);
   cursor: pointer;
   text-align: left;
 }
 
-.group-label:hover { color: var(--text-muted); }
+/* İkon başlığın ağırlığını taşımaz, ona eşlik eder. */
+.group-label .section-icon { color: var(--text-muted); }
+
+.group-label:hover { color: var(--accent-ui); }
+
+.group-label:hover .section-icon { color: var(--accent-ui); }
 
 .group.closed .group-label { margin-bottom: 0; }
 
@@ -798,7 +834,7 @@ function pickPhoto(e) {
 
 /* Kapalı grupta kaç ayar olduğu görünsün. */
 .group-count {
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
   letter-spacing: 0.08em;
   color: var(--text-dim);
   opacity: 0;
@@ -821,15 +857,18 @@ function pickPhoto(e) {
 
 .tabs button {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   border: 0;
   background: transparent;
   color: var(--text-dim);
   font-family: inherit;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 0.4rem 0 0.5rem;
+  padding: 0.5rem 0 0.6rem;
   cursor: pointer;
 }
 
@@ -974,8 +1013,13 @@ function pickPhoto(e) {
   /* Parmakla kaydırılan şeritlerin kaydırma çubuğu mobilde gizli; farede
      kaydırmanın başka yolu olmadığı için masaüstünde ince bir çubuk
      gösterilir. */
-  .preset-strip { scrollbar-width: thin; }
-  .preset-strip::-webkit-scrollbar { display: block; height: 6px; }
-  .preset-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  /* Ön tanımlar da sarar. Yatay kaydırma dokunmatikte doğal, farede
+     değil: tekerlek dikey kaydırır, şeridin sonundaki ön tanımların
+     varlığı bile fark edilmiyordu. */
+  .preset-strip {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 0.4rem 0.4rem;
+  }
 }
 </style>

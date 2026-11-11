@@ -61,9 +61,14 @@ watch(() => settings.colorStyle, applyPalette)
 <template>
   <div class="app" :class="{ wide }">
     <div class="hat-watermark" aria-hidden="true"></div>
-    <TopNav v-if="!chromeless" />
-    <div class="app-content">
-      <router-view />
+    <!-- Üst çubuk ve içerik tek sütun; masaüstünde gezinme bu sütunun
+         SOLUNA geçer (bkz. assets/css/desktop.css). Sarmalayıcı bunun
+         içindir: mobilde kolonun kendisidir, masaüstünde ana sütun. -->
+    <div class="app-main">
+      <TopNav v-if="!chromeless" />
+      <div class="app-content">
+        <router-view />
+      </div>
     </div>
     <BottomNav v-if="!chromeless" />
   </div>
@@ -94,6 +99,16 @@ watch(() => settings.colorStyle, applyPalette)
   z-index: -1;
 }
 
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* Kaydırma `.app-content`in işi; sarmalayıcı taşmayı kendi içinde
+     tutmazsa flex zinciri çöküyor. */
+  min-height: 0;
+  min-width: 0;
+}
+
 .app-content {
   flex: 1;
   overflow-y: auto;
@@ -101,5 +116,24 @@ watch(() => settings.colorStyle, applyPalette)
   position: relative;
   z-index: 1;
   padding:0 1.25rem;
+}
+
+/* ── Masaüstü: kabuk satıra döner ──
+   Solda gezinme rayı, sağda üst çubuk + içerik. Kural burada duruyor
+   çünkü `.app` bu bileşenin scoped seçicisine sahip; `desktop.css`ten
+   yazılsa özgüllük yarışını kaybeder. Rayın kendi biçimi
+   `components/nav/BottomNav.vue`te.
+   Blok dosyanın SONUNDA duruyor: `.app-content`in `padding` kısaltması
+   yukarıda ve aynı özgüllükte, önce gelseydi kaynak sırası kazanırdı. */
+@media (min-width: 900px) {
+  .app {
+    flex-direction: row;
+  }
+
+  /* Üst çubuk masaüstünde yok (parçaları raya taşındı); içerik o boşluğu
+     kazanır ama sayfanın tepesine yapışmasın diye bir pay bırakılır. */
+  .app-content {
+    padding-top: 2.5rem;
+  }
 }
 </style>

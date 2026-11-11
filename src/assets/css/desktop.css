@@ -16,13 +16,19 @@
    filigranı zaten oradadır, boşluk İsviçre düzeninde bir öğedir.
 
    ── İKİ EŞİK ──
-   900px   kabuk: içerik ortalanır, üst/alt çubuk aynı kolona hizalanır.
-           Bu dosyanın işi burada biter.
-   1024px  iki kolon: ana sayfa, vakitler ve takvim yatay düzene geçer.
-           Bu kurallar İLGİLİ BİLEŞENİN kendi `<style scoped>` bloğunda
-           durur — sayfa düzeni sayfanın kendi meselesidir ve buradan
-           yazılsaydı scoped seçicilerle özgüllük yarışına girilirdi.
-           Yeni bir sayfayı yatay düzene geçirirken aynı eşiği kullan.
+   900px   masaüstü: gezinme sola bir raya geçer, içerik ortalanır, üst
+           çubuk aynı kolona hizalanır, bileşenler masaüstü ölçülerine
+           büyür (ölçek kuralları bileşenlerin kendi bloklarında).
+   1240px  iki kolon: ana sayfa, saat, vakitler ve takvim yatay düzene
+           geçer. Neden 1024 değil: sol ray ~216px yiyor, 1024'te içeriğe
+           ~790px kalıyor ve iki kolona bölününce vakit listesinin
+           saatleri birbirine giriyordu (ölçüldü). Bu kurallar İLGİLİ
+           BİLEŞENİN kendi `<style scoped>` bloğunda durur — sayfa düzeni
+           sayfanın kendi meselesidir ve buradan yazılsaydı scoped
+           seçicilerle özgüllük yarışına girilirdi. Yeni bir sayfayı
+           yatay düzene geçirirken aynı eşiği kullan.
+           (Görsel oluşturucu kendi tam ekran kabuğudur, rayı yok; onun
+           masaüstü eşiği 1024'te kalır.)
    ════════════════════════════════════════════════════════════ */
 
 @media (min-width: 900px) {
@@ -59,25 +65,34 @@
     max-width: none;
   }
 
-  /* Üst ve alt çubuk da aynı kolona hizalanır; yoksa logo ve şehir
-     seçici içerikten 300px uzakta, ekranın köşelerinde kalıyor. */
-  .top-nav {
-    width: 100%;
-    max-width: calc(var(--shell-now) + 1rem);
-    margin-inline: auto;
-  }
+  /* Üst çubuk masaüstünde yok: logo, şehir seçici ve menü sol raya
+     taşındı (bkz. nav/TopNav.vue). İçeriğin tepeden aldığı pay
+     App.vue'nun kendi bloğunda — buradan yazılan `padding-top`,
+     oradaki `.app-content[data-v-…] { padding: 0 1.25rem }` kısaltmasına
+     özgüllükte yeniliyor. */
 
+  /* ── Gezinme sola geçer ──
+     Kabuk satıra döner: solda gezinme rayı, sağda üst çubuk + içerik.
+     Alt gezinme parmağın ulaştığı yerdir; farede ekranın dibi en uzak
+     nokta ve 1400px genişliğinde dört ikon yan yana kaybolup gidiyordu.
+     Rayın kendi biçimi `components/nav/BottomNav.vue`in masaüstü
+     bloğunda — ölçü ve etiketler bileşenin kendi meselesi.
+     DOM sırası değişmez (gezinme en sonda); yalnızca görsel sıra
+     `order` ile öne alınır. */
+  /* `.app`in satıra dönmesi App.vue'nun KENDİ scoped bloğunda: oradaki
+     `.app[data-v-…] { flex-direction: column }` buradan yazılan kuralı
+     özgüllükle eziyor. */
   .bottom-nav {
-    max-width: var(--shell-now);
-    margin-inline: auto;
+    order: -1;
+    max-width: none;
+    margin-inline: 0;
   }
-
 }
 
 /* ── İki kolon eşiği ──
    Sayfa düzenlerinin kendisi bileşenlerin scoped bloklarında; burada
    yalnızca kabuğun ölçüsü büyür. */
-@media (min-width: 1024px) {
+@media (min-width: 1240px) {
   .app.wide {
     --shell-now: var(--shell-wide);
   }

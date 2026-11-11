@@ -78,8 +78,8 @@ useSeo({
 /* ── Masaüstü: iki kolon ──
    Mobilde üç blok alt alta; geniş ekranda saat ve takvim solda, vakit
    bilgisi sağda durur. Blokların içine dokunulmaz, yalnızca yerleşim
-   değişir. Eşik `assets/css/desktop.css`te açıklanan 1024px. */
-@media (min-width: 1024px) {
+   değişir. Eşik `assets/css/desktop.css`te açıklanan 1240px. */
+@media (min-width: 1240px) {
   .home-page {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

@@ -131,8 +131,8 @@ const miladiLine = computed(() =>
    Ana sayfanın "bugün" bloğu. Mobilde saatin altında ince bir satır;
    geniş ekranda sol kolonun tabanında tek başına kalınca aynı ölçü cılız
    duruyor. Takvim sayfasındaki bugün bloğuyla aynı ağırlığa çıkar.
-   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
-@media (min-width: 1024px) {
+   Eşik `assets/css/desktop.css`te açıklanan 900px. */
+@media (min-width: 900px) {
   .calendar-widget { gap: 1.5rem; }
 
   .hijri-day {

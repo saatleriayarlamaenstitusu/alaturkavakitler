@@ -304,8 +304,8 @@ function formatTime(dateObj) {
    aynı ölçüler (9px etiket, 14px saat) sayfanın içinde kaybolup okunmaz
    hâle geliyor. Yalnızca ölçüler büyür, düzen aynı kalır — kaza bandı
    listeyle aynı flex yapısını paylaştığı için hizası kendiliğinden korunur.
-   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
-@media (min-width: 1024px) {
+   Eşik `assets/css/desktop.css`te açıklanan 900px. */
+@media (min-width: 900px) {
   .vakit-item { padding: 0.5rem 0; }
 
   .dot {

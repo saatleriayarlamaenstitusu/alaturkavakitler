@@ -201,9 +201,19 @@ onUnmounted(() => clearInterval(intervalId))
    Şerit boydan boya uzanır; boyu `--range-h` ile verilir. Etiketler bandın
    değil ÜSTÜNDEKİ BOŞLUĞUN tepesine göre konumlanır: `top: -40%` bant
    büyüdükçe etiketi boşluğun dışına taşıyordu. */
-@media (min-width: 1024px) {
+@media (min-width: 1240px) {
+  /* Ayraç çizgisi bandın boyuna ORANLA uzuyor (`height: 130%`): mobilde
+     bandın üstüne 22px çıkan çizgi, 180px'lik bantta 60px çıkıp etiket
+     boşluğunu boydan boya geçiyor ve döndürülmüş adın ortasından
+     geçiyordu. Masaüstünde sabit bir pay yeter. */
+  .vakit-segment::before { height: calc(100% + 1rem); }
+
+  /* Etiket çizginin SAĞINA kaydırılır. `rotate(270deg)` +
+     `transform-origin: 0 0` ile metin kutusu satır yüksekliği kadar SAĞA
+     taşar; `left` negatifken kutu çizgiyi içine alıyordu. */
   .label {
     top: calc(3.5rem - var(--range-gap));
+    left: 0.3rem;
     font-size: 0.8125rem;
   }
 }

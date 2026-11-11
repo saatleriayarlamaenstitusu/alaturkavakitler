@@ -211,9 +211,52 @@ homeClock         // 'led' | 'normal' — ana sayfa saat görünümü (LedClock 
 - Uygulama mobil için tasarlandı; masaüstü kuralları `src/assets/css/desktop.css`
   ve ilgili bileşenlerin scoped bloklarındadır. **Mobil düzene dokunulmaz** —
   her masaüstü kuralı bir `@media (min-width: …)` içinde durur.
-- **İki eşik var.** `900px`: kabuk — içerik ortalanır, üst çubuk ve alt
-  gezinme aynı kolona hizalanır. `1024px`: iki kolon — ana sayfa, vakitler
-  ve takvim yatay düzene geçer.
+- **İki eşik var.** `900px`: masaüstü — gezinme sola bir raya geçer,
+  içerik ortalanır, üst çubuk aynı kolona hizalanır ve bileşenler
+  masaüstü ölçülerine büyür. `1240px`: iki kolon — ana sayfa, saat,
+  vakitler ve takvim yatay düzene geçer.
+- Eşik neden 1024 değil 1240: sol ray ~216px yiyor. 1024'te içeriğe
+  ~790px kalıyor ve orada iki kolona bölününce vakit listesinin saatleri
+  birbirine giriyordu (ölçüldü). Görsel oluşturucunun rayı yok (kendi tam
+  ekran kabuğu), onun eşiği 1024'te kaldı.
+- **Alt gezinme masaüstünde sol raydır** (`BottomNav.vue`in 900px bloğu):
+  ikonların yanında adları yazar. Alt çubuk parmağın ulaştığı yerdir;
+  farede ekranın dibi en uzak nokta ve 1400px boyunca dört ikon
+  kayboluyordu. Aktif satırın işareti de değişir: alt çubuktaki parıltı
+  ve nokta ekranın DİBİNE göre konumlanmış üç pseudo-elemandır, dikey
+  rayda hepsi yanlış yerde durur; yerine solda aksan çubuğu + hafif zemin.
+- **Masaüstünde üst çubuk tamamen kalkar**, üç parçası da raya taşınır:
+  logo rayın tepesinde, üç nokta menüsünün satırları ortadaki ikincil
+  bölümde, şehir seçici dibinde. İçerik o 5.5rem'i kazanır; tepeye
+  yapışmasın diye `.app-content`e masaüstünde bir pay verilir.
+- İkincil satırlar birincillerle AYNI kalıbı kullanır (ikon + etiket,
+  aynı yükseklik, aynı vurgu). Önce yalnızca metindiler ve ray iki ayrı
+  listeden toplanmış gibi duruyordu; ayrımı ince bir çizgi ile etiket
+  ağırlığı taşır, yapı değil.
+- İkonları `nav/NavIcon.vue`te, dört ana ikonun diliyle: 24'lük ızgara,
+  DOLGU (kontur yok), arkada %35 opak gövde + önünde tam opak ayrıntı.
+  Kontur tabanlı bir set (bkz. `share/SectionIcon.vue`) yan yana gelince
+  iki ayrı uygulamadan toplanmış gibi duruyor. Ana dördü dosyadan gelen
+  `<img>` olarak kalır (beyaz SVG + filtre), yenileri satır içi SVG —
+  renklerini `currentColor`dan alıyorlar.
+- Liste tek kaynaktan gelir: `src/data/secondaryNav.js` (yol, etiket,
+  ikon, `action`) — hem mobildeki menü hem ray onu okur, yeni satır bir
+  yere eklenip diğerinde unutulmasın. Şehir seçici de tek bileşendir
+  (`nav/CitySelect.vue`), iki yerde ayrı `select` yazılmaz.
+- DOM sırası değişmez (gezinme en sonda, mobildeki gibi); ray yalnızca
+  `order: -1` ile görsel olarak öne alınır. `.app`in satıra dönmesi ve
+  `.app-content`in tepe payı App.vue'nun KENDİ scoped bloğundadır —
+  `desktop.css`ten yazılan `.app` kuralı, bileşenin `.app[data-v-…]`
+  kuralını özgüllükte yenemiyor (dosyanın başındaki uyarının ta kendisi).
+- O blok App.vue'nun stil bloğunun SONUNDA durur: `.app-content`in
+  `padding` KISALTMASI yukarıda ve aynı özgüllükte; medya sorgusu önce
+  gelseydi kaynak sırası kısaltmayı kazandırır, `padding-top` sessizce
+  sıfırlanırdı (ölçüldü: hesaplanan değer 0px).
+- Rayın tepesindeki logo mobildekinden büyüktür (140px → 168px). Ölçü
+  CSS'ten değil `LogoMotion`un `width` prop'undan gelir: bileşen
+  genişliği `--size` olarak satır içi stilde yazıyor, stil sayfası onu
+  `!important` olmadan ezemez. Mobildeki ve raydaki logo iki AYRI
+  örnektir (biri üst çubukta, biri rayda; karşı eşikte gizli).
 - Ölçü tek bir değişkenden sürülür: `--shell` (880px, okunan sayfalar) ve
   `--shell-wide` (1200px, iki kolona bölünenler). Kabuk `--shell-now`'u
   okur; `App.vue` geniş rotalarda `.app`'e `wide` sınıfı verir ve
@@ -249,7 +292,12 @@ homeClock         // 'led' | 'normal' — ana sayfa saat görünümü (LedClock 
   Sağ kolonda tek başına dikine uzatmak denendi: kolonun boyunu
   dolduruyor ama bir gün çizelgesinden çok dolu bir sütuna benziyor.
   Bandın üstündeki etiket payı ayrı bir değişkendir (`--range-gap`),
-  yoksa bant uzadıkça boşluk da aynı oranda uzuyordu.
+  yoksa bant uzadıkça boşluk da aynı oranda uzuyordu. Vakit ayraçları da
+  öyle: çizgi bandın boyuna ORANLA uzuyor (`height: 130%`), mobilde 22px
+  olan pay 180px'lik bantta 60px'e çıkıp döndürülmüş vakit adlarının
+  ortasından geçiyordu — masaüstünde sabit bir paya çekildi ve etiket
+  çizginin sağına kaydırıldı (`rotate(270deg)` + `transform-origin: 0 0`
+  metin kutusunu satır yüksekliği kadar SAĞA taşırır).
 - Yazı listeleri (`saat üzerine`, `yenilikler`) 900px'ten sonra kart
   ızgarasına geçer. Kart zemini mat kurulur (`--bg` + `--surface`
   gradyanı); doğrudan `--surface` verilseydi `canli` paletinde altındaki
@@ -395,6 +443,25 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - **Harf aralığı** mutlak değil, tasarımdaki değere eklenen bir kaymadır (`--ls`): `letter-spacing: calc(0.42em + var(--ls, 0em))`. Böylece widget içindeki tracking hiyerarşisi korunur. Arap harfleri bitişik yazıldığı ve letter-spacing bağlantıları kopardığı için Arapça/Osmanlıca widget'larında bu alan sunulmaz (`typographyFieldsNoTracking`).
 - **Opaklık katman seviyesindedir** (`layer.opacity`), widget tipinden bağımsız. Yalnızca içerik sarmalayıcısına uygulanır — katmanın tamamına verilseydi yığın bağlamı oluşup seçim tutamakları da soluklaşırdı. Seçim, widget'ın iki satırını da doldurur, sonrası serbest düzenlenebilir (`EditorPanel.updateProp`'taki `preset` dalı).
 - **Düzen localStorage'da saklanır** (`shareEditor`): oran, katmanlar, arka plan, grid, marka satırı. Seçim/sürükleme gibi anlık durumlar saklanmaz. Yazma 400ms geciktirilir; fotoğraf data URI'si kotayı aşarsa düzen fotoğrafsız kaydedilir (katmanlar kaybolmaz). Üst çubuktaki **Sıfırla** iki dokunuşla onaylanır ve varsayılan kompozisyonu kurar.
+- **Bölüm başlıkları panelin omurgasıdır.** 9px'lik soluk satırlar ayarların
+  arasında kaybolup bölümün nerede başladığını belirsizleştiriyordu: başlık
+  13px, tam kontrast, yanında çizgi ikon ve sağa uzanan hairline. İkonlar
+  `SectionIcon.vue`'da grup kimliğine göre haritalanır (tek kontur, dolgu
+  yok); yeni bir grup eklenince ikon haritasına da bir satır ekle —
+  eklenmezse genel bir kare çizilir, panel ikonsuz kalmaz.
+- **Masaüstünde yatay kaydırma YOK.** Yazı tipi (70 aile), hazır ibare ve
+  renk şeritleri parmakla kaydırmak için tasarlandı; farede tekerlek dikey
+  kaydırır ve şeridin sonundaki öğelerin varlığı fark edilmiyordu. İnce bir
+  yatay çubuk denendi ve bırakıldı (6px'lik hedef). Yan sütunda genişlik dar
+  ama boy serbest: şeritler sarılır, kutu gerekirse kendi içinde DİKEY kayar
+  ve çerçevelenir — çerçeve olmadan alttaki yarım satır kırpılmış gibi
+  duruyor, kaydırılacak alan olduğu okunmuyor.
+- `scrollIntoView` KULLANMA: seçili yazı tipini göstermek için çağrıldığında
+  üstteki bütün kaydırma kutularını da kaydırıyor, ayar listesi tipografi
+  grubunun ortasından açılıyordu. Yalnızca şeridin kendi `scrollTop`/
+  `scrollLeft` değeri kurulur.
+- Segment (`select`) seçenekleri sarar: dört seçenekli zemin dolgusunda
+  sonuncusu `overflow: hidden` ile kırpılıyor, var olduğu belli olmuyordu.
 - **Masaüstünde (≥1024px) panel alt sayfa değil yan sütundur**: akışa girer,
   tam boy olur ve kendi içinde kayar. Tutamak ve katlanma gizlenir — ikisi de
   panelin tuvali örtmesinden doğan davranışlar, yan sütunda örtmüyor. İç

@@ -47,8 +47,8 @@ useSeo({
    sayfanın altında ince bir bant; sağ kolonda tek başına kalınca cılız
    duruyor, bu yüzden orada boyu büyütülüyor (`--range-h`). Sayfanın alt
    yarısındaki boşluk da böylece kapanıyor.
-   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
-@media (min-width: 1024px) {
+   Eşik `assets/css/desktop.css`te açıklanan 1240px. */
+@media (min-width: 1240px) {
   /* Üstte sayaç ve liste yan yana, altta günün zaman şeridi boydan boya.
      Şerit başta sağ kolonda tek başına duruyordu; kolonun boyunu doldurmak
      için dikine uzayınca bir gün çizelgesinden çok dolu bir sütuna

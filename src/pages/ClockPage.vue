@@ -171,8 +171,8 @@ onUnmounted(() => clearInterval(intervalId))
    dizilim sayfanın ortasında dar bir şerit bırakıyor: kadran solda,
    okunan saat sağda, tarihler ikisinin altında tam genişlikte durur.
    Kadran da büyür — 280px'lik çizim 1200px'lik kabukta madalyon gibi
-   kalıyordu. Eşik `assets/css/desktop.css`te açıklanan 1024px. */
-@media (min-width: 1024px) {
+   kalıyordu. Eşik `assets/css/desktop.css`te açıklanan 1240px. */
+@media (min-width: 1240px) {
   .clock-content {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

@@ -255,8 +255,8 @@ onUnmounted(() => {
    Sayaç sayfanın ana bilgisi; geniş ekranda mobildeki 3rem ölçüsüyle
    kolonun içinde küçük kalıyor. Pusula da onunla birlikte büyür, yoksa
    sayaç büyüyünce yanında düğme gibi duruyor.
-   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
-@media (min-width: 1024px) {
+   Eşik `assets/css/desktop.css`te açıklanan 900px. */
+@media (min-width: 900px) {
   .badge {
     font-size: 0.8125rem;
     padding: 0.3rem 0.9rem;

@@ -506,8 +506,8 @@ function onTouchEnd(e) {
    sayfanın tamamına yayılıyordu ve hücreler kareliğini sütun
    genişliğinden aldığı için (`aspect-ratio: 1`) 127px'lik devasa
    daireler çıkıyordu; iki kolonda hücre kendiliğinden makul boyda kalır.
-   Eşik `assets/css/desktop.css`te açıklanan 1024px. */
-@media (min-width: 1024px) {
+   Eşik `assets/css/desktop.css`te açıklanan 1240px. */
+@media (min-width: 1240px) {
   .hijri-month {
     display: grid;
     grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);

@@ -1,20 +1,9 @@
 <script setup>
-import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { useAppStore } from '@/stores/app'
-import { CITIES_LIST } from '@/data/cities'
 import DropdownMenu from './DropdownMenu.vue'
+import CitySelect from './CitySelect.vue'
 import LogoMotion from '@/components/ui/LogoMotion.vue'
-
-const appStore = useAppStore()
-
-const selectedPlate = computed({
-  get: () => appStore.city.plate,
-  set: (plate) => {
-    const city = CITIES_LIST.find(c => c.plate === plate)
-    if (city) appStore.setCity({ plate: city.plate, name: city.name })
-  },
-})
+import { SECONDARY_NAV } from '@/data/secondaryNav'
 </script>
 
 <template>
@@ -27,19 +16,16 @@ const selectedPlate = computed({
     </RouterLink>
 
     <div class="nav-right">
-      <select class="city-select" v-model="selectedPlate">
-        <option v-for="city in CITIES_LIST" :key="city.plate" :value="city.plate">
-          {{ city.name }}
-        </option>
-      </select>
+      <CitySelect />
 
-      <DropdownMenu>
-        <RouterLink to="/gorsel-olustur" class="menu-action">Görsel Oluştur</RouterLink>
-        <span class="menu-sep" aria-hidden="true"></span>
-        <RouterLink to="/ayarlar">Ayarlar</RouterLink>
-        <RouterLink to="/saatuzerine">Saat Üzerine</RouterLink>
-        <RouterLink to="/yenilikler">Yenilikler</RouterLink>
-        <RouterLink to="/hakkinda">Hakkında</RouterLink>
+      <!-- Masaüstünde bu bağlantılar sol rayın ikincil bölümünde duruyor;
+           menü orada gizlenir (aynı liste iki yerde görünmesin). Liste tek
+           kaynaktan: `data/secondaryNav.js`. -->
+      <DropdownMenu class="menu">
+        <template v-for="item in SECONDARY_NAV" :key="item.path">
+          <RouterLink :to="item.path" :class="{ 'menu-action': item.action }">{{ item.label }}</RouterLink>
+          <span v-if="item.action" class="menu-sep" aria-hidden="true"></span>
+        </template>
       </DropdownMenu>
     </div>
   </nav>
@@ -82,25 +68,15 @@ const selectedPlate = computed({
   gap: 0.5rem;
 }
 
-.city-select {
-  background: transparent;
-  border: 1px solid rgba(128, 128, 128, 0.35);
-  border-radius: 6px;
-  font-size: 0.75rem;
-  color: var(--text);
-  cursor: pointer;
-  max-width: 130px;
-  appearance: none;
-  padding: 0.3rem 0.5rem;
-}
 
-.city-select option {
-  background: #1a1a1a;
-  color: white;
-}
 
-.city-select:focus {
-  outline: none;
-  border-color: var(--accent-ui);
+
+/* ── Masaüstü ──
+   Üst çubuğun üç parçası da sol raya taşındı: logo rayın tepesinde,
+   şehir seçici dibinde, menü satırları aradaki ikincil bölümde. Geriye
+   bir şey kalmadığı için çubuğun kendisi kalkar ve içerik o 5.5rem'i
+   kazanır. Eşik `assets/css/desktop.css`te açıklanan 900px. */
+@media (min-width: 900px) {
+  .top-nav { display: none; }
 }
 </style>

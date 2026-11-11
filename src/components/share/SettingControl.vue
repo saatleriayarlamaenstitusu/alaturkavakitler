@@ -85,10 +85,20 @@ const tabFonts = computed(() => fontsByGroup(fontTab.value))
 // var); sekme açılınca ya da seçim değişince görünür alana kaydırılır.
 const stripRef = ref(null)
 
+// Seçili yazı tipini şeridin içinde görünür kıl. `scrollIntoView` KULLANMA:
+// o, üstteki bütün kaydırma kutularını da kaydırıyor — ayar listesi açılır
+// açılmaz tipografi grubunun ortasından başlıyor, üstteki "Ön tanım" ve
+// "İçerik" bölümleri atlanmış gibi görünüyordu. Kaydırılan tek şey şerittir;
+// masaüstünde şerit sarıldığı için dikey, mobilde yatay kayar.
 function revealActive() {
   requestAnimationFrame(() => {
-    stripRef.value?.querySelector('.font-chip.active')
-      ?.scrollIntoView({ block: 'nearest', inline: 'center' })
+    const box = stripRef.value
+    const chip = box?.querySelector('.font-chip.active')
+    if (!box || !chip) return
+    const b = box.getBoundingClientRect()
+    const c = chip.getBoundingClientRect()
+    box.scrollTop += (c.top - b.top) - (b.height - c.height) / 2
+    box.scrollLeft += (c.left - b.left) - (b.width - c.width) / 2
   })
 }
 
@@ -648,11 +658,15 @@ const fullWidth = computed(() =>
 .phrase-chip.active .phrase-tr { opacity: 0.85; }
 
 /* ── Segment ── */
+/* Seçenekler sütuna sığmazsa alt satıra geçer: dört seçenekli bir alanda
+   (zemin dolgusu) sonuncusu `overflow: hidden` ile kırpılıyor, var olduğu
+   hiç belli olmuyordu. */
 .segments {
   display: flex;
+  flex-wrap: wrap;
   border: 1px solid var(--border);
   border-radius: 4px;
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .segment {
@@ -818,28 +832,51 @@ const fullWidth = computed(() =>
 .textarea:focus { outline: none; border-color: var(--accent-ui); }
 
 /* ── Masaüstü ──
-   Yazı tipi ve ibare şeritleri 70'e yakın öğe taşıyor; sarmak yerine
-   yatay kaydırmalı kalmaları doğru. Ama kaydırma çubuğu mobil için
-   gizlenmişti ve farede yatay kaydırmanın başka yolu yok — geniş
-   ekranda ince bir çubuk gösterilir.
+   Yazı tipi (70 aile), ibare ve renk şeritleri mobilde yatay kaydırılır;
+   parmakla doğru, fareyle değil: tekerlek dikey kaydırır ve şeridin
+   sonundaki öğeler fark edilmiyordu bile. İnce bir yatay çubuk denendi,
+   6px'lik bir hedef iyi bir çözüm değil.
+   Yan sütunda genişlik dar ama BOY serbest: şeritler sarılır, gerekirse
+   kutu kendi içinde DİKEY kayar — tekerleğin zaten yaptığı hareket.
    Eşik `assets/css/desktop.css`te açıklanan 1024px. */
 @media (min-width: 1024px) {
   .fonts,
   .phrases {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.35rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-bottom: 0;
+    /* Liste uzun; sarınca bütün panel uzayacağına kendi içinde kayar.
+       Kutunun çerçevesi var: yoksa alttaki yarım satır kırpılmış gibi
+       duruyor, kaydırılacak bir alan olduğu okunmuyor. */
+    max-height: 13rem;
+    padding: 0.4rem;
+    border: 1px solid var(--border);
     scrollbar-width: thin;
-    padding-bottom: 0.45rem;
   }
+
+  .phrases { max-height: 16rem; }
 
   .fonts::-webkit-scrollbar,
   .phrases::-webkit-scrollbar {
     display: block;
-    height: 6px;
+    width: 6px;
   }
 
   .fonts::-webkit-scrollbar-thumb,
   .phrases::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 3px;
+  }
+
+  /* Beş sekme ve renk kutuları zaten sığıyor; sarmaları yeter. */
+  .font-tabs,
+  .swatches {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    row-gap: 0.3rem;
   }
 }
 </style>
