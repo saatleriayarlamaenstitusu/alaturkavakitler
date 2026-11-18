@@ -118,6 +118,16 @@ function updateProp(key, value) {
     patch.text = p.ar
     patch.sub = p.tr
   }
+  // Ayet seçici tek bir alan değil, bir yama yayar: sure/ayet seçimiyle
+  // birlikte çekilen metinleri de taşır. Tek anahtara sıkıştırılsaydı
+  // widget'ın ağdan okuması gerekirdi ve dışa aktarım bekleyen bir isteği
+  // rasterize ederdi.
+  if (selectedDef.value?.settings.find(f => f.key === key)?.type === 'ayet'
+      && value && typeof value === 'object') {
+    delete patch[key]
+    Object.assign(patch, value)
+  }
+
   editor.updateProps(layer.id, patch)
 }
 

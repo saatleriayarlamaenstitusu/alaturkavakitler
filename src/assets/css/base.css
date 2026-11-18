@@ -41,6 +41,13 @@
   --border: rgba(255, 255, 255, 0.07);
   --watermark-opacity: 0.05;
   --watermark-filter: invert(1);
+  /* Yerel denetimleri (açılır liste, kaydırma çubuğu, onay kutusu)
+     tarayıcı çiziyor ve sayfanın CSS'i oraya geçmiyor; neyi çizeceğini
+     yalnızca `color-scheme`den öğreniyor. Açık mod blokları bunu zaten
+     veriyordu, varsayılan koyu modda eksikti: tarayıcı açık varsayıp
+     açılır listeyi BEYAZ zeminle çiziyor ve üstündeki beyaz metin
+     okunmuyordu (ölçüldü: ayet seçicinin sure listesi). */
+  color-scheme: dark;
 }
 :root[data-vakit="imsak"]  { --primary: #00b7ff; }
 :root[data-vakit="gunes"]  { --primary: #ffbd33; }

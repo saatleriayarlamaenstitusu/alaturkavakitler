@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { FONT_GROUPS, fontsByGroup, getFont } from '@/data/shareFonts'
 import { ensureFontGroup } from '@/composables/useShareFonts'
 import { phraseList } from '@/data/phraseSets'
+import AyetPicker from './AyetPicker.vue'
 import { useShareEditor } from '@/composables/useShareEditor'
 
 const props = defineProps({
@@ -144,7 +145,7 @@ function pickImage(e) {
 
 // Etiket + denetim aynı ızgarada; textarea ve şeritler tam genişlik ister.
 const fullWidth = computed(() =>
-  ['textarea', 'font', 'phrase', 'image'].includes(props.field.type)
+  ['textarea', 'font', 'phrase', 'image', 'ayet'].includes(props.field.type)
 )
 </script>
 
@@ -217,6 +218,12 @@ const fullWidth = computed(() =>
           >{{ f.label }}</button>
         </div>
       </div>
+
+      <AyetPicker
+        v-else-if="field.type === 'ayet'"
+        :model-value="value"
+        @update:model-value="value = $event"
+      />
 
       <div v-else-if="field.type === 'phrase'" class="phrases">
         <button
@@ -331,6 +338,7 @@ const fullWidth = computed(() =>
         v-else-if="field.type === 'textarea'"
         ref="textareaEl"
         class="textarea"
+        :class="{ arabic: field.arabic }"
         dir="auto"
         rows="2"
         v-model="value"
@@ -641,6 +649,15 @@ const fullWidth = computed(() =>
   color: var(--text);
   cursor: pointer;
   white-space: nowrap;
+}
+
+/* Arayüzün yazı tipinde Arapça harf yok: harekeli metin kutucuk (▯) olarak
+   çiziliyordu. `inherit` bırakılamıyor çünkü yedek zinciri yok — Arapça
+   bir aile açıkça verilmeli. */
+.textarea.arabic {
+  font-family: 'Amiri', 'Noto Naskh Arabic', 'Scheherazade New', serif;
+  font-size: 1rem;
+  line-height: 1.95;
 }
 
 .phrase-ar {

@@ -58,6 +58,45 @@ export const WIDGET_PRESETS = {
     preset('sade', 'Sade', { variant: 'plain', font: 'lora', weight: 500, letterSpacing: 0.01 }),
     preset('dikey', 'Dikey', { variant: 'vertical', font: 'bebas-neue', weight: 400, letterSpacing: 0.12 }),
   ],
+  // Ayet: Arapça ve Latin iki ayrı yazı tipi taşır, ön tanım ikisini
+  // birlikte verir — tek başına değiştirilen bir Arapça font, yanındaki
+  // meal eski ailesinde kalınca uyumsuz duruyor.
+  'ayet': [
+    preset('klasik', 'Klasik', {
+      font: 'amiri', weight: 400, latinFont: 'lora',
+      size: 54, latinScale: 0.34, mealNameScale: 0.6, refScale: 0.6, gap: 18, width: 880,
+      align: 'center', latinAlign: 'center', mealNamePos: 'ust',
+    }),
+    preset('celi', 'Celî', {
+      font: 'aref-ruqaa', weight: 700, latinFont: 'cormorant-garamond',
+      size: 68, latinScale: 0.28, mealNameScale: 0.65, refScale: 0.65, gap: 24, width: 860,
+      align: 'center', latinAlign: 'center', mealNamePos: 'ust',
+    }),
+    preset('nastalik', 'Nastalik', {
+      font: 'noto-nastaliq', weight: 400, latinFont: 'lora',
+      // Nastalik eğik ve derin iner; aynı punto diğer yazılardan büyük
+      // görünür ve satır arası daha çok yer ister.
+      size: 44, latinScale: 0.38, mealNameScale: 0.6, refScale: 0.55, gap: 28, width: 900,
+      align: 'center', latinAlign: 'center', mealNamePos: 'ust',
+    }),
+    preset('kufi', 'Kûfî', {
+      font: 'reem-kufi', weight: 500, latinFont: 'inter-tight',
+      size: 56, latinScale: 0.3, mealNameScale: 0.55, refScale: 0.6, gap: 20, width: 880,
+      align: 'center', latinAlign: 'center', mealNamePos: 'ust',
+    }),
+    // Arapça sağda, meal solda: iki yazı yönünün kendi doğal kenarına
+    // yaslandığı editöryel düzen.
+    preset('editoryel', 'Editöryel', {
+      font: 'amiri', weight: 400, latinFont: 'lora',
+      size: 52, latinScale: 0.36, mealNameScale: 0.5, refScale: 0.5, gap: 22, width: 900,
+      align: 'right', latinAlign: 'left', mealNamePos: 'alt',
+    }),
+    preset('modern', 'Modern', {
+      font: 'cairo', weight: 500, latinFont: 'inter-tight',
+      size: 46, latinScale: 0.42, mealNameScale: 0.55, refScale: 0.55, gap: 14, width: 840,
+      align: 'left', latinAlign: 'left', mealNamePos: 'ust',
+    }),
+  ],
   'text': [
     preset('manset', 'Manşet', { font: 'bebas-neue', weight: 400, size: 96, uppercase: true,
       letterSpacing: 0.02, align: 'center' }),

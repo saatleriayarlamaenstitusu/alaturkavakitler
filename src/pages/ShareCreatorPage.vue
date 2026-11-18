@@ -46,7 +46,14 @@ onMounted(async () => {
   editor.ensureComposition()
   // Yalnızca kullanımdaki fontların grubu yüklenir; gerisi seçicide o sekme
   // açıldığında iner.
-  ensureFontsFor(editor.state.layers.map(l => l.props.font))
+  // `font` tek font alanı DEĞİL: takvim parçasının titleFont/weekdayFont/
+  // dayFont'u, ayetin latinFont'u var. Yalnızca `font` okunduğu sürece
+  // kayıtlı bir düzen o ailelerin grubunu indirmiyor ve yazı, kullanıcı o
+  // sekmeyi açana kadar yedek fontla çiziliyordu.
+  ensureFontsFor(editor.state.layers.flatMap(l =>
+    Object.entries(l.props)
+      .filter(([k]) => k === 'font' || k.endsWith('Font'))
+      .map(([, v]) => v)))
   // Fotoğraf paleti kaydedilmez, geri yüklenen fotoğraftan yeniden çıkarılır.
   editor.refreshPhotoPalette()
 

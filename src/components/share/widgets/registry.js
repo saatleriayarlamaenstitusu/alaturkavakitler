@@ -7,8 +7,10 @@ import LogoWidget from './LogoWidget.vue'
 import MonthCalendarWidget from './MonthCalendarWidget.vue'
 import PhraseWidget from './PhraseWidget.vue'
 import ImageWidget from './ImageWidget.vue'
+import AyetWidget from './AyetWidget.vue'
 import { DEFAULT_FONT, getFont, weightOptions, isColorFont } from '@/data/shareFonts'
 import { defaultPhrase } from '@/data/phraseSets'
+import { DEFAULT_VERSE } from '@/data/kuranMeta'
 import { currentMonthOf, GREGORIAN_MONTHS, HIJRI_MONTHS } from '@/utils/calendarGrid'
 import { presetsFor } from '@/data/widgetPresets'
 import { TABLE_RANGE } from '@/utils/hijri'
@@ -271,7 +273,7 @@ const WIDGETS = [
     },
     settings: [
       { key: 'preset', type: 'phrase', source: 'arabic', label: 'Hazır metin', group: 'icerik' },
-      { key: 'text', type: 'textarea', label: 'Arapça', group: 'icerik' },
+      { key: 'text', type: 'textarea', arabic: true, label: 'Arapça', group: 'icerik' },
       { key: 'harakat', type: 'toggle', label: 'Hareke', group: 'icerik' },
       { key: 'sub', type: 'text', label: 'Alt satır', group: 'icerik' },
       ...typographyFieldsNoTracking,
@@ -305,7 +307,7 @@ const WIDGETS = [
     },
     settings: [
       { key: 'preset', type: 'phrase', source: 'ottoman', label: 'Hazır metin', group: 'icerik' },
-      { key: 'text', type: 'textarea', label: 'Eski yazı', group: 'icerik' },
+      { key: 'text', type: 'textarea', arabic: true, label: 'Eski yazı', group: 'icerik' },
       { key: 'sub', type: 'text', label: 'Alt satır', group: 'icerik' },
       ...typographyFieldsNoTracking,
       { key: 'size', type: 'range', label: 'Boyut', min: 40, max: 220, step: 4, group: 'boyut' },
@@ -313,6 +315,110 @@ const WIDGETS = [
       { key: 'subColor', type: 'color', label: 'Alt satır rengi', swatches: COLOR_SWATCHES,
         group: 'gorunum', hidden: (p) => !p.sub },
       alignField,
+    ],
+  },
+  {
+    id: 'ayet',
+    label: 'Ayet',
+    hint: 'Kuran-ı Kerim',
+    component: AyetWidget,
+    defaultProps: () => ({
+      // Seçim ve metin AYRI tutulur: `ayet` seçicinin durumu, gerisi
+      // çizilen metin. Metin ayarların içinde durduğu için widget ağa
+      // çıkmaz ve her satır elle düzenlenebilir.
+      ayet: {
+        surah: DEFAULT_VERSE.surah,
+        verse: DEFAULT_VERSE.verse,
+        // `to` = `verse` tek ayet demek. Ayrı bir "aralık mı" bayrağı
+        // yerine son ayetin kendisi bayrak: iki alan çelişemez.
+        to: DEFAULT_VERSE.verse,
+        authors: [11],
+        numbers: true,
+        // 'birlesik' | 'satir' | 'ayri'
+        layout: 'birlesik',
+      },
+      ar: DEFAULT_VERSE.ar,
+      tx: DEFAULT_VERSE.tx,
+      meals: DEFAULT_VERSE.meals,
+      // 'ayri' kipinin okuduğu yapılı hâl; seçici her ikisini birden
+      // yazıyor, böylece kip değiştirmek yeni bir istek gerektirmiyor.
+      verses: [{
+        n: DEFAULT_VERSE.verse,
+        ar: DEFAULT_VERSE.ar,
+        tx: DEFAULT_VERSE.tx,
+        meals: DEFAULT_VERSE.meals,
+      }],
+      ref: DEFAULT_VERSE.ref,
+      showAr: true,
+      showTx: false,
+      showRef: true,
+      mealNames: true,
+      width: 880,
+      size: 54,
+      latinScale: 0.34,
+      gap: 18,
+      align: 'center',
+      // Latin hizalaması Arapça'dan ayrı: biri sağa, biri sola
+      // konabilsin. Başlangıçta ikisi de aynı.
+      latinAlign: 'center',
+      mealNamePos: 'ust',
+      mealNameScale: 0.6,
+      refScale: 0.6,
+      font: 'amiri',
+      weight: 400,
+      italic: false,
+      letterSpacing: 0,
+      latinFont: DEFAULT_FONT,
+      color: '#ffffff',
+      txColor: '#ffffff',
+      mealColor: '#ffffff',
+      // 'auto' DEĞİL. Kaynak satırı ve mütercim adı bu rengi kullanıyor ve
+      // 'auto' o anki vakit rengine çözülüyor — yatsıda #2e3b83, koyu bir
+      // tuvalde okunmuyor (ölçüldü: İhlas önizlemesinde mütercim adları
+      // kayboluyordu). Vakit rengi tuvalde İÇERİK olarak doğru, ama bir
+      // künye satırının okunurluğu renge bağlı olmamalı.
+      refColor: '#ffffff',
+    }),
+    settings: [
+      { key: 'ayet', type: 'ayet', label: 'Ayet', group: 'icerik' },
+      { key: 'showAr', type: 'toggle', label: 'Arapça', group: 'icerik' },
+      { key: 'ar', type: 'textarea', arabic: true, label: 'Arapça metin', group: 'icerik', hidden: (p) => !p.showAr },
+      { key: 'showTx', type: 'toggle', label: 'Okunuş', group: 'icerik' },
+      { key: 'tx', type: 'textarea', label: 'Okunuş metni', group: 'icerik', hidden: (p) => !p.showTx },
+      { key: 'mealNames', type: 'toggle', label: 'Mütercim adı', group: 'icerik',
+        hidden: (p) => (p.meals?.length ?? 0) < 2 },
+      { key: 'mealNamePos', type: 'select', label: 'Adın yeri', group: 'icerik',
+        hidden: (p) => (p.meals?.length ?? 0) < 2 || p.mealNames === false,
+        options: [{ value: 'ust', label: 'Üstte' }, { value: 'alt', label: 'Altta' }] },
+      { key: 'showRef', type: 'toggle', label: 'Kaynak satırı', group: 'icerik' },
+      { key: 'ref', type: 'text', label: 'Kaynak', group: 'icerik', hidden: (p) => !p.showRef },
+
+      { key: 'font', type: 'font', label: 'Arapça yazı tipi', group: 'tipografi' },
+      { key: 'weight', type: 'select', compact: true, label: 'Kalınlık', group: 'tipografi',
+        options: (p) => weightOptions(p.font) },
+      { key: 'latinFont', type: 'font', label: 'Latin yazı tipi', group: 'tipografi' },
+
+      { key: 'size', type: 'range', label: 'Arapça boyut', min: 24, max: 150, step: 2, group: 'boyut' },
+      // Latin metin Arapça'ya ORANLA ölçülür: Arapça boyutu değiştirildiğinde
+      // meal de birlikte kayar, iki sürgüyü elle dengelemek gerekmez.
+      { key: 'latinScale', type: 'range', label: 'Meal oranı', min: 0.16, max: 0.7, step: 0.02, unit: '×', group: 'boyut' },
+      // Mütercim adı Latin metnine oranla ölçülür, Arapça'ya değil:
+      // yanında durduğu paragrafla birlikte kaymalı.
+      { key: 'mealNameScale', type: 'range', label: 'Mütercim adı oranı', min: 0.3, max: 1.2, step: 0.05,
+        unit: '×', group: 'boyut', hidden: (p) => (p.meals?.length ?? 0) < 2 || p.mealNames === false },
+      { key: 'refScale', type: 'range', label: 'Kaynak oranı', min: 0.3, max: 1.2, step: 0.05,
+        unit: '×', group: 'boyut', hidden: (p) => p.showRef === false },
+      { key: 'width', type: 'range', label: 'Genişlik', min: 320, max: 1040, step: 20, group: 'boyut' },
+      { key: 'gap', type: 'range', label: 'Satır arası', min: 0, max: 60, step: 2, unit: 'px', group: 'boyut' },
+
+      textColorField('color', 'Arapça rengi'),
+      { key: 'txColor', type: 'color', label: 'Okunuş rengi', swatches: COLOR_SWATCHES,
+        group: 'gorunum', hidden: (p) => !p.showTx },
+      { key: 'mealColor', type: 'color', label: 'Meal rengi', swatches: COLOR_SWATCHES, group: 'gorunum' },
+      { key: 'refColor', type: 'color', label: 'Kaynak rengi', swatches: COLOR_SWATCHES, group: 'gorunum' },
+      { ...alignField, label: 'Arapça hizası' },
+      { key: 'latinAlign', type: 'select', label: 'Latin hizası', group: 'gorunum',
+        options: alignField.options },
     ],
   },
   {
