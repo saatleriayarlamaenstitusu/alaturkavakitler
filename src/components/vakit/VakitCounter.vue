@@ -1,10 +1,9 @@
 <script setup>
 import { ref, watch, onUnmounted, computed } from 'vue'
 import { useAppStore } from '@/stores/app'
-import { findVakit, isKerahat } from '@/utils/vakit'
+import { findVakit, nextVakit, isKerahat } from '@alaturkavakitler/core'
 import QiblaCompass from './QiblaCompass.vue'
 import MosqueIcon from '@/components/ui/MosqueIcon.vue'
-import { DateTime } from 'luxon'
 
 const appStore = useAppStore()
 const counter = ref({ hours: 0, minutes: 0, seconds: 0 })
@@ -25,9 +24,9 @@ const counterDisplay = computed(() => {
 const isCuma = computed(() => {
   const vakit = appStore.vakit
   if (!vakit?.imsak || !vakit?.ikindi) return false
-  const now = DateTime.now()
-  if (now.weekday !== 5) return false
-  return now >= vakit.imsak.valueDateObj && now < vakit.ikindi.valueDateObj
+  const now = new Date()
+  if (now.getDay() !== 5) return false
+  return now >= vakit.imsak.time && now < vakit.ikindi.time
 })
 
 // Cuma günü güneş vaktindeyken sayaç öğleye (cuma namazına) iniyor:
@@ -45,25 +44,21 @@ function tick() {
   const { vakit } = appStore
   if (!vakit) return
 
-  const now = DateTime.now()
-  const found = findVakit(vakit)
+  const now = new Date()
+  const found = findVakit(vakit, now)
 
   if (found !== appStore.currentVakit) {
     appStore.setCurrentVakit(found)
   }
 
-  const currentKey = appStore.currentVakit
-  if (!currentKey || !vakit[currentKey]) return
+  // Sıradaki vakti core buluyor: "şimdiki vaktin ardılı" diye adım atmak
+  // yerine ileride kalan EN YAKIN vakte bakıyor. Gece yarısı ile imsak
+  // arasında bugünün altı vakti de ileride olduğu için adım atan yol
+  // yarının imsakına ulaşıp 27 saatlik bir sayaç gösterebiliyordu.
+  const next = nextVakit(vakit, now)
+  if (!next) return
 
-  const nextKey = vakit[currentKey].next
-  const nextVakitObj = (currentKey === 'yatsi' && vakit[nextKey].valueDateObj < now)
-    ? vakit[nextKey].valueDateObj2
-    : vakit[nextKey].valueDateObj
-
-  if (!nextVakitObj) return
-
-  const dur = now.until(nextVakitObj).toDuration(['hours', 'minutes', 'seconds']).toObject()
-  counter.value = dur
+  counter.value = { hours: next.hours, minutes: next.minutes, seconds: next.seconds }
 }
 
 function startInterval() {

@@ -24,3 +24,6 @@ yarn-error.log*
 /dist
 
 ROADMAP.md
+
+# Wrangler yerel durumu (emüle edilmiş KV, önbellek)
+.wrangler/

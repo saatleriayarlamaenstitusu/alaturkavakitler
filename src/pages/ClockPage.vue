@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
-import { calculateAlaturka } from '@/utils/clock'
+import { calculateAlaturka } from '@alaturkavakitler/core'
 import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
 import AnalogClock from '@/components/clock/AnalogClock.vue'
@@ -19,7 +19,7 @@ const appStore = useAppStore()
 const now = ref(DateTime.now())
 let intervalId = null
 
-const alaturkaTime = computed(() => calculateAlaturka(now.value, appStore.vakitler))
+const alaturkaTime = computed(() => calculateAlaturka(now.value.toJSDate(), appStore.vakitler))
 const normalTime = computed(() => now.value.setLocale('tr').toLocaleString(DateTime.TIME_SIMPLE))
 
 // Saniye tiklerini izler: akşam ezanı geçince hicri tarih kendiliğinden döner.

@@ -1,6 +1,9 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
 import { COLOR_STYLES } from '@/data/colorStyles'
+import { NOTIFY_KEYS, NOTIFY_CHOICES, VAKIT_LABELS } from '@/data/vakitNotify'
+import { supportsNotifications, requestNotificationPermission } from '@/composables/useVakitNotifications'
 import { useSeo } from '@/composables/useSeo'
 
 useSeo({
@@ -25,6 +28,31 @@ const homeClockOptions = [
 const hijriOffsetOptions = [
   { value: true,  label: 'Akşam ezanı' },
   { value: false, label: 'Gece yarısı' },
+]
+
+// Bildirim izni sayfa açıkken değişebilir (tarayıcı ayarından geri
+// alınabiliyor), bu yüzden okunan değer bir ref.
+const permission = ref('default')
+const notifySupported = supportsNotifications()
+
+onMounted(() => {
+  if (notifySupported) permission.value = Notification.permission
+})
+
+async function toggleNotifications(on) {
+  if (!on) {
+    settings.notificationsEnabled = false
+    return
+  }
+  permission.value = await requestNotificationPermission()
+  // İzin verilmediyse anahtar açılmaz: açık görünüp hiç bildirim
+  // gelmemesi, kapalı durmasından daha yanıltıcı.
+  settings.notificationsEnabled = permission.value === 'granted'
+}
+
+const notifyOptions = [
+  { value: false, label: 'Kapalı' },
+  { value: true,  label: 'Açık' },
 ]
 
 const firstPageOptions = [
@@ -116,6 +144,47 @@ const firstPageOptions = [
         >
           <span>{{ opt.label }}</span>
         </button>
+      </div>
+    </section>
+
+    <section class="setting-block">
+      <div class="setting-head">
+        <h2 class="setting-name">Vakit Hatırlatması</h2>
+        <p class="setting-desc">Vakit girmeden önce haber ver</p>
+      </div>
+
+      <div class="theme-selector">
+        <button
+          v-for="opt in notifyOptions"
+          :key="String(opt.value)"
+          class="theme-btn"
+          :class="{ active: settings.notificationsEnabled === opt.value }"
+          :disabled="!notifySupported"
+          @click="toggleNotifications(opt.value)"
+        >
+          <span>{{ opt.label }}</span>
+        </button>
+      </div>
+
+      <p v-if="!notifySupported" class="notify-note">
+        Bu tarayıcı bildirimleri desteklemiyor.
+      </p>
+      <p v-else-if="permission === 'denied'" class="notify-note">
+        Bildirim izni reddedilmiş. Tarayıcının site ayarlarından izin verip tekrar deneyin.
+      </p>
+      <p v-else class="notify-note">
+        Hatırlatma uygulama açıkken verilir. Her zaman çalışması için uygulamayı ana ekrana ekleyin.
+      </p>
+
+      <div v-if="settings.notificationsEnabled" class="notify-list">
+        <label v-for="key in NOTIFY_KEYS" :key="key" class="notify-row">
+          <span class="notify-vakit">{{ VAKIT_LABELS[key] }}</span>
+          <select v-model.number="settings.notifyOffsets[key]" class="notify-select">
+            <option v-for="c in NOTIFY_CHOICES" :key="c.value" :value="c.value">
+              {{ c.value > 0 ? c.label + ' önce' : c.label }}
+            </option>
+          </select>
+        </label>
       </div>
     </section>
 
@@ -217,6 +286,57 @@ const firstPageOptions = [
   background: var(--text);
   border-color: var(--text);
   color: var(--bg);
+}
+
+.theme-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Vakit hatırlatması ── */
+.notify-note {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+  max-width: 44ch;
+}
+
+.notify-list {
+  margin-top: 1.1rem;
+  border-top: 1px solid var(--border);
+  max-width: 24rem;
+}
+
+.notify-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.notify-vakit {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.notify-select {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.notify-select:focus-visible {
+  outline: 2px solid var(--accent-ui);
+  outline-offset: 1px;
 }
 
 .theme-icon {

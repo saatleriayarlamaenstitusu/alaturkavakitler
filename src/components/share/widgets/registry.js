@@ -13,7 +13,7 @@ import { defaultPhrase } from '@/data/phraseSets'
 import { DEFAULT_VERSE } from '@/data/kuranMeta'
 import { currentMonthOf, GREGORIAN_MONTHS, HIJRI_MONTHS } from '@/utils/calendarGrid'
 import { presetsFor } from '@/data/widgetPresets'
-import { TABLE_RANGE } from '@/utils/hijri'
+import { TABLE_RANGE } from '@alaturkavakitler/core'
 
 // Paylaşım widget'ları — uygulama bileşenlerinden ayrı, export için yazılmış
 // saf/compact bileşenler. Kurallar:

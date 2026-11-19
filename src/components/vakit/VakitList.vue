@@ -2,7 +2,6 @@
 import { computed, ref, watch, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useKazaStore, KAZA_KEYS } from '@/stores/kaza'
-import { DateTime } from 'luxon'
 
 const appStore = useAppStore()
 const kaza = useKazaStore()
@@ -52,9 +51,9 @@ const vakitItems = computed(() => {
   return Object.values(appStore.vakit)
 })
 
-function formatTime(dateObj) {
-  if (!dateObj) return ''
-  return dateObj.setLocale('tr').toLocaleString(DateTime.TIME_SIMPLE)
+function formatTime(date) {
+  if (!date) return ''
+  return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
 }
 </script>
 
@@ -77,7 +76,7 @@ function formatTime(dateObj) {
       >
         <span class="dot"></span>
         <span class="label">{{ item.name }}</span>
-        <span class="value">{{ formatTime(item.valueDateObj) }}</span>
+        <span class="value">{{ formatTime(item.time) }}</span>
         <!-- Bant kapalıyken de borcun olduğu görünsün. -->
         <span v-if="!editing && kaza.has(item.key)" class="kaza-badge">
           {{ kaza.counts[item.key] }}

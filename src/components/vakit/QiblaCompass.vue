@@ -1,8 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
-import { getCityCoords } from '@/data/cityCoords'
-import { qiblaBearing, formatBearing, compassName } from '@/utils/qibla'
+import { CITIES, qiblaBearing, formatBearing, compassName } from '@alaturkavakitler/core'
 
 const appStore = useAppStore()
 
@@ -13,7 +12,13 @@ const gps = ref(null)
 const gpsState = ref('idle') // idle | isteniyor | aktif | hata
 const gpsError = ref('')
 
-const coords = computed(() => gps.value ?? getCityCoords(appStore.city?.plate))
+// Şehrin koordinatı core'daki şehir tablosunda duruyor (il merkezi).
+const cityCoords = (plate) => {
+  const c = CITIES[String(Number(plate))]
+  return c ? [c.lat, c.lon] : null
+}
+
+const coords = computed(() => gps.value ?? cityCoords(appStore.city?.plate))
 const bearing = computed(() => (coords.value ? qiblaBearing(coords.value[0], coords.value[1]) : null))
 
 function useGps() {

@@ -26,6 +26,13 @@ const API = 'https://api.acikkuran.com/v1'
 // sıradır — Diyanet önce, çünkü vakitler de oradan geliyor.
 const AUTHORS = [11, 14, 15, 19, 21, 22, 2, 16, 109]
 
+// Katman eklenirken gösterilecek ayet. Kısa olması şart: parça tuvale
+// düştüğü anda bir şey göstermeli ve gösterdiği şey kompozisyonu
+// ezmemeli. Önce Ayetel Kürsi (2:255) vardı — tek başına tuvalin yarısını
+// kaplıyor ve kullanıcı daha neyi eklediğini görmeden yer değiştirmeye
+// başlıyordu. İhlas 1 dört kelime.
+const DEFAULT = { surah: 112, verse: 1, author: 11 }
+
 function apiKey() {
   const env = readFileSync(resolve(ROOT, '.env'), 'utf8')
   const key = env.match(/^ACIKKURAN_KEY=(.*)$/m)?.[1]?.trim().replace(/^['"]|['"]$/g, '')
@@ -44,7 +51,11 @@ async function get(path, key) {
 }
 
 const key = apiKey()
-const [surahs, authors] = await Promise.all([get('/surahs', key), get('/authors', key)])
+const [surahs, authors, defaultVerse] = await Promise.all([
+  get('/surahs', key),
+  get('/authors', key),
+  get(`/surahs/${DEFAULT.surah}/verses/${DEFAULT.verse}?author=${DEFAULT.author}`, key),
+])
 
 // Yalnızca kullanılan alanlar. Ham yanıt her sure için okuma kayıtlarını da
 // taşıyor (mp3 adresleri), paket onlarca KB şişiyordu.
@@ -94,6 +105,33 @@ export const authorById = (id) => AUTHORS.find((a) => a.id === Number(id)) ?? nu
 export const TOTAL_VERSES = ${total}
 `
 
+// DEFAULT_VERSE da BURADA üretiliyor. Daha önce dosyaya elle eklenmişti
+// ve betiğin ikinci çalıştırılması onu sessizce siliyordu.
+const defaultAuthorName = byId.get(DEFAULT.author).name
+const defaultSurahName = surahRows.find((s) => s.id === DEFAULT.surah).name
+const defaultBlock = `
+/**
+ * Katman eklenirken gösterilen ayet.
+ *
+ * Gömülü duruyor çünkü bir parça tuvale eklendiği anda bir şey GÖSTERMELİ.
+ * Ağdan çekilseydi katman boş doğar, istek dönene kadar kullanıcı neyi
+ * eklediğini göremez ve ilk saniyede yapılan bir dışa aktarım boş çıkardı.
+ * Başka bir ayete geçildiğinde metin vekilden gelir.
+ *
+ * Kısa bir ayet seçilmesi bilinçli: uzun bir ayet eklendiği anda tuvalin
+ * yarısını kaplıyor ve kompozisyonu ezerek başlıyor.
+ */
+export const DEFAULT_VERSE = {
+  surah: ${DEFAULT.surah},
+  verse: ${DEFAULT.verse},
+  ref: ${JSON.stringify(`${defaultSurahName} ${DEFAULT.surah}:${DEFAULT.verse}`)},
+  ar: ${JSON.stringify(defaultVerse.verse)},
+  tx: ${JSON.stringify(defaultVerse.transcription ?? '')},
+  meals: [{ id: ${DEFAULT.author}, name: ${JSON.stringify(defaultAuthorName)}, text: ${JSON.stringify(defaultVerse.translation?.text ?? '')} }],
+}
+`
+
 mkdirSync(resolve(ROOT, 'src/data'), { recursive: true })
-writeFileSync(resolve(ROOT, 'src/data/kuranMeta.js'), out)
+writeFileSync(resolve(ROOT, 'src/data/kuranMeta.js'), out + defaultBlock)
 console.log(`src/data/kuranMeta.js yazıldı — ${surahRows.length} sure, ${total} ayet, ${authorRows.length} meal`)
+console.log(`varsayılan ayet: ${defaultSurahName} ${DEFAULT.surah}:${DEFAULT.verse} (${defaultAuthorName})`)

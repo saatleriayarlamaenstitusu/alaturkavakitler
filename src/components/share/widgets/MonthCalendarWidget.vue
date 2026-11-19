@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { getFont, nearestWeight } from '@/data/shareFonts'
 import { monthGrid, WEEKDAYS_SHORT, WEEKDAYS_NARROW } from '@/utils/calendarGrid'
-import { holyDaysOn } from '@/data/holyDays'
+import { holyDaysOn } from '@alaturkavakitler/core'
 import { localizeNumerals } from '@/utils/numerals'
 import WidgetLines from './WidgetLines.vue'
 

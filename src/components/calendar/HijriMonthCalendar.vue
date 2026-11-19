@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { hijriMonth } from '@/utils/hijri'
-import { holyDaysOn } from '@/data/holyDays'
+import { hijriMonth } from '@alaturkavakitler/core'
+import { holyDaysOn } from '@alaturkavakitler/core'
 import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
 

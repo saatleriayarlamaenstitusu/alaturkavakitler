@@ -1,7 +1,11 @@
 <script setup>
 import { computed } from 'vue'
 import { useAppStore } from '@/stores/app'
-import { CITIES_LIST } from '@/data/cities'
+import { CITIES } from '@alaturkavakitler/core'
+
+// Core şehirleri plakaya göre anahtarlanmış bir obje olarak veriyor;
+// seçici sıralı bir listeye ihtiyaç duyuyor.
+const CITY_LIST = Object.values(CITIES)
 
 // Şehir seçici iki yerde duruyor: mobilde üst çubukta, masaüstünde sol
 // rayın dibinde. Tek bileşen — iki ayrı `select` olsaydı biri store'a
@@ -11,7 +15,7 @@ const appStore = useAppStore()
 const selectedPlate = computed({
   get: () => appStore.city.plate,
   set: (plate) => {
-    const city = CITIES_LIST.find(c => c.plate === plate)
+    const city = CITY_LIST.find(c => c.plate === plate)
     if (city) appStore.setCity({ plate: city.plate, name: city.name })
   },
 })
@@ -19,7 +23,7 @@ const selectedPlate = computed({
 
 <template>
   <select class="city-select" v-model="selectedPlate" aria-label="Şehir">
-    <option v-for="city in CITIES_LIST" :key="city.plate" :value="city.plate">
+    <option v-for="city in CITY_LIST" :key="city.plate" :value="city.plate">
       {{ city.name }}
     </option>
   </select>

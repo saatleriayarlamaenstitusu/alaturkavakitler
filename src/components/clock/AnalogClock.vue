@@ -1,14 +1,14 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
-import { calculateAlaturka } from '@/utils/clock'
+import { calculateAlaturka } from '@alaturkavakitler/core'
 import { DateTime } from 'luxon'
 
 const appStore = useAppStore()
 const now = ref(DateTime.now())
 let intervalId = null
 
-const alaturkaStr = computed(() => calculateAlaturka(now.value, appStore.vakitler))
+const alaturkaStr = computed(() => calculateAlaturka(now.value.toJSDate(), appStore.vakitler))
 
 const hands = computed(() => {
   const t = alaturkaStr.value

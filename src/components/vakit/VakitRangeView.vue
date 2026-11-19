@@ -1,17 +1,16 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
-import { DateTime } from 'luxon'
 
 const appStore = useAppStore()
-const now = ref(DateTime.now())
+const now = ref(new Date())
 let intervalId = null
 
 const KERAHAT_MINUTES = 45
 const MINUTES_IN_DAY = 1440
 
 function minutesBetween(start, end) {
-  return end.diff(start, 'minutes').minutes
+  return (end - start) / 60000
 }
 
 function toPercent(minutes) {
@@ -32,9 +31,9 @@ const vakitItems = computed(() => {
 
     let width
     if (item.key === 'yatsi') {
-      width = toPercent(minutesBetween(item.valueDateObj, v['imsak'].valueDateObj2))
+      width = toPercent(minutesBetween(item.time, v['imsak'].timeTomorrow))
     } else {
-      width = toPercent(minutesBetween(item.valueDateObj, v[item.next].valueDateObj))
+      width = toPercent(minutesBetween(item.time, v[item.next].time))
     }
 
     return { ...item, width }
@@ -43,13 +42,13 @@ const vakitItems = computed(() => {
 
 const nowPercent = computed(() => {
   const v = appStore.vakit
-  if (!v?.imsak?.valueDateObj) return null
+  if (!v?.imsak?.time) return null
 
-  const imsakToday = v.imsak.valueDateObj
-  const imsakTomorrow = v.imsak.valueDateObj2 ?? imsakToday.plus({ days: 1 })
+  const imsakToday = v.imsak.time
+  const imsakTomorrow = v.imsak.timeTomorrow ?? new Date(imsakToday.getTime() + 86400000)
 
-  const totalMs = imsakTomorrow.toMillis() - imsakToday.toMillis()
-  const elapsedMs = now.value.toMillis() - imsakToday.toMillis()
+  const totalMs = imsakTomorrow - imsakToday
+  const elapsedMs = now.value - imsakToday
   const pct = (elapsedMs / totalMs) * 100
 
   if (pct < 0) return 0
@@ -58,7 +57,7 @@ const nowPercent = computed(() => {
 })
 
 onMounted(() => {
-  intervalId = setInterval(() => { now.value = DateTime.now() }, 60000)
+  intervalId = setInterval(() => { now.value = new Date() }, 60000)
 })
 
 onUnmounted(() => clearInterval(intervalId))

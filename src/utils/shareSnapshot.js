@@ -1,9 +1,6 @@
 import { DateTime } from 'luxon'
-import { calculateAlaturka } from '@/utils/clock'
-import { nowHijri } from '@/utils/hijri'
+import { calculateAlaturka, nowHijri, holyDayLabel, VAKIT_COLORS } from '@alaturkavakitler/core'
 import { aksamCutoff } from '@/composables/useHijriToday'
-import { holyDayLabel } from '@/data/holyDays'
-import { VAKIT_COLORS } from '@/utils/vakit'
 
 const VAKIT_ORDER = ['imsak', 'gunes', 'ogle', 'ikindi', 'aksam', 'yatsi']
 const VAKIT_NAMES = {
@@ -34,7 +31,7 @@ export function createSnapshot({ city, vakitler, currentVakit, hijriOffset = fal
 
   return {
     cityName: city?.name ?? '',
-    alaturka: calculateAlaturka(now, vakitler),
+    alaturka: calculateAlaturka(now.toJSDate(), vakitler),
     normal: now.toFormat('HH:mm'),
     currentVakit,
     primary: VAKIT_COLORS[currentVakit] ?? '#ae002e',

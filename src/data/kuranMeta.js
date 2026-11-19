@@ -147,18 +147,21 @@ export const authorById = (id) => AUTHORS.find((a) => a.id === Number(id)) ?? nu
 export const TOTAL_VERSES = 6236
 
 /**
- * Katman eklenirken gösterilen ayet: Ayetel Kürsi, Diyanet meali.
+ * Katman eklenirken gösterilen ayet.
  *
  * Gömülü duruyor çünkü bir parça tuvale eklendiği anda bir şey GÖSTERMELİ.
  * Ağdan çekilseydi katman boş doğar, istek dönene kadar kullanıcı neyi
  * eklediğini göremez ve ilk saniyede yapılan bir dışa aktarım boş çıkardı.
  * Başka bir ayete geçildiğinde metin vekilden gelir.
+ *
+ * Kısa bir ayet seçilmesi bilinçli: uzun bir ayet eklendiği anda tuvalin
+ * yarısını kaplıyor ve kompozisyonu ezerek başlıyor.
  */
 export const DEFAULT_VERSE = {
-  surah: 2,
-  verse: 255,
-  ref: 'Bakara 2:255',
-  ar: "اَللّٰهُ لَٓا اِلٰهَ اِلَّا هُوَۚ اَلْحَيُّ الْقَيُّومُۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌۜ لَهُ مَا فِي السَّمٰوَاتِ وَمَا فِي الْاَرْضِۜ مَنْ ذَا الَّذ۪ي يَشْفَعُ عِنْدَهُٓ اِلَّا بِاِذْنِه۪ۜ يَعْلَمُ مَا بَيْنَ اَيْد۪يهِمْ وَمَا خَلْفَهُمْۚ وَلَا يُح۪يطُونَ بِشَيْءٍ مِنْ عِلْمِه۪ٓ اِلَّا بِمَا شَٓاءَۚ وَسِعَ كُرْسِيُّهُ السَّمٰوَاتِ وَالْاَرْضَۚ وَلَا يَؤُ۫دُهُ حِفْظُهُمَاۚ وَهُوَ الْعَلِيُّ الْعَظ۪يمُ",
-  tx: "Allahu la ilahe illa huvel hayyul kayyum, la te'huzuhu sinetun ve la nevm, lehu ma fis semavati ve ma fil ard, menzellezi yeşfeu indehu illa bi iznih ya'lemu ma beyne eydihim ve ma halfehum, ve la yuhitune bi şey'in min ilmihi illa bi ma şae, vesia kursiyyuhus semavati vel ard, ve la yeuduhu hıfzuhuma ve huvel aliyyul azim.",
-  meals: [{ id: 11, name: 'Diyanet İşleri', text: "Allah, kendisinden başka hiçbir ilah olmayandır. Diridir, kayyumdur. O'nu ne bir uyuklama tutabilir, ne de bir uyku. Göklerdeki her şey, yerdeki her şey O'nundur. İzni olmaksızın O'nun katında şefaatte bulunacak kimdir? O, kulların önlerindekileri ve arkalarındakileri (yaptıklarını ve yapacaklarını) bilir. Onlar O'nun ilminden, kendisinin dilediği kadarından başka bir şey kavrayamazlar. O'nun kürsüsü, bütün gökleri ve yeri kaplayıp kuşatmıştır. (O, göklere, yere, bütün evrene hükmetmektedir.) Gökleri ve yeri koruyup gözetmek O'na güç gelmez. O, yücedir, büyüktür." }],
+  surah: 112,
+  verse: 1,
+  ref: "İhlas 112:1",
+  ar: "قُلْ هُوَ اللّٰهُ اَحَدٌۚ",
+  tx: "Kul huvallahu ehad.",
+  meals: [{ id: 11, name: "Diyanet İşleri", text: "De ki: \"O, Allah'tır, bir tektir.\"" }],
 }

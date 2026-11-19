@@ -2,7 +2,7 @@ import { computed, unref } from 'vue'
 import { DateTime } from 'luxon'
 import { useAppStore } from '@/stores/app'
 import { useSettingsStore } from '@/stores/settings'
-import { hijriNow } from '@/utils/hijri'
+import { hijriNow } from '@alaturkavakitler/core'
 
 /**
  * Bugünün akşam ezanı anı — ayar kapalıysa ya da vakit bilinmiyorsa null.

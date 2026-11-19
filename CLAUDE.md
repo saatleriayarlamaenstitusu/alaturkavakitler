@@ -12,7 +12,9 @@ Alaturka saat: son akşam (güneş batımı) ezanından geçen süre.
 - **Vue Router 4** (SPA routing, history mode)
 - **Pinia** (state management, AppContext yerine)
 - **Luxon** (tarih/saat hesaplamaları)
-- **hijri-date** (hicri takvim — doğruluk kontrolü yapılacak, değişebilir)
+- **@alaturkavakitler/core** — hicri takvim, dinî günler, namaz vakti tablosu,
+  alaturka saat, kıble ve şehir listesi. Site ve masaüstü (GTK4/GJS)
+  uygulaması AYNI paketi kullanır; kural katmanı burada tek kopyadır.
 - **@zumer/snapdom** (DOM → PNG; paylaşım görseli dışa aktarımı, sadece `/gorsel-olustur` chunk'ında)
 
 ### Stil
@@ -559,12 +561,12 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 
 ## Kıble Pusulası
 
-- `utils/qibla.js` büyük daire yönünü hesaplar (Kâbe 21.4225°N, 39.8252°E).
+- `qiblaBearing` (core) büyük daire yönünü hesaplar (Kâbe 21.4225°N, 39.8252°E).
   Düz haritadaki "Mekke'ye doğru" sezgisi yanlıştır; Türkiye'den kıble
   güneydoğu değil güney-güneydoğudur (İstanbul ~152°, Diyarbakır ~181°).
   Formül iki bağımsız türevle (genel başlangıç yönü ↔ özelleşmiş hâli)
   karşılaştırılıp doğrulandı.
-- Konum iki kaynaktan gelir: `data/cityCoords.js` (81 il merkezi, plaka
+- Konum iki kaynaktan gelir: core'un `CITIES` tablosu (81 il merkezi, plaka
   anahtarlı) ya da kullanıcı isterse cihaz GPS'i. GPS varsa o kullanılır.
 - Cihaz pusulası isteğe bağlı: `deviceorientationabsolute` varsa kadran döner
   ve iğne gerçek kıbleyi gösterir. iOS 13+ `DeviceOrientationEvent.requestPermission()`
@@ -593,7 +595,7 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 
 ## Dinî Günler
 
-- `src/data/holyDays.js` — kandiller, bayramlar, arefe ve Aşure hicri takvimden
+- `holyDaysOn` / `holyDayLabel` (core) — kandiller, bayramlar, arefe ve Aşure hicri takvimden
   **kural olarak** türetilir; sabit tarih listesi tutulmaz.
 - **Gecelerdeki incelik:** hicri gün güneş batımıyla başlar. "Recep ayının 27.
   gecesi" 26'sının akşamında başlayıp 27'sine ait olan gecedir — bu yüzden
@@ -608,11 +610,64 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
   ön-doldurulur, alan serbest kalır) ve aylık takvim parçasında "Dinî günler"
   anahtarı.
 
+## Çekirdek: `@alaturkavakitler/core`
+
+- Hicri takvim, dinî günler, namaz vakti tablosu, alaturka saat, kıble ve
+  şehir listesi **sitede değil pakette** durur. Sebebi ölçüldü: aynı kurallar
+  iki yerde yaşarken ayrıştılar — gece yarısı ile imsak arası sayaç hatası
+  core'da düzeltildi, sitedeki kopyada aylarca kaldı.
+- Siteden silinen dosyalar: `utils/{vakit,clock,hijri,qibla}.js`,
+  `data/{hijriMonths,holyDays,cities,cityCoords}.js`. Yenisini eklemeden önce
+  "bu kural core'a mı ait" diye sor: ekrana ait olan sitede, takvim/vakit
+  kuralı olan pakette.
+- **Alan adları farklı, dikkat:** core Luxon kullanmaz, saatler düz `Date`'tir.
+  `valueDateObj` → `time`, `value2` → `valueTomorrow`, `valueDateObj2` →
+  `timeTomorrow`. `createVakitObj` → `createVakitTable`.
+- Site Luxon'u BIRAKMADI; biçimlendirme (yerelleştirilmiş tarih, süre) hâlâ
+  Luxon ile yapılıyor. Core'a `Date` verilir: `calculateAlaturka(now.toJSDate(), …)`.
+- Sayaç artık `nextVakit(table, now)` ile besleniyor: "şimdiki vaktin ardılı"
+  diye adım atmak yerine ileride kalan en yakın vakte bakar. Gece yarısından
+  sonra bugünün altı vakti de ileride olduğu için adım atan yol yarının
+  imsakına ulaşıp 27 saatlik sayaç gösterebiliyordu.
+- Geçiş körlemesine yapılmadı: 2022–2037 arasındaki 5844 günün tamamında
+  eski ve yeni `toHijri` ile `holyDaysOn` çıktıları karşılaştırıldı (fark: 0),
+  81 ilin kıble açısı da birebir aynı çıktı.
+- Paket npm'de, yayın GitHub Actions'tan trusted publishing ile
+  (`alaturka-core` deposu, `v*` etiketi). Kuralları değiştirmek gerekirse
+  orada değiştir, sürüm çıkar, burada `npm i` ile güncelle.
+
+## Vakit Hatırlatmaları
+
+- Bildirim vaktin KENDİSİNDE değil öncesinde verilir: ezanla gelen haberin
+  hazırlanacak vakti kalmıyor. Süre vakit başına ayarlanır —
+  `src/data/vakitNotify.js` (varsayılanlar, seçenek listesi, metin kalıbı),
+  ayar `settings.notifyOffsets` (dakika; `-1` kapalı, `0` tam vakitte).
+- `notifyOffsets` bir obje olduğu için settings store'un kayıt izleyicisi
+  `deep: true` ile kurulu; tek bir vakit değişince de yazılır.
+- Zamanlama `useVakitNotifications()` içinde ve **tek bir `setTimeout`
+  değil 20 saniyelik bir yoklama**: arka plan sekmesinde tarayıcı
+  zamanlayıcıları kısıyor, cihaz uyuduğunda uzun timeout çok geç uyanıyor.
+  Yoklama "şu an ile beş dakika öncesi arasında bir hatırlatma vakti geçti
+  mi" diye bakar, böylece geciken bir tik hatırlatmayı düşürmez.
+- Verilen hatırlatmalar `vakitNotifyFired` anahtarında tutulur
+  (`gün-vakit-dakika`); sayfa yenilenince aynı hatırlatma tekrar verilmez.
+- Bugünün ve yarının tablosu birlikte taranır: bir saatlik imsak uyarısı
+  gece yarısının öbür tarafına düşüyor.
+- Bildirim mümkünse servis çalışanından verilir (`registration.showNotification`);
+  Android Chrome `new Notification()` çağrısını reddediyor.
+- İzin verilmediyse anahtar AÇILMAZ — açık görünüp hiç bildirim gelmemesi,
+  kapalı durmasından daha yanıltıcı.
+- **Sınır:** web tarafı yalnızca uygulama açıkken bildirir (sunucu ve
+  abonelik gerektiren gerçek push yok). Pencere kapalıyken bildiren
+  masaüstü uygulamasıdır; oradaki ayar aynı anahtarları taşır
+  (`notify-offsets`, `a{si}`) ve bildirim store'un saniyelik tikinden
+  çıkar — ayrı bir zamanlayıcı yok.
+
 ## Hicri Takvim
 
-- Dönüşüm **tablo tabanlıdır**: `src/data/hijriMonths.js` her hicri ayın 1'ine
-  denk gelen miladi günü tutar, `src/utils/hijri.js` ikili aramayla çevirir.
-  `hijri-date` paketi kaldırıldı.
+- Dönüşüm **tablo tabanlıdır** ve core'dadır: paketin `data/hijri-months.json`
+  dosyası her hicri ayın 1'ine denk gelen miladi günü tutar, `toHijri` /
+  `fromHijri` ikili aramayla çevirir. `hijri-date` paketi kaldırıldı.
 - **Neden:** aritmetik (tabular) kütüphaneler sabit kural uygular, Diyanet
   hesabî takvim kullanır. Ölçüldü — 2026'nın 12 ay başlangıcından 9'u tutmuyordu,
   Ramazan'da sapma 2 güne çıkıyordu. Sabit düzeltme katsayısı işe yaramaz.

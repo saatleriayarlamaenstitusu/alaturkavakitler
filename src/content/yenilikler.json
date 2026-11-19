@@ -1,5 +1,23 @@
 [
   {
+    "id": "vakit-hatirlatmasi",
+    "title": "Vakit hatırlatması",
+    "date": "2026-11-19",
+    "body": "Vakit **girmeden önce** bildirim gelmesi eklendi. Ezanla birlikte gelen haber çoğu zaman geç kalıyor; hatırlatma artık öncesinde veriliyor.\n\nHer vakit için ne kadar önce haber almak istediğiniz ayrı ayrı seçilebiliyor. Ön tanımlı süreler: imsaktan bir saat, güneşten 20, öğleden 30, ikindiden 20, akşamdan 30, yatsıdan 15 dakika önce. İstediğiniz vakti tamamen kapatabilir ya da tam vaktinde bildirim isteyebilirsiniz.\n\nAyarlar sayfasından açılıyor; tarayıcı bir kez izin istiyor. Hatırlatma uygulama açıkken verilir — her zaman çalışması için uygulamayı ana ekrana ekleyin.\n\nAynı ayar Linux masaüstü uygulamasında da var; orada pencere kapalıyken de bildiriyor."
+  },
+  {
+    "id": "ayet-widgeti",
+    "title": "Ayet parçası",
+    "date": "2026-11-19",
+    "body": "Görsel Oluştur bölümüne **ayet** parçası eklendi.\n\nSure ve ayet seçiliyor, istenirse bir aralık veriliyor (Bakara 255–257 gibi). Arapça metin, okunuşu ve meal ayrı ayrı açılıp kapatılabiliyor; dokuz meal arasından birden fazlası aynı anda seçilebiliyor — Diyanet, Elmalılı (ikisi de), Hasan Basri Çantay, İbni Kesir, Muhammed Esed ve İngilizce için Pickthall, Arberry, Yusuf Ali.\n\nBirden çok ayette üç düzen var: hepsi tek paragraf, her ayet kendi satırında, ya da her ayetin Arapçası ve meali birlikte art arda.\n\nArapçanın ve Latin metnin hizası ayrı ayrı verilebiliyor — biri sağa, diğeri sola yaslanabilir. Meal sahibinin adı metnin altında ya da üstünde durur, boyutu ayarlanır; kaynak satırının oranı da öyle.\n\nAltı hazır görünüm var: Klasik, Celî, Nastalik, Kûfî, Editöryel ve Modern."
+  },
+  {
+    "id": "linux-masaustu-uygulamasi",
+    "title": "Linux masaüstü uygulaması",
+    "date": "2026-11-17",
+    "body": "Alaturka Vakitler artık Linux'ta **ayrı bir masaüstü uygulaması** olarak da var. Tarayıcıda açılan sitenin küçültülmüş hâli değil; GTK4 ve libadwaita ile yazılmış, sistemin kendi arayüzüne ait bir pencere.\n\nÜç sayfası var: alaturka saat ve sonraki vakte kalan süre, günün altı vakti, aylık takvim (miladi ve hicri, dinî günlerle). Vakit rengi uygulamanın tamamına siniyor, açık ve koyu temayı sistemden alıyor.\n\nAsıl farkı bildirimlerde: tarayıcı yalnızca sekmesi açıkken hatırlatabiliyor, masaüstü uygulaması pencere kapalıyken de bildiriyor. Her vakit için kaç dakika önce haber alacağın ayrı ayrı seçiliyor.\n\nVakit, hicri takvim ve dinî gün hesapları siteyle aynı yerden geliyor: ikisi de aynı çekirdek paketi kullanıyor, yani bir tarih düzeltmesi iki uygulamada birden düzeliyor.\n\nKaynak kodu ve kurulum adımları GitHub'da: github.com/saatleriayarlamaenstitusu/alaturka-desktop — Debian, Ubuntu ve Mint için **.deb**, diğer dağıtımlar için **Flatpak** paketi hazırlanıyor."
+  },
+  {
     "id": "masaustu-duzeni",
     "title": "Masaüstü için yeni düzen",
     "date": "2026-11-11",

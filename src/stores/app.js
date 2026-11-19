@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import { createVakitObj, findVakit, VAKIT_COLORS } from '@/utils/vakit'
+import { createVakitTable, findVakit, VAKIT_COLORS } from '@alaturkavakitler/core'
 
 export const useAppStore = defineStore('app', () => {
   const city = ref(JSON.parse(localStorage.getItem('city') || 'null') || { plate: '34', name: 'İSTANBUL' })
@@ -13,7 +13,7 @@ export const useAppStore = defineStore('app', () => {
   watch(vakitler, (newVakitler) => {
     if (newVakitler) {
       localStorage.setItem('vakitler', JSON.stringify(newVakitler))
-      vakit.value = createVakitObj(newVakitler)
+      vakit.value = createVakitTable(newVakitler)
     }
   })
 
@@ -59,7 +59,7 @@ export const useAppStore = defineStore('app', () => {
 
   async function init() {
     if (vakitler.value) {
-      vakit.value = createVakitObj(vakitler.value)
+      vakit.value = createVakitTable(vakitler.value)
     }
     if (shouldFetch()) {
       await fetchVakitler()

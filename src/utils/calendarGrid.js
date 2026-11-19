@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { toHijri, fromHijri, hijriMonthLength, HIJRI_MONTHS } from './hijri'
+import { toHijri, fromHijri, hijriMonthLength, HIJRI_MONTHS } from '@alaturkavakitler/core'
 
 export { HIJRI_MONTHS }
 
@@ -15,7 +15,7 @@ export const WEEKDAYS_NARROW = ['P', 'S', 'Ç', 'P', 'C', 'C', 'P']
 const mondayIndex = (jsDate) => (jsDate.getDay() + 6) % 7
 
 // ── Hicri ──────────────────────────────────────────────────────
-// Dönüşüm `utils/hijri.js`teki Diyanet tablosundan gelir.
+// Dönüşüm `@alaturkavakitler/core`taki Diyanet tablosundan gelir.
 const hijriMonthStart = (year, month) => fromHijri(year, month, 1)
 const hijriDaysInMonth = (year, month) => hijriMonthLength(year, month)
 

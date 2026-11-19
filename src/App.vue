@@ -3,6 +3,7 @@ import { computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useSettingsStore } from '@/stores/settings'
+import { useVakitNotifications } from '@/composables/useVakitNotifications'
 import TopNav from '@/components/nav/TopNav.vue'
 import BottomNav from '@/components/nav/BottomNav.vue'
 
@@ -19,6 +20,10 @@ const chromeless = computed(() => route.path === '/gorsel-olustur')
 // aynı ölçüye hizalanmalı — CSS tek başına rotayı bilemez.
 const WIDE_ROUTES = ['/', '/saat', '/vakitler', '/takvim']
 const wide = computed(() => WIDE_ROUTES.includes(route.path))
+
+// Vakit hatırlatmaları kabukta yaşar: hangi sayfada olunduğundan
+// bağımsız çalışması gerekiyor.
+useVakitNotifications()
 
 let systemMediaQuery = null
 
