@@ -48,6 +48,47 @@ useSeo({
         </div>
 
         <div class="credits-item">
+          <b>Veri Kaynakları</b>
+          <ul class="sources">
+            <li>
+              <span class="src-what">Namaz vakitleri</span>
+              <span class="src-who">Diyanet İşleri Başkanlığı</span>
+            </li>
+            <li>
+              <span class="src-what">Hicri takvim</span>
+              <span class="src-who">Diyanet'in ay başlangıçları tablosu</span>
+            </li>
+            <li>
+              <span class="src-what">Kuran metni, okunuş ve mealler</span>
+              <span class="src-who">
+                <a href="https://acikkuran.com" target="_blank" rel="noopener">Açık Kuran</a>
+                —
+                <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.tr" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+              </span>
+            </li>
+            <li>
+              <span class="src-what">Mushaf sayfa düzeni</span>
+              <span class="src-who">
+                <a href="https://qul.tarteel.ai" target="_blank" rel="noopener">Quranic Universal Library</a>
+                ve
+                <a href="https://quran.com" target="_blank" rel="noopener">Quran.com</a>
+              </span>
+            </li>
+            <li>
+              <span class="src-what">Mushaf yazı tipleri</span>
+              <span class="src-who">
+                Kral Fahd Mushaf Basım Kompleksi (KFGQPC) · Diyanet İşleri Başkanlığı
+                <a href="https://kuran.diyanet.gov.tr" target="_blank" rel="noopener">Kur'an-ı Kerim</a>
+              </span>
+            </li>
+          </ul>
+          <p class="src-note">
+            Mushafın satır düzeni ve sayfa yazı tipleri yayıncılarının
+            sunucularından okunur; bu uygulama onların bir kopyasını dağıtmaz.
+          </p>
+        </div>
+
+        <div class="credits-item">
           <b>Tasarım &amp; Uygulama</b>
           <span class="name">Abdullah Öğük</span>
           <div class="links">
@@ -149,6 +190,43 @@ useSeo({
   margin: 0.6rem 0 1.25rem;
 }
 
+/* Veri kaynakları: ikon değil, okunan bir liste — kaynağın adı
+   bağlantının kendisidir. Atıf CC BY-NC-SA'nın şartı, süs değil. */
+.sources {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.src-what {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.src-who {
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  margin-top: 0.15rem;
+}
+
+.src-who a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--text-muted);
+}
+
+.src-who a:hover {
+  text-decoration-color: var(--text);
+}
+
 .links {
   display: flex;
   gap: 0.5em;
@@ -176,4 +254,11 @@ useSeo({
   width: 130px;
   height: auto;
 }
+.src-note {
+  margin: 0.6rem 0 0;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
 </style>

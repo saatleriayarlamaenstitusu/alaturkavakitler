@@ -27,6 +27,25 @@ export function ensureFontGroup(groupId) {
   injectGroup(groupId)
 }
 
+/**
+ * Tek bir aileyi yükler.
+ *
+ * Kuran sayfası gibi tek font kullanan yerler için: grubun tamamını
+ * indirmek (arapça grubunda 16 aile) boşuna stylesheet demek.
+ */
+export function ensureFont(fontId) {
+  const key = `one:${fontId}`
+  if (loaded.has(key)) return
+  loaded.add(key)
+  const font = getFont(fontId)
+  if (!font) return
+  const link = document.createElement('link')
+  link.rel = 'stylesheet'
+  link.dataset.font = fontId
+  link.href = `https://fonts.googleapis.com/css2?family=${font.google}&display=swap`
+  document.head.appendChild(link)
+}
+
 // Kullanımdaki fontların grupları — kayıtlı bir düzen geri geldiğinde
 // o fontlar sekmeye dokunulmadan da doğru render edilsin diye.
 export function ensureFontsFor(fontIds) {

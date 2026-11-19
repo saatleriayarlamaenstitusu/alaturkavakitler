@@ -48,7 +48,11 @@ const AUTHORS = new Set([11, 14, 15, 19, 21, 22, 2, 16, 109])
 const BROWSER_TTL = 60 * 60 * 24 * 30      // 30 gün
 const EDGE_TTL = 60 * 60 * 24 * 365        // 1 yıl
 /** Bir istekte alınabilecek en fazla ayet. */
-const MAX_RANGE = 20
+// Mushaf sayfası da bu uçtan besleniyor ve son cüzde bir sayfaya kırktan
+// fazla kısa ayet düşebiliyor; sınır ona göre. Maliyeti yok: vekil zaten
+// surenin tamamını önbellekten okuyup dilimliyor, aralık yalnızca kaç
+// ayetin geri döneceğini belirliyor.
+const MAX_RANGE = 60
 // KV'de süre sınırı yok. `expirationTtl` verilmiyor: metin değişmediği için
 // kaydın kendiliğinden düşmesi yalnızca gereksiz bir API isteği demek olurdu.
 // Tüm Kuran dokuz mealle 16.6 MB tutuyor — ücretsiz plandaki 1 GB'ın %2'si.
@@ -198,8 +202,8 @@ export async function onRequestGet(context) {
       const to = Number(segments[3])
       if (!Number.isInteger(from) || !Number.isInteger(to) || from < 1 || to < from)
         return fail('invalid_range', 'Geçersiz ayet aralığı', 400)
-      // Üst sınır paylaşım görseli için: bir tuvale sığmayacak uzunlukta
-      // bir aralık, boşuna taşınan yüz kilobayt demek.
+      // Üst sınır: bir mushaf sayfasının en kalabalık hâli sığsın ama
+      // "bütün sureyi aralık olarak iste" yolu açılmasın.
       if (to - from + 1 > MAX_RANGE)
         return fail('range_too_long', `En çok ${MAX_RANGE} ayet alınabilir`, 400)
 

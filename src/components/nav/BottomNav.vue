@@ -38,6 +38,12 @@ import LogoMotion from '@/components/ui/LogoMotion.vue'
         <span class="nav-label">Takvim</span>
       </div>
     </RouterLink>
+    <RouterLink to="/kuran" class="nav-link">
+      <div class="nav-button">
+        <img src="/Icons/Nav/quran.svg" alt="" aria-hidden="true" />
+        <span class="nav-label">Kur'an</span>
+      </div>
+    </RouterLink>
 
     <!-- Üst çubuktaki üç nokta menüsünün içeriği. Mobilde gizli (orada
          menü zaten var), masaüstünde rayın ikincil bölümü: bir kebap

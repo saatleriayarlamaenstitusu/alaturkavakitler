@@ -24,9 +24,13 @@ Alaturka saat: son akşam (güneş batımı) ezanından geçen süre.
 - BEM benzeri class isimlendirme.
 
 ### CMS / İçerik
-- **Karar:** Local Directus (Docker, port 8055) → `scripts/export-content.js` → `src/content/*.json` → git push → Cloudflare otomatik deploy
-- Sunucu maliyeti sıfır. Directus sadece içerik girerken açık olur.
-- Koleksiyonlar: blog yazıları, yenilikler, dini günler, makaleler
+- **Karar:** Directus yok. İçerik repoda JSON (`src/content/*.json`); düzenleme
+  için geliştirmede çalışan bir `/admin` sayfası yazılacak — Vite geliştirme
+  sunucusuna eklenen bir uç nokta dosyayı doğrudan diske yazar, commit elle
+  atılır. Üretim derlemesinde ne sayfa ne uç nokta bulunur.
+- Sunucu, veritabanı, token yok. `git diff` içerik incelemesi yerine geçer.
+- Yönetilecekler: yenilikler, saat üzerine yazıları, widget ön tanımları,
+  ileride kıraat kesitlerinin künyesi.
 
 ### PWA
 - `vite-plugin-pwa` kurulu — `registerType: 'autoUpdate'`, `manifest: false` (public/manifest.json kullanılır)
@@ -367,7 +371,6 @@ Veri formatı (ham JSON):
 
 ```
 VITE_VAKIT_BASE_URL=https://raw.githubusercontent.com/saatleriayarlamaenstitusu/data-diyanet-namaz-vakitleri/main/data/namaz/
-VITE_DIRECTUS_URL=          # Directus geçişi sonrası (Faz 7)
 VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 ```
 
@@ -635,6 +638,202 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - Paket npm'de, yayın GitHub Actions'tan trusted publishing ile
   (`alaturka-core` deposu, `v*` etiketi). Kuralları değiştirmek gerekirse
   orada değiştir, sürüm çıkar, burada `npm i` ile güncelle.
+
+## Kuran Sayfası ve Hatim
+
+- Rota `/kuran`, alt gezinmenin BEŞİNCİ birincil girişi (ikon
+  `public/Icons/Nav/quran.svg`, diğer dördüyle aynı dil: beyaz dolgu,
+  kontur yok, CSS filtresiyle boyanıyor). Sayfa iki sekme taşıyor:
+  **Oku** ve **Hatim**; **Dinle** üçüncü olarak gelecek.
+- **Sayfa birimi mushaf sayfasıdır** (1–604). Dizin `src/data/mushafPages.js`:
+  her satır `[sure, ilk ayet, ayet sayısı]`. `scripts/export-mushaf-pages.js`
+  üretir ve üretirken 604 sayfanın hepsinde "ayetler gerçekten ardışık mı"
+  diye doğrular — üç sayıdan listeyi geri kurup ham veriyle karşılaştırır.
+- **Dizin quran.com'dan (Medine mushafı) üretiliyor, Açık Kuran'dan DEĞİL.**
+  Sebebi ölçüldü: Açık Kuran'ın `page` alanı tutarsız — Fatiha 0, Bakara 1–5
+  → 1, Kehf 292, Yasin 439, Mülk 561 (hepsi bir eksik), ama Adiyat 599,
+  Tebbet 603, İhlas/Felak/Nas 604 (birebir). Kayma yolun ortasında kapanıyor
+  ve toplam 605 ayrı sayfa değeri çıkıyor. Sayfa numarası kullanıcının
+  elindeki mushafla karşılaştırılacağı için bu veri kullanılamaz.
+  Ayet METNİ yine Açık Kuran'dan (vekil üzerinden) geliyor; dizin yalnızca
+  sayıdan ibaret. QF'nin şartları açısından bu açık bir mesele, bkz. ROADMAP.
+- Bir sayfa birden çok sure taşıyabilir (604. sayfada üç tane). İstekler
+  SURE başına yapılır (`rangesOfPage`), çünkü vekil sure sure önbellekliyor.
+- Vekildeki `MAX_RANGE` 20'den **60**'a çıkarıldı: son cüzde bir sayfaya
+  kırktan fazla kısa ayet düşüyor. Maliyeti yok, vekil zaten surenin
+  tamamını okuyup dilimliyor.
+- **Meal satırları birleşir**: bazı mealler ayetleri gruplayarak çeviriyor
+  (Diyanet'te Fatiha 2-4 ve 6-7) ve API grubun metnini gruptaki HER ayet
+  için döndürüyor — ekranda aynı cümle üç kez çıkıyordu. Ardışık ve aynı
+  metinli ayetler tek satırda toplanıp "2–4" diye etiketleniyor, metnin
+  başındaki "(2-4)" işareti atılıyor.
+- **Gitme kutusu tek alandır** (`GoTo.vue`): sure adı, `2:255`, `bakara 255`,
+  `s42`, `c5` — ne yazıldığını kendisi anlar ve seçenekleri listeler. Önce
+  dört ayrı açılır liste vardı (sure/cüz/sayfa/meal) ve bir AYETE gitmenin
+  yolu yoktu. Ön ekli yazım (`s42`) ad aramasından ÖNCE bakılır, yoksa
+  "s42" bütün S'li surelerin 42. ayetini listeliyor; ad araması da iki
+  harften başlar.
+- Aranan ayet bulunduğu sayfada vurgulanır. Vurgu SAYFAYA bağlı tutulur
+  (`focus.page === page`), böylece sayfa başka bir yolla değişince
+  kendiliğinden düşer — ayrı bir temizleme izleyicisi yok.
+- Serbest okumada **hızlı erişim şeridi** (`data/quranShortcuts.js`):
+  Yasin, Tebâreke, Amme, Vâkıa, Rahmân, Kehf, Ayetel Kürsi, Âmenerrasûlü,
+  30. cüz, kısa sureler, Fâtiha. Yaygın adıyla anılanlar resmî adlarıyla
+  aranmıyor; liste bilinçli kısa. Hatim okuyucusunda GÖSTERİLMEZ: orada
+  sıralı okunuyor, sıçramak akışı bozar.
+- **İlk açılışta "Ümmet için" hatmi hazır gelir** ve hemen yazılır. Yalnızca
+  HİÇ kayıt yokken (`localStorage.getItem` → `null`) kurulur: kullanıcı
+  hatmini sildiyse kayıt artık boş bir liste olarak vardır ve bir daha
+  tohumlanmaz — "sildim ama geri geldi" olmaz.
+- **İki görünüm var, tepeden tek dokunuşla değişir** (`settings.quranView`):
+  - **Mushaf** (varsayılan) — basılı sayfanın satır satır kendisi:
+    15 satır, sayfaya ait QPC fontu (`MushafSheet.vue`, `utils/qpc.js`).
+    Satır sonları bizim kırdığımız yerler değil, mushafın kırdığı yerler.
+  - **Esnek** — ayetler akar, yazı boyu %70–180 arası ayarlanır. Küçük
+    ekranda ve meal eşliğinde okumak için.
+  Değişen yalnızca dizim: sayfa birimi, hatim işaretlemesi, kaydırma ve
+  adres çubuğu iki görünümde de aynı.
+- **Dizim ve font dışarıdan okunur, repoda DURMAZ.** Dizim quran.com v4'ten
+  (`verses/by_page/{n}?words=true` → `line_number` + `code_v1`/`code_v2`),
+  font `static.qurancdn.com`'dan sayfa sayfa (`FontFace`). İkisi de
+  `Access-Control-Allow-Origin: *`, vekil gerekmiyor. Böylece QF'nin
+  "yeniden dağıtma" şartı hiç devreye girmiyor — kopyasını tutmuyoruz.
+  Son 90 sayfanın dizimi localStorage'da (`qpcLines`).
+- **Glif kodu YALNIZCA kendi sayfasının fontunda anlamlıdır**: 42. sayfanın
+  kodunu 43'ün fontuyla çizmek başka harfler verir. Bu yüzden font sayfa
+  başına ayrıdır ve dizimle birlikte beklenir — font gelmeden satırları
+  basmak bir an kutu kutu glif gösteriyor.
+- **Başlık satırları veride yok, sayımla bulunur**: bir sayfada kullanılmayan
+  satır numarası sure adı ya da besmeledir. Sure sayfanın ortasında
+  başlıyorsa ilk kelimesinin üstündeki boş satırlar ona aittir — iki boşsa
+  ad + besmele, bir boşsa yalnız ad. Tevbe besmelesizdir ve veride de tek
+  boş satır bırakır, ayrıca kural yazmak gerekmedi (293 ve 187 ile
+  doğrulandı). Sure adı ayrı bir fontta tek gliftir (`sura_names`,
+  PUA'da `U+E000 + sure - 1`).
+- **Tecvitli V4 YOK ve bu ölçülmüş bir sınır**: V4 sayfa fontları CDN'de
+  duruyor ama kendi glif kodlarını istiyor, V1 kodlarıyla harfler
+  birleşmiyor; API `code_v4` vermiyor. Yeniden denemeden önce ROADMAP'teki
+  iki yola bak.
+- **Alt sayfa kabuğu tektir** (`components/ui/BottomSheet.vue`): örtü,
+  panel, başlık şeridi ve kayan gövde. Üç müşterisi var (sure/sayfa/cüz
+  seçici, meal seçici, sure künyesi); dördüncüsü de oradan gelmeli — iki
+  ayrı kopya iki ayrı davranışa ayrışıyor. Mobilde dipten, masaüstünde
+  ortadan açılır.
+- **Meal seçimi de alt sayfadır, `select` değil**: dokuz meal arasında dil
+  karışık ve açılır kutuda hangisinin Türkçe olduğu ancak addan tahmin
+  ediliyordu. Satırda **TR/EN rozeti** var, liste dile göre bölünmüş,
+  "Meal kapalı" en üstte (yalnızca Arapça okumak sık yapılan bir iş).
+- **Sure başlarında zeminli künye bloğu** (`SurahHeader.vue`): mushafta
+  sayfanın kendi süslemesi (tek glif) + altında Türkçe ad, anlamı,
+  iniş yeri ve ayet sayısı; esnek görünümde süsleme olmadan aynısı.
+  Süsleme Arapçadır, künye onu herkes için açar. Sondaki `i` künyeyi
+  alt sayfada genişletir (`SurahInfoSheet.vue`).
+- **Künye verisi üretilmiştir** (`src/data/surahInfo.js`,
+  `scripts/export-surah-info.js`): iniş yeri/ayet sayısı/iniş sırası
+  quran.com'dan, ad anlamları betiğin içindeki elle yazılmış listeden
+  (quran.com anlamı Türkçe vermiyor; `--check` ile İngilizce adın yanına
+  basılıp gözden geçirilir). **TDV bağlantıları üretimde tek tek HTTP ile
+  doğrulanır**, 200 dönmeyen surede bağlantı yazılmaz — uydurma bağlantı
+  bağlantısızlıktan kötüdür.
+- **Sure tanıtım metni YOK ve uydurulmadı**: quran.com'un metni yalnızca
+  İngilizce, 114 sure için Türkçe metin yazmak doğruluğu denetlenemeyen
+  bir yığın olurdu. Künye + TDV maddesi bağlantısı veriliyor.
+- **Sure adı glifinin kodlaması sıralı DEĞİL**: sure numarası ondalık
+  haliyle onaltılık basamaklara yazılır (12 → `U+E012`, 114 → `U+E114`).
+  Sıralı sayıldığında 18. surenin yerine Yusuf çıkıyordu (ölçüldü).
+  Fontun 116 glifi ve E009→E010, E099→E100 boşlukları bunu doğruluyor.
+- **Seçici yerel `select` değildir** (`PickerSheet.vue`): 114 seçenekli bir
+  `select` Android'de aranamayan, ağır bir listeye dönüşüyor ve sure ile
+  sayfasını yan yana gösteremiyor. Alt sayfa olarak açılır, üç sekmesi var
+  (sure/sayfa/cüz), her satır iki bilgiyi birden taşır — cüzde satırın
+  adı "1. cüz" değil cüzün BAŞLADIĞI suredir, numara zaten solda duruyor
+  ve aynı sayı iki kez okunuyordu ve bulunduğun satır
+  işaretli gelip listenin ortasına kaydırılır. Gitme kutusunun YERİNE değil
+  yanına konur: biri yazarak arayan, öbürü göz gezdirerek seçen için.
+- Arapça yazı tipi ayardan gelir (`settings.quranFont`, varsayılan Lateef) ve
+  `ensureFont(id)` ile YALNIZCA o aile indirilir — arapça grubunun tamamı 16
+  aile eder. Liste bilinçli dar: nesih hatları (Lateef, Scheherazade, Amiri,
+  Noto Naskh); talik ve kufi mushaf için değil.
+- **İki okuyucu var ve bu bilinçli.** `Oku` SERBESTTİR, hiçbir hatme
+  yazmaz. `Hatim` sekmesinde bir hatme dokununca o hatmin İÇİNDE bir
+  okuyucu açılır: hangi hatimde olduğun tepede yazılı durur ve çevirdiğin
+  sayfa okundu sayılır. Önce tek okuyucu vardı ve "Okudum" düğmesi
+  görünmeyen bir "etkin hatme" yazıyordu — hangi hatmi okuduğun ekranda
+  hiçbir yerde yazmıyordu, ilk kullanışta sorulan soru bu oldu.
+- **İşaretleme sayfa çevrilince olur**, düğmeyle değil: sayfayı çevirmek
+  zaten onu bitirdiğini söylüyor, araya bir iş daha koymaya gerek yok.
+  Ayrılınan sayfa işaretlenir (iki yönde de), yanlışlıkla sayılan sayfa
+  tepedeki rozete dokunarak geri alınır. Bu yüzden işaretleme sessiz
+  değil: her sayfada görünür bir durum taşır.
+- Sekme değişince okuyucudan çıkılır (`watch(tab)`), yoksa hatim rozeti
+  serbest okumaya sızıyor.
+- **Yön mushafın yönüdür: sağdan sola.** Sonraki sayfa SOLDAKİ düğmedir
+  (`‹`), önceki sağdakidir (`›`) — Latin kitaplardaki dizilişin aynadaki
+  hâli. Parmakla da öyle: sağa doğru kaydırmak İLERİ götürür.
+- Kaydırma üç şart arar (yatay yol ≥ 60px, yatay dikeyden baskın, süre
+  < 800ms) ve farede hiç çalışmaz — farede sürükleme metin seçmektir.
+  `.sheet`te `touch-action: pan-y`, dikey kaydırma tarayıcıda kalır.
+- **Okunan hatim adreste durur** (`?h=<id>&s=<sayfa>&b=hatim`): sayfayı
+  yenileyince okuduğun yerden düşmüyorsun. Kayıtta olmayan bir kimlik
+  gelirse yok sayılır ve liste açılır.
+- **Sayfa gezinmesi ÜSTTE**, başlık satırının içinde. Altta denendi ve
+  sayfanın uzunluğuna göre yer değiştiriyordu — her sayfada başka bir
+  yere basmak gerekiyordu. Dipte yalnızca tek bir "sonraki sayfa" var,
+  uzun sayfada başa dönmemek için.
+- **Hatim bir sayaç değil kayıt**: `stores/hatim.js` "hangi sayfayı hangi gün
+  okudum" tutar (`progress: { sayfa: 'YYYY-MM-DD' }`). Günlük takvim şeridi,
+  kaldığın yer ve oran hep bu tek kayıttan türer; yanlış işareti geri almak
+  da bunu gerektiriyor. Birden fazla hatim sürebilir, biri etkindir.
+- Görselleştirme `HatimRing`: Behold'un dolan yuvarlağı yerine **otuz dilim**,
+  çünkü hatim cüz cüz okunur — tek parça bir yay "yüzde kaç" der, otuz dilim
+  "kaçıncı cüzdeyim" der. Son dolan dilim kısmen dolu (opaklıkla).
+- **Hatim listesi tek bir listedir, üstte ayrı bir "etkin hatim" bloğu
+  yoktur.** Önce vardı ve iki sakıncası görüldü: aynı hatim ekranda iki
+  kez duruyordu, bir de okuyucuya girip çıkınca üstteki blok başka bir
+  hatme geçtiği için hangisine baktığın kayıyordu. Şimdi her satır kendi
+  görselleştirmesini taşır; açık satır şeridini, kaldığı yeri ve silme
+  düğmesini gösterir, kapalı satır halka + niyet + sayıdan ibarettir.
+- Günlük şerit (`HatimCalendar`) bugünü SAĞA alır ve geriye uzanır
+  (`direction: rtl` kapta, içerik `ltr`); dolgu o dönemdeki en yüksek güne
+  göre ölçeklenir, yoksa günde iki sayfa okuyanda şerit hep sönük kalır.
+  Kutucuklar HAFTA HAFTA gruplanır (pazartesi–pazar, aralarında boşluk) ve
+  sayfa sayısı kutunun İÇİNDE yazar. Önce ince çubuklardı, sayı yalnızca
+  fare ipucundaydı — dokunmatikte öyle bir ipucu yok, "hangi gün kaç sayfa"
+  hiç görünmüyordu. Bir güne dokunmak altındaki satırda onu okutur.
+- **Hatim sekmesinin tepesinde bütün hatimlerin TOPLAMI** duruyor (sayfa
+  sayısı + ortak şerit). Tek tek hatimler aşağıda kendi şeritlerini
+  taşıyor; üstteki "bugün hiç okudum mu" sorusunun cevabı, hangi hatme
+  yazıldığına bakmaksızın — hatim bitip yenisi başladığında süreklilik
+  orada görünür. (Bu, kaldırılan "etkin hatim" bloğundan farklı: o, hangi
+  hatme baktığın kayıyordu; bu toplam hiç değişmiyor.)
+- Silme düğmesi okuma düğmesinin yanında DURMAZ, satırın öbür ucundadır:
+  ikisi yan yanayken yanlış olana basmak bir dokunuş uzaklıkta.
+- **Takvim sayfası da okumayı gösterir**: seçili günde hangi hatimden kaç
+  sayfa okunduğu dinî gün satırının altında yazar, ızgarada o günün
+  altında ince bir çizgi durur. Çizgi dinî gün NOKTASINDAN ayrı bir
+  biçimdir — ikisi aynı güne düşebiliyor ve aynı biçim olsalar ayırt
+  edilemezlerdi. Rengi noktayla aynı mantıkta (`--bg`), çünkü `canli`
+  paletinde `--accent-ui` hücre zeminiyle aynı renge düşüyor.
+- Okuma sayfası adres çubuğunda: `?s=<sayfa>&b=hatim`. Paylaşılabilsin ve
+  geri tuşu sayfalar arasında çalışsın diye.
+
+## Yedekleme
+
+- Uygulamanın bütün hafızası tarayıcıdadır ve geri getirecek bir sunucu
+  yoktur: tarayıcı verisini temizlemek ayarları, şehri, kaza sayaçlarını,
+  hatimleri ve görsel düzenini siler. Bu yüzden dışa aktarma bir özellik
+  değil, zorunluluk (`src/utils/backup.js`, ayarlarda "Yedek" bloğu).
+- Yedeğe giren: `city`, `kazaCounts`, `hatimler`, `shareEditor` ve bütün
+  `settings_*`. **Girmeyen**: `vakitler`, `kuranVerses`, `vakitNotifyFired`
+  — üçü de yeniden üretilebilir, yedeği şişirmekten başka işe yaramazlar.
+- Dosya tarayıcıda üretilir (`Blob` + `URL.createObjectURL`), hiçbir yere
+  gönderilmez. Ad: `alaturka-yedek-YYYY-AA-GG.json`.
+- **İçe aktarma iki adımlı**: önce dosya okunup doğrulanır ve "kaç kayıt,
+  hangi tarihli" diye söylenir, sonra onaylanır. Tek dokunuşla üzerine
+  yazmak yanlış dosyada geri dönüşü olmayan bir iş olurdu.
+- Yedek elle düzenlenebilir bir metindir: yüklerken yalnızca TANINAN
+  anahtarlar yazılır (`KEYS` + `settings_` öneki), gerisi yok sayılır.
+- Yükleme sonrası sayfa yenilenir — store'lar veriyi açılışta okuyor.
 
 ## Vakit Hatırlatmaları
 

@@ -24,8 +24,19 @@ export const useSettingsStore = defineStore('settings', () => {
   const darkMode = ref(load('darkMode', 'auto'))
   const colorStyle = ref(load('colorStyle', 'klasik'))
   const homeClock = ref(load('homeClock', 'led')) // 'led' | 'normal'
+  // Kuran gösterimi: okuma sayfası, hatim ve ileride kıraat kesitleri
+  // aynı tercihi okur — ayet nasıl görünsün sorusu bir kez sorulur.
+  // 0 = meal kapalı, yalnızca Arapça metin.
+  const quranMeal = ref(load('quranMeal', 11))          // Diyanet İşleri
+  const quranFont = ref(load('quranFont', 'lateef'))
+  // Görünüm: 'mushaf' basılı sayfanın satır satır dizimi, 'esnek' akan
+  // metin. Mushaf varsayılan — sayfa numarası zaten basılı nüshanın.
+  const quranView = ref(load('quranView', 'mushaf'))    // 'mushaf' | 'esnek'
+  const quranScript = ref(load('quranScript', 'v2'))    // QPC hattı (bkz. utils/qpc)
+  // Esnek görünümde Arapça metnin boyu, yüzde olarak (100 = taban).
+  const quranFontSize = ref(load('quranFontSize', 100))
 
-  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, darkMode, colorStyle, homeClock }
+  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, quranMeal, quranFont, quranView, quranScript, quranFontSize, darkMode, colorStyle, homeClock }
 
   // `deep`: ayarların çoğu düz değer ama `notifyOffsets` bir obje —
   // içindeki tek bir vakit değişince de kaydedilmeli.

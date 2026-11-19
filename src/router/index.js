@@ -5,6 +5,7 @@ const routes = [
   { path: '/saat', component: () => import('@/pages/ClockPage.vue') },
   { path: '/vakitler', component: () => import('@/pages/PrayerTimesPage.vue') },
   { path: '/takvim', component: () => import('@/pages/CalendarPage.vue') },
+  { path: '/kuran', component: () => import('@/pages/QuranPage.vue') },
   { path: '/gorsel-olustur', component: () => import('@/pages/ShareCreatorPage.vue') },
   { path: '/ayarlar', component: () => import('@/pages/SettingsPage.vue') },
   { path: '/hakkinda', component: () => import('@/pages/AboutPage.vue') },

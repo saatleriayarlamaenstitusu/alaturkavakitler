@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { hijriMonth } from '@alaturkavakitler/core'
 import { holyDaysOn } from '@alaturkavakitler/core'
+import { useHatimStore } from '@/stores/hatim'
 import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
 
@@ -30,6 +31,20 @@ const moonSrc = computed(() => `/Icons/moon/${Math.min(selected.value.day, 29)}.
 
 // Seçili günün dinî günü — başlıkta rozet olarak görünür.
 const selectedHoly = computed(() => holyDaysOn(selected.value.greg.toJSDate()))
+
+// Seçili günde hangi hatimden kaç sayfa okunmuş. Takvim "o gün ne oldu"
+// sorusunun sorulduğu yer; dinî gün oradaysa okuma da orada olmalı.
+const hatim = useHatimStore()
+const selectedReading = computed(() =>
+  hatim.readOn(selected.value.greg.toISODate()))
+
+// Izgarada nokta koymak için: ay içinde okuma yapılan günler.
+const readDays = computed(() => {
+  const out = {}
+  for (const h of hatim.list)
+    for (const [page, day] of Object.entries(h.progress)) out[day] = (out[day] ?? 0) + 1
+  return out
+})
 
 // Izgarada işaretlemek için: hangi hicri günlerde dinî gün var.
 const holyDays = computed(() => {
@@ -103,6 +118,7 @@ const cells = computed(() => {
       empty: false,
       day: d,
       gregDay: firstGreg.plus({ days: d - 1 }).day,
+      iso: firstGreg.plus({ days: d - 1 }).toISODate(),
       key: `d${d}`,
       state: isToday ? 'today' : isCurrentMonth.value && d < today.date ? 'past' : 'future',
     })
@@ -164,6 +180,14 @@ function onTouchEnd(e) {
         </span>
         <span v-if="selectedHoly[0].note" class="hm-holy-note">{{ selectedHoly[0].note }}</span>
       </div>
+
+      <!-- O gün hatimden okunanlar; okuma yoksa satır hiç çizilmez. -->
+      <div v-if="selectedReading.length" class="hm-read">
+        <span v-for="r in selectedReading" :key="r.id" class="hm-read-row">
+          <span class="hm-read-count">{{ r.pages }} sayfa</span>
+          <span class="hm-read-niyet">{{ r.niyet }}</span>
+        </span>
+      </div>
     </div>
 
     <div class="hm-divider"></div>
@@ -199,6 +223,9 @@ function onTouchEnd(e) {
             <span class="hm-greg">{{ cell.gregDay }}</span>
             <!-- Dinî gün işareti: hücre zaten dolu, nokta en az yer kaplayanı. -->
             <span v-if="holyDays[cell.day]" class="hm-dot" aria-hidden="true"></span>
+            <!-- Okuma işareti: noktadan ayrı bir çizgi, ikisi aynı gün
+                 düşebiliyor ve aynı biçim olurlarsa ayırt edilemezler. -->
+            <span v-if="readDays[cell.iso]" class="hm-readmark" aria-hidden="true"></span>
           </template>
         </span>
       </div>
@@ -208,6 +235,43 @@ function onTouchEnd(e) {
 
 <style scoped>
 /* ── Dinî gün ── */
+.hm-readmark {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  /* Nokta ile aynı sebep: renk HÜCRENİN zeminine göre seçilir. `canli`
+     paletinde `--accent-ui` hücre zeminiyle aynı renge düşüp kayboluyor. */
+  background: var(--bg);
+  opacity: 0.8;
+}
+
+.hm-read {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.hm-read-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.hm-read-count {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
 .hm-holy {
   display: flex;
   flex-wrap: wrap;

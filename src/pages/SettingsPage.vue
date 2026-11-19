@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
 import { COLOR_STYLES } from '@/data/colorStyles'
 import { NOTIFY_KEYS, NOTIFY_CHOICES, VAKIT_LABELS } from '@/data/vakitNotify'
+import { AUTHORS } from '@/data/kuranMeta'
+import { downloadBackup, readBackup, applyBackup } from '@/utils/backup'
 import { supportsNotifications, requestNotificationPermission } from '@/composables/useVakitNotifications'
 import { useSeo } from '@/composables/useSeo'
 
@@ -54,6 +56,51 @@ const notifyOptions = [
   { value: false, label: 'Kapalı' },
   { value: true,  label: 'Açık' },
 ]
+
+// Kuran sayfasının yazı tipi. Liste bilinçli dar: mushaf nesih hattıyla
+// okunur, talik ve kufi başka işler içindir. Hepsi `shareFonts.js`te
+// tanımlı, yalnızca seçilen aile indirilir.
+const quranFontOptions = [
+  { value: 'lateef', label: 'Lateef' },
+  { value: 'scheherazade', label: 'Scheherazade' },
+  { value: 'amiri', label: 'Amiri' },
+  { value: 'noto-naskh', label: 'Noto Naskh' },
+]
+
+// ── Yedek ──
+// İçe aktarma iki adımlı: önce dosya okunup NE GELECEĞİ söylenir, sonra
+// onaylanır. Tek dokunuşla üzerine yazmak, yanlış dosyada geri dönüşü
+// olmayan bir iş olurdu.
+const fileInput = ref(null)
+const pending = ref(null)   // { data, keys, createdAt }
+const backupNote = ref('')
+
+async function pickFile(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (!file) return
+  const result = readBackup(await file.text())
+  if (!result.ok) {
+    pending.value = null
+    backupNote.value = result.error
+    return
+  }
+  pending.value = result
+  backupNote.value = ''
+}
+
+function confirmImport() {
+  if (!pending.value) return
+  applyBackup(pending.value.data)
+  // Store'lar veriyi açılışta okuyor; yerine oturması için sayfa yenilenir.
+  window.location.reload()
+}
+
+const backupDate = (iso) => {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString('tr-TR', { dateStyle: 'long', timeStyle: 'short' })
+}
 
 const firstPageOptions = [
   { value: '/',         label: 'Ana Sayfa',    desc: 'Ana sayfa' },
@@ -185,6 +232,73 @@ const firstPageOptions = [
             </option>
           </select>
         </label>
+      </div>
+    </section>
+
+    <section class="setting-block">
+      <div class="setting-head">
+        <h2 class="setting-name">Kuran</h2>
+        <p class="setting-desc">Okuma ve hatim sayfası</p>
+      </div>
+
+      <span class="sub-label">Yazı tipi</span>
+      <div class="theme-selector">
+        <button
+          v-for="opt in quranFontOptions"
+          :key="opt.value"
+          class="theme-btn"
+          :class="{ active: settings.quranFont === opt.value }"
+          @click="settings.quranFont = opt.value"
+        >
+          <span>{{ opt.label }}</span>
+        </button>
+      </div>
+
+      <span class="sub-label sub-label--spaced">Meal</span>
+      <select v-model.number="settings.quranMeal" class="notify-select meal-select">
+        <option :value="0">Kapalı — yalnızca Arapça</option>
+        <option v-for="a in AUTHORS" :key="a.id" :value="a.id">{{ a.name }}</option>
+      </select>
+    </section>
+
+    <section class="setting-block">
+      <div class="setting-head">
+        <h2 class="setting-name">Yedek</h2>
+        <p class="setting-desc">Verilerin tamamı bu cihazda tutuluyor</p>
+      </div>
+
+      <p class="notify-note">
+        Ayarlar, şehir, kaza sayaçları, hatimler ve görsel düzeni tarayıcıda
+        duruyor; tarayıcı verisi temizlenirse geri getirecek bir sunucu yok.
+        Yedek dosyası bu cihazda üretilir, hiçbir yere gönderilmez.
+      </p>
+
+      <div class="backup-actions">
+        <button class="theme-btn" @click="downloadBackup()">Yedeği indir</button>
+        <button class="theme-btn" @click="fileInput?.click()">Yedekten yükle</button>
+        <input
+          ref="fileInput"
+          type="file"
+          accept="application/json,.json"
+          class="file-hidden"
+          @change="pickFile"
+        />
+      </div>
+
+      <p v-if="backupNote" class="notify-note notify-note--warn">{{ backupNote }}</p>
+
+      <div v-if="pending" class="confirm">
+        <p class="confirm-text">
+          <strong>{{ pending.keys.length }}</strong> kayıt yüklenecek
+          <template v-if="backupDate(pending.createdAt)">
+            — {{ backupDate(pending.createdAt) }} tarihli yedek
+          </template>.
+          Bu cihazdaki aynı veriler değiştirilecek.
+        </p>
+        <div class="confirm-actions">
+          <button class="theme-btn theme-btn--solid" @click="confirmImport">Yükle ve yenile</button>
+          <button class="theme-btn" @click="pending = null">Vazgeç</button>
+        </div>
       </div>
     </section>
 
@@ -332,6 +446,47 @@ const firstPageOptions = [
   font-size: 0.78rem;
   color: var(--text);
   cursor: pointer;
+}
+
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.file-hidden { display: none; }
+
+.notify-note--warn { color: var(--primary); }
+
+.confirm {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-width: 34rem;
+}
+
+.confirm-text {
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+}
+
+.theme-btn--solid {
+  background: var(--accent-ui);
+  border-color: var(--accent-ui);
+  color: #fff;
+}
+
+.meal-select {
+  max-width: 22rem;
+  width: 100%;
 }
 
 .notify-select:focus-visible {

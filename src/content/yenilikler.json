@@ -1,5 +1,23 @@
 [
   {
+    "id": "kuran-sayfasi",
+    "title": "Kur'an-ı Kerim sayfası",
+    "date": "2026-11-19",
+    "body": "Alt menüye **Kur'an-ı Kerim** eklendi: mushaf, meal ve hatim takibi bir arada.\n\n**Mushaf görünümü** basılı sayfanın kendisidir — 604 sayfanın her biri 15 satır, satır sonları mushafın kırdığı yerlerde, sayfanın kendi yazı tipiyle. Sure başlarında basılı nüshadaki süsleme duruyor; altında surenin Türkçe adı, adının anlamı, Mekkî mi Medenî mi olduğu ve ayet sayısı yazıyor. Yanındaki **i** düğmesi iniş sırasını, besmele durumunu ve TDV İslam Ansiklopedisi'ndeki maddesinin bağlantısını açıyor.\n\n**Esnek görünüm** ayetleri akıtır ve yazı boyu ayarlanabilir; küçük ekranda ya da meal eşliğinde okumak için. İki görünüm arasında tepedeki tek düğmeyle geçiliyor. İki hat seçeneği var: 1421H ve 1405H Medine baskıları.\n\nSayfalar **sağdan sola** çevriliyor — parmakla kaydırmak da mushafın yönünde çalışıyor.\n\nGitmek istediğiniz yeri tek kutuya yazabilirsiniz — **bakara 255**, **2:255**, **yasin**, **s42**, **c5** — ne yazdığınızı kendisi anlıyor ve aradığınız ayeti sayfasında vurguluyor. Yazmak istemiyorsanız **Seç** düğmesi sure, sayfa ve cüz listelerini açıyor; bulunduğunuz yer işaretli geliyor. Serbest okumada Yasin, Tebâreke, Amme, Kehf, Ayetel Kürsi gibi en çok dönülen yerler için kısayol şeridi var.\n\nMeal dokuz çeviriden seçiliyor (Diyanet İşleri ön tanımlı), dili satırın yanında yazıyor. Yalnızca Arapça okumak isteyenler meali kapatabiliyor."
+  },
+  {
+    "id": "hatim-takibi",
+    "title": "Hatim takibi",
+    "date": "2026-11-19",
+    "body": "Kur'an sayfasının **Hatim** bölümü, hangi sayfayı hangi gün okuduğunuzu tutuyor.\n\nBir niyetle hatim başlatılıyor ve aynı anda birden fazla hatim sürebiliyor. İşaretleme için ayrı bir düğmeye basmak gerekmiyor: **sayfayı çevirmek o sayfayı okundu sayıyor.** Yanlışlıkla sayılan sayfa, tepedeki rozete dokunarak geri alınıyor. Kaldığınız yer hatırlanıyor, sayfayı yenilediğinizde okuduğunuz yerden devam ediyorsunuz.\n\nİlerleme otuz dilimli bir halkada görünüyor — yüzde değil, kaçıncı cüzde olduğunuz. Altındaki günlük şerit hangi gün kaç sayfa okuduğunuzu hafta hafta gösteriyor; en üstte de bütün hatimlerin toplamı duruyor. Takvim sayfasında bir güne dokununca o gün hangi hatimden kaç sayfa okunduğu yazıyor.\n\nİlk açılışta \"Ümmet için\" hatmi hazır geliyor."
+  },
+  {
+    "id": "yedekleme",
+    "title": "Yedek alma ve geri yükleme",
+    "date": "2026-11-19",
+    "body": "Uygulamanın bütün hafızası tarayıcınızda duruyor ve geri getirecek bir sunucu yok: tarayıcı verisini temizlemek ayarları, şehri, kaza sayaçlarını, hatimleri ve görsel düzeninizi siler. Artık **Ayarlar → Yedek** bölümünden hepsini tek dosyaya indirebilir, sonra geri yükleyebilirsiniz.\n\nDosya tarayıcınızda üretiliyor, hiçbir yere gönderilmiyor. Geri yükleme iki adımlı: önce dosyanın içinde ne olduğu söyleniyor, onayladıktan sonra yazılıyor — yanlış dosyayla geri dönüşü olmayan bir iş yapılmasın diye."
+  },
+  {
     "id": "vakit-hatirlatmasi",
     "title": "Vakit hatırlatması",
     "date": "2026-11-19",
