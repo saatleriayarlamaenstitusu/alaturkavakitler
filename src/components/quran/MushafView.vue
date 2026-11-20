@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
-import { rangesOfPage, versesOfPage, juzOfPage, surahOfPage, clampPage, PAGE_COUNT } from '@/utils/mushaf'
+import { rangesOfPage, versesOfPage, juzOfPage, surahOfPage, clampPage, diyanetPage, PAGE_COUNT } from '@/utils/mushaf'
 import { fetchRange, eastern } from '@/utils/kuran'
 import { AUTHORS } from '@/data/kuranMeta'
-import { MUSHAF_SCRIPTS, scriptById } from '@/utils/qpc'
+import { MUSHAF_SCRIPTS, scriptById, pageTajweed } from '@/utils/qpc'
+import { quranFontById } from '@/data/quranFonts'
 import MushafSheet from '@/components/quran/MushafSheet.vue'
+import { createDoubleTap } from '@/utils/doubleTap'
 import SurahHeader from '@/components/quran/SurahHeader.vue'
 
 /**
@@ -30,21 +32,47 @@ const props = defineProps({
   read: { type: Boolean, default: false },
   /** Gitme kutusundan gelen ayet: `{ surah, verse }` — vurgulanır. */
   focusVerse: { type: Object, default: null },
+  /** Tam ekran okuma açık mı. */
+  immersive: { type: Boolean, default: false },
+  /** Dinleme şeridi açık mı — düğme basılı görünsün. */
+  listening: { type: Boolean, default: false },
 })
-const emit = defineEmits(['update:page', 'toggle-read', 'info'])
+const emit = defineEmits(['update:page', 'toggle-read', 'info', 'font', 'listen', 'ayah', 'update:immersive'])
 
 const settings = useSettingsStore()
 
 const state = ref({ loading: false, error: '', groups: [] })
+/** Ayet anahtarına göre tecvitli metin; boşsa düz metin basılır. */
+const tajweed = ref({})
+
+async function loadTajweed(page) {
+  if (mushaf.value || !settings.quranTajweed) { tajweed.value = {}; return }
+  try {
+    const map = await pageTajweed(page)
+    if (page === props.page) tajweed.value = map
+  } catch {
+    // Tecvit gelmezse metin düz basılır; okumayı engellemeye değmez.
+    if (page === props.page) tajweed.value = {}
+  }
+}
 
 const juz = computed(() => juzOfPage(props.page))
 const surah = computed(() => surahOfPage(props.page))
+// Türk mushafında numara bir eksiktir (tezhipli açılış sayfası
+// numarasızdır); elindeki nüshayla karşılaştırabilmek için yan yana
+// yazılıyor. Son sayfalarda eşleme ölçülmediği için boş geçiliyor.
+const diyanet = computed(() => diyanetPage(props.page))
 const meal = computed(() => AUTHORS.find((a) => a.id === settings.quranMeal) ?? AUTHORS[0])
+
+const tap = createDoubleTap()
+const onVerseTap = (surah, verse) =>
+  tap(`${surah}:${verse}`, () => emit('ayah', { surah, verse }))
 
 const mushaf = computed(() => settings.quranView !== 'esnek')
 // Kayıtta artık sunulmayan bir hat durabilir (V4 kaldırıldı):
 // listeyi değil, listenin çözdüğü kimliği ölçüt al.
 const scriptId = computed(() => scriptById(settings.quranScript).id)
+const fontLabel = computed(() => quranFontById(settings.quranFont).label)
 const toggleView = () => { settings.quranView = mushaf.value ? 'esnek' : 'mushaf' }
 
 /**
@@ -94,7 +122,9 @@ async function load(page) {
     state.value = { loading: false, error: '', groups: [] }
     return
   }
-  state.value = { loading: true, error: '', groups: [] }
+  // Eski meal de yerinde kalır: aynı sebeple (kutu çöküp kaydırma
+  // sıfırlanıyordu).
+  state.value = { ...state.value, loading: true, error: '' }
   try {
     const parts = await Promise.all(
       want.map((g) => fetchRange(g.surah, g.from, g.to, [meal.value.id])))
@@ -116,8 +146,10 @@ async function load(page) {
   }
 }
 
-watch(() => props.page, (p) => load(p), { immediate: true })
+watch(() => props.page, (p) => { load(p); loadTajweed(p) }, { immediate: true })
 watch(() => [settings.quranMeal, settings.quranView], () => load(props.page))
+watch(() => [settings.quranTajweed, settings.quranView, props.page],
+  () => loadTajweed(props.page))
 
 const go = (delta) => emit('update:page', clampPage(props.page + delta))
 
@@ -172,7 +204,14 @@ function onUp(e) {
       <button class="page-btn" :disabled="page >= PAGE_COUNT" @click="go(1)" aria-label="Sonraki sayfa">‹</button>
       <span class="meta">
         <span class="meta-main">{{ surah?.name }}</span>
-        <span class="meta-sub">{{ juz }}. cüz · sayfa {{ page }}/{{ PAGE_COUNT }}</span>
+        <span class="meta-sub">
+          {{ juz }}. cüz · sayfa {{ page }}/{{ PAGE_COUNT }}
+          <span
+            v-if="diyanet && diyanet !== page"
+            class="meta-alt"
+            title="Türkiye'de basılan mushaflarda bu sayfanın numarası"
+          >· Diyanet {{ diyanet }}</span>
+        </span>
       </span>
       <button class="page-btn" :disabled="page <= 1" @click="go(-1)" aria-label="Önceki sayfa">›</button>
     </header>
@@ -192,6 +231,7 @@ function onUp(e) {
       </button>
 
       <nav v-if="mushaf" class="scripts" aria-label="Hat">
+        <span class="bar-label">Hat</span>
         <button
           v-for="s in MUSHAF_SCRIPTS"
           :key="s.id"
@@ -203,11 +243,51 @@ function onUp(e) {
       </nav>
 
       <div v-else class="sizer" role="group" aria-label="Yazı boyu">
+        <button class="script" @click="emit('font')">{{ fontLabel }}</button>
+        <button
+          class="script"
+          :class="{ on: settings.quranTajweed }"
+          :aria-pressed="settings.quranTajweed"
+          title="Renkli tecvit"
+          @click="settings.quranTajweed = !settings.quranTajweed"
+        >Tecvit</button>
         <button class="size-btn" :disabled="!sizeable(-1)" aria-label="Küçült" @click="resize(-1)">A−</button>
         <span class="size-val">{{ settings.quranFontSize }}%</span>
         <button class="size-btn" :disabled="!sizeable(1)" aria-label="Büyüt" @click="resize(1)">A+</button>
       </div>
+
+      <!-- Tam ekran: hatim okurken ekranda sayfadan başka bir şey
+           kalmasın. Mushaf modunda sayfa ekrana SIĞDIRILIR, kaydırma
+           olmaz — bir mushaf sayfası kaydırılarak okunmaz. -->
+      <!-- Dinleme: okumayı bırakmadan açılıp kapanır, bu yüzden
+           görünüm düğmeleriyle aynı şeritte. -->
+      <button
+        class="full-btn"
+        :class="{ on: listening }"
+        title="Dinle"
+        @click="emit('listen')"
+      >
+        <!-- Nota DEĞİL kulaklık: nota müziği çağrıştırıyor, buradaki iş
+             kıraat dinlemek. Satır içi SVG, rengini `currentColor`dan
+             alıyor; dolgu tabanlı, gezinme ikonlarıyla aynı dilde. -->
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+          <path d="M12 2.5c-5 0-9 4-9 9v5.5A2.5 2.5 0 0 0 5.5 19H8a.5.5 0 0 0 .5-.5v-7A.5.5 0 0 0 8 11H5.2C5.9 7.4 8.6 5 12 5s6.1 2.4 6.8 6H16a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h2.5A2.5 2.5 0 0 0 21 17v-5.5c0-5-4-9-9-9z" />
+        </svg>
+      </button>
+
+      <button
+        class="full-btn"
+        :aria-pressed="immersive"
+        :title="immersive ? 'Tam ekrandan çık' : 'Tam ekran oku'"
+        @click="emit('update:immersive', !immersive)"
+      >{{ immersive ? '⤡' : '⤢' }}</button>
     </div>
+
+    <!-- Dinleme şeridi: sayfanın ÜSTÜNDE, denetimlerin hemen altında.
+         Altta denendi ve gezinme düğmelerinde olduğu gibi sayfanın
+         uzunluğuna göre yer değiştiriyordu — her sayfada başka bir
+         yere bakmak gerekiyordu. -->
+    <slot name="bar" />
 
     <!-- Kaydırma iki görünümde de aynı: sayfa birimi değişmiyor. -->
     <div
@@ -221,13 +301,19 @@ function onUp(e) {
         :page="page"
         :script="scriptId"
         :focus-verse="focusVerse"
+        :fit="immersive"
         @info="emit('info', $event)"
+        @ayah="emit('ayah', $event)"
       />
 
-      <div v-if="state.loading" class="sheet-note">Yükleniyor…</div>
-      <div v-else-if="state.error" class="sheet-note sheet-note--error">{{ state.error }}</div>
+      <div v-if="state.error" class="sheet-note sheet-note--error">{{ state.error }}</div>
+      <div v-else-if="state.loading && !state.groups.length" class="sheet-note">Yükleniyor…</div>
 
-      <article v-else class="flow" :class="{ 'flow--meal-only': mushaf }">
+      <article
+        v-else
+        class="flow"
+        :class="{ busy: state.loading, 'flow--meal-only': mushaf }"
+      >
       <section v-for="g in state.groups" :key="g.surah + '-' + g.from" class="surah-block">
         <SurahHeader
           v-if="g.from === 1 && !mushaf"
@@ -239,8 +325,17 @@ function onUp(e) {
         <p v-if="!mushaf" class="ar" dir="rtl" lang="ar">
           <template v-for="v in g.verses" :key="v.no">
             <span
+              v-if="tajweed[`${g.surah}:${v.no}`]"
               class="ar-verse"
               :class="{ focus: focusVerse && focusVerse.surah === g.surah && focusVerse.verse === v.no }"
+              v-html="tajweed[`${g.surah}:${v.no}`]"
+              @pointerup="onVerseTap(g.surah, v.no)"
+            />
+            <span
+              v-else
+              class="ar-verse"
+              :class="{ focus: focusVerse && focusVerse.surah === g.surah && focusVerse.verse === v.no }"
+              @pointerup="onVerseTap(g.surah, v.no)"
             >{{ v.ar }}</span>
             <span class="ar-no">{{ eastern(v.no) }}</span>
           </template>
@@ -310,6 +405,8 @@ function onUp(e) {
   color: var(--text-muted);
 }
 
+.meta-alt { opacity: 0.75; }
+
 .sheet-note {
   padding: 3rem 0;
   text-align: center;
@@ -375,7 +472,16 @@ function onUp(e) {
   color: var(--bg);
 }
 
-.scripts { display: inline-flex; gap: 0.3rem; }
+.scripts { display: inline-flex; align-items: center; gap: 0.3rem; }
+
+/* Şeritteki küçük başlık: yanındaki iki düğmenin neyi seçtiğini
+   söyler. Olmadığında "1421H" tek başına bilmece gibi duruyor. */
+.bar-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
 
 .script {
   font: inherit;
@@ -395,7 +501,28 @@ function onUp(e) {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  flex-wrap: wrap;
 }
+
+.full-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.7rem;
+  font: inherit;
+  font-size: 0.8rem;
+  line-height: 1;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.full-btn[aria-pressed="true"],
+.full-btn.on { border-color: var(--accent-ui); color: var(--text); }
 
 .size-btn {
   font: inherit;
@@ -421,6 +548,8 @@ function onUp(e) {
 
 /* Mushaf görünümünde akan metin yok, yalnızca meal: sayfanın altındaki
    blok kendi ayracını taşır. */
+.flow.busy { opacity: 0.45; transition: opacity 0.12s; }
+
 .flow--meal-only .surah-block + .surah-block {
   margin-top: 1rem;
   padding-top: 1rem;
@@ -452,13 +581,29 @@ function onUp(e) {
 
 .meal-row.focus .meal-no { color: var(--text); }
 
-/* Ayet numarası: metnin kendisi değil, ayracı. */
+/* Ayet numarası bir MADALYONDUR, metnin içinde kaybolan bir rakam
+   değil: mushafta da ayet sonu süslemeli bir durak işaretidir.
+   Önce düz rakamdı (aksan renginde, küçük) ve akan metinde seçilmiyordu
+   — nerede bittiğini anlamak için gözle aramak gerekiyordu.
+
+   Ölçü `em` cinsinden: yazı boyu %70–180 arasında değişiyor, madalyon
+   onunla birlikte büyüyüp küçülmeli. */
 .ar-no {
-  display: inline-block;
-  font-size: 0.62em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  margin: 0 0.25em;
+  font-size: 0.5em;
+  line-height: 1;
+  vertical-align: 0.5em;
   color: var(--accent-ui);
-  padding: 0 0.35em;
-  vertical-align: 0.15em;
+  border: 1px solid color-mix(in srgb, var(--accent-ui) 45%, transparent);
+  border-radius: 50%;
+  /* İçteki ince halka basılı mushafın çift konturlu durağını andırır;
+     ayrı bir eleman istemesin diye kutu gölgesiyle çizildi. */
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent-ui) 12%, transparent);
 }
 
 .meal {
@@ -574,6 +719,50 @@ function onUp(e) {
 
 
 
+
+/* Tecvit renkleri.
+   Sınıflar quran.com'un işaretlemesinden geliyor; tanınmayan sınıf
+   renklenmiyor (bkz. utils/qpc `safeTajweed`). Renkler SABİT, palete
+   bağlı değil: tecvit kuralının rengi okurun öğrendiği bir koddur,
+   temaya göre değişirse anlamını kaybeder. Koyu zeminde okunurluk için
+   açık tonlar seçildi; açık modda bir tık koyulaşıyorlar. */
+.ar :deep(.tj-ghunnah),
+.ar :deep(.tj-idgham_with_ghunnah),
+.ar :deep(.tj-idgham_mimi),
+.ar :deep(.tj-idgham_shafawi) { color: #88c9ff; }
+
+.ar :deep(.tj-ikhafa),
+.ar :deep(.tj-ikhafa_shafawi) { color: #ff9ad1; }
+
+.ar :deep(.tj-iqlab) { color: #9ee37d; }
+
+.ar :deep(.tj-qalqalah) { color: #ffd166; }
+
+.ar :deep(.tj-madda_normal) { color: #f7a072; }
+.ar :deep(.tj-madda_permissible) { color: #e0b0ff; }
+.ar :deep(.tj-madda_necessary),
+.ar :deep(.tj-madda_obligatory) { color: #ff6b6b; }
+
+.ar :deep(.tj-ham_wasl),
+.ar :deep(.tj-laam_shamsiyah),
+.ar :deep(.tj-slnt) { color: var(--text-muted); }
+
+:root[data-theme="light"] .ar :deep(.tj-ghunnah),
+:root[data-theme="light"] .ar :deep(.tj-idgham_with_ghunnah),
+:root[data-theme="light"] .ar :deep(.tj-idgham_mimi),
+:root[data-theme="light"] .ar :deep(.tj-idgham_shafawi) { color: #1a73c7; }
+
+:root[data-theme="light"] .ar :deep(.tj-ikhafa),
+:root[data-theme="light"] .ar :deep(.tj-ikhafa_shafawi) { color: #c2186f; }
+
+:root[data-theme="light"] .ar :deep(.tj-iqlab) { color: #2e7d32; }
+:root[data-theme="light"] .ar :deep(.tj-qalqalah) { color: #a86a00; }
+:root[data-theme="light"] .ar :deep(.tj-madda_normal) { color: #c1521d; }
+:root[data-theme="light"] .ar :deep(.tj-madda_permissible) { color: #7b3fb8; }
+:root[data-theme="light"] .ar :deep(.tj-madda_necessary),
+:root[data-theme="light"] .ar :deep(.tj-madda_obligatory) { color: #c62828; }
+
+.script.on { border-color: var(--accent-ui); color: var(--text); }
 
 @media (min-width: 900px) {
   .ar { font-size: calc(2rem * var(--quran-scale, 1)); line-height: 2.6; }

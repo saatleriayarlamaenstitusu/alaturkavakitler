@@ -1,0 +1,19 @@
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "https://alaturkavakitler.com",
+          "https://www.alaturkavakitler.com",
+          "https://alaturkavakitler.pages.dev",
+          "http://localhost:5173",
+          "http://127.0.0.1:5173"
+        ],
+        "methods": ["GET", "HEAD"],
+        "headers": ["range"]
+      },
+      "exposeHeaders": ["content-length", "content-range", "content-type", "etag"],
+      "maxAgeSeconds": 86400
+    }
+  ]
+}

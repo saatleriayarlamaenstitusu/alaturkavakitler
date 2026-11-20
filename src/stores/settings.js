@@ -35,8 +35,14 @@ export const useSettingsStore = defineStore('settings', () => {
   const quranScript = ref(load('quranScript', 'v2'))    // QPC hattı (bkz. utils/qpc)
   // Esnek görünümde Arapça metnin boyu, yüzde olarak (100 = taban).
   const quranFontSize = ref(load('quranFontSize', 100))
+  // Renkli tecvit — YALNIZCA esnek görünümde. Mushaf görünümünde metin
+  // glif kodlarından geliyor ve orada tecvit etiketi yok.
+  const quranTajweed = ref(load('quranTajweed', false))
+  // Son seçilen kârî. Dinleme şeridinde değişir, ayarlarda değil:
+  // dinlerken verilen bir karar.
+  const quranReciter = ref(load('quranReciter', 'husary'))
 
-  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, quranMeal, quranFont, quranView, quranScript, quranFontSize, darkMode, colorStyle, homeClock }
+  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, quranMeal, quranFont, quranView, quranScript, quranFontSize, quranTajweed, quranReciter, darkMode, colorStyle, homeClock }
 
   // `deep`: ayarların çoğu düz değer ama `notifyOffsets` bir obje —
   // içindeki tek bir vakit değişince de kaydedilmeli.

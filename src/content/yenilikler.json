@@ -1,5 +1,11 @@
 [
   {
+    "id": "kiraat-dinleme",
+    "title": "Kıraat dinleme",
+    "date": "2026-11-20",
+    "body": "Kur'an sayfasına **dinleme** geldi. Ayrı bir bölüm değil: okuduğunuz sayfanın üstünde bir şerit açılıyor ve **okunan ayet mushafta vurgulanıyor**. Kıraat sayfanın sonuna gelince sayfa kendiliğinden çevriliyor — gözünüz mushaftan ayrılmadan mukabele takip edebiliyorsunuz.\n\n**Bir ayete iki kez dokunun, oradan okumaya başlasın.** Okunan ayete tekrar iki kez dokunmak durdurur. Aynı sayfadaki başka bir surenin ayetine dokunmak da çalışıyor.\n\nSure başından başlandığında **besmele de okunuyor** — kârînin kendi sesinden, aynı kayıttan.\n\nYedi kârî arasından seçim yapılabiliyor: Abdülbasit Abdüssamed (murattal ve mücevved), Mahmud Halil el-Hüsarî, Suud eş-Şüreym, Mahmud Ali el-Benna, Ekrem el-Alakmî ve Hadi Turé. Seçim listesinde her kârînin **okuyuş temposu** üç kademeli olarak gösteriliyor (Fâtiha'yı kaç saniyede okuduğundan ölçülmüş) ve ayet takibinin o kârîde çalışıp çalışmadığı yazıyor.\n\nDinlediğiniz yer adres satırında duruyor, yani bağlantıyı paylaşmak okunan ayeti paylaşmak oluyor."
+  },
+  {
     "id": "kuran-sayfasi",
     "title": "Kur'an-ı Kerim sayfası",
     "date": "2026-11-19",

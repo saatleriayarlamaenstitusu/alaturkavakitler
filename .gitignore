@@ -27,3 +27,12 @@ ROADMAP.md
 
 # Wrangler yerel durumu (emüle edilmiş KV, önbellek)
 .wrangler/
+
+# Kârî kayıtlarının yerel kopyası (R2 aynası) — repoya girmez
+.mirror/
+
+# Kelime kelime kıraat damgaları: henüz kullanılmıyor (ayet vurgusu
+# `ayah.json` ile yapılıyor) ve 7,3 MB tutuyor. QUL dosyalarından
+# `scripts/import-qul-recitation.js` ile her an yeniden üretilebilir.
+# Kelime vurgusu geldiğinde CDN'e taşınacak (bkz. ROADMAP).
+src/data/recitation/*/w/

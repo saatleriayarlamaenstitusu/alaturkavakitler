@@ -368,3 +368,12 @@ select {
 :root[data-palette="canli"] .hand-hour {
   stroke: var(--text) !important;
 }
+
+/* Tam ekran okuma (Kur'an sayfası).
+   Gezinmeyi `z-index` ile örtmek yetmiyor: `.app-content` kendi yığın
+   bağlamını açtığı için içerideki hiçbir değer dışarıdaki çubukları
+   aşamıyor. İm `<html>`de duruyor ve çubuklar gizleniyor. */
+:root[data-immersive] .top-nav,
+:root[data-immersive] .bottom-nav {
+  display: none;
+}

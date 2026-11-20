@@ -372,6 +372,8 @@ Veri formatı (ham JSON):
 ```
 VITE_VAKIT_BASE_URL=https://raw.githubusercontent.com/saatleriayarlamaenstitusu/data-diyanet-namaz-vakitleri/main/data/namaz/
 VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
+VITE_MUSHAF_FONT_BASE=https://cdn.alaturkavakitler.com/mushaf   # boşsa static.qurancdn.com
+VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek yol yok
 ```
 
 ---
@@ -693,12 +695,23 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
     ekranda ve meal eşliğinde okumak için.
   Değişen yalnızca dizim: sayfa birimi, hatim işaretlemesi, kaydırma ve
   adres çubuğu iki görünümde de aynı.
-- **Dizim ve font dışarıdan okunur, repoda DURMAZ.** Dizim quran.com v4'ten
-  (`verses/by_page/{n}?words=true` → `line_number` + `code_v1`/`code_v2`),
-  font `static.qurancdn.com`'dan sayfa sayfa (`FontFace`). İkisi de
-  `Access-Control-Allow-Origin: *`, vekil gerekmiyor. Böylece QF'nin
-  "yeniden dağıtma" şartı hiç devreye girmiyor — kopyasını tutmuyoruz.
-  Son 90 sayfanın dizimi localStorage'da (`qpcLines`).
+- **Dizim verisi DEPODADIR, ağdan gelmez** (`src/data/mushaf/juz-NN.json`,
+  `scripts/export-mushaf-lines.js`). Değişmeyen bir tablo için her sayfa
+  açılışında ağa çıkmak tek bir sağlayıcıya bağlı kalmak ve çevrimdışı
+  okumayı imkânsız kılmak demekti. Cüz başına ~110 kB ham / ~13 kB
+  sıkıştırılmış; yalnızca okunan cüzün dosyası yüklenir
+  (`import.meta.glob` ile 30 ayrı parça). Ölçüldü: 293. sayfa açılırken
+  **sıfır API isteği**.
+  - Her kelime İKİ glif kodunu birden taşır (`a` = V1, `b` = V2); hat
+    değiştirmek yeni bir indirme değil, yalnızca yeniden çizim.
+  - quran.com yalnızca YEDEK yoldur (`remoteLines`) ve aynı biçimi kurar.
+- **Sayfa fontları 113 MB eder, repoya girmez.** Ölçüldü: V2 ~75 MB,
+  V1 ~38 MB (ilk sayfalar küçük olduğu için başta 25 MB sanıldı — tek
+  tek örnekle tahmin yürütme). Ayna Cloudflare R2'de durur, kökü
+  `VITE_MUSHAF_FONT_BASE`; tanımlı değilse doğrudan
+  `static.qurancdn.com` kullanılır, yani ayna kurulmadan da çalışır.
+  Sıra **ayna önce**: font küçüktür ve her sayfada gerekir, okuma hızı
+  bize bağlı olmalı.
 - **Glif kodu YALNIZCA kendi sayfasının fontunda anlamlıdır**: 42. sayfanın
   kodunu 43'ün fontuyla çizmek başka harfler verir. Bu yüzden font sayfa
   başına ayrıdır ve dizimle birlikte beklenir — font gelmeden satırları
@@ -710,6 +723,75 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
   boş satır bırakır, ayrıca kural yazmak gerekmedi (293 ve 187 ile
   doğrulandı). Sure adı ayrı bir fontta tek gliftir (`sura_names`,
   PUA'da `U+E000 + sure - 1`).
+- **Sayfa çevrilirken eski sayfa YERİNDE kalır.** Yükleme sırasında
+  satırlar boşaltılıyordu: kutu bir anlığına "Yükleniyor…" kadar
+  kısalıyor, tarayıcı kaydırmayı o boya kırpıyor ve sonraki sayfaya
+  geçince ekran en başa fırlıyordu (ölçüldü: `.app-content` scrollTop
+  600 → 0). Artık eski sayfa soluklaşarak duruyor, yenisi gelince
+  değişiyor; kaydırma yerinde kalıyor (600 → 601). Aynı kural mealde de
+  geçerli. Eski sayfa kendi fontuyla durduğu için doğru görünmeye de
+  devam eder.
+- **Hat etiketleri baskı YILIDIR** (`1421H`, `1405H`), "Mushaf/Klasik"
+  değil: ilk hâlinde V2'nin adı "Mushaf"tı ve görünüm düğmesindeki
+  "Mushaf" ile yan yana düşüp ikisi karışıyordu. Yanlarındaki küçük
+  "HAT" başlığı da bu yüzden var — tek başına "1421H" bilmece gibi
+  duruyor.
+- **Sayfa numarası iki mushafta farklıdır ve ikisi de yazılır.** Türk
+  (Diyanet) mushafında Fâtiha ile Bakara'nın başı tezhipli AÇILIŞ
+  sayfasıdır ve numara taşımaz; numaralandırma Bakara 6'dan 2 ile
+  başlar. Bu yüzden kitabın büyük kısmında **Diyanet = Medine − 1**.
+  Diyanet'in kendi PDF'inden basılı numaralar okunarak doğrulandı:
+  Diyanet 2 = Medine 3 (Bakara 6–16), 293 = 294 (Kehf 5–15),
+  582 = 583 (Nebe 31 – Nâziât 15), ama 603 = 603. Son cüzde iki mushaf
+  sayfa SINIRLARINDA da ayrışıyor (Diyanet 594 = Beled sonu + Şems'in
+  tamamı; Medine'de öyle bir sayfa yok) ve numaralar 603'te örtüşüyor.
+  Ayrışmanın tam yeri ölçülmedi, bu yüzden `diyanetPage()` 583'ten
+  sonrası için `null` döner — bilinmeyen bir numara uydurmaktansa
+  göstermemek doğru.
+- **Tecvit YALNIZCA esnek görünümdedir.** quran.com tecvit etiketini
+  AYET seviyesinde veriyor (`text_uthmani_tajweed`, `<tajweed class=…>`);
+  kelime seviyesinde düz metin dönüyor (ölçüldü), dolayısıyla glif
+  tabanlı mushaf görünümünde kullanılamıyor. Gelen işaretleme olduğu
+  gibi `v-html`e VERİLMEZ: `safeTajweed()` belgeyi ayrıştırıp yalnızca
+  tanınan sınıfa sahip `<tajweed>` öğelerini `<span class="tj tj-…">`
+  olarak geçirir, kalan her şeyi düz metne indirger, öznitelik taşımaz.
+- **Tecvit renkleri palete bağlı DEĞİL, sabittir**: kuralın rengi okurun
+  öğrendiği bir koddur, temaya göre değişirse anlamını kaybeder. Yalnızca
+  açık modda okunurluk için bir tık koyulaşırlar.
+- **Tam ekran okuma** (`immersive`): sayfa kabuğun dışına çıkıp ekranı
+  kaplar — rota özelliği değil, sayfanın geçici bir kipi.
+  - Gezinme çubukları `z-index` ile ÖRTÜLEMEZ: `.app-content` kendi
+    yığın bağlamını açıyor (`position: relative; z-index: 1`), içerideki
+    50 o bağlamın içinde kalıyor ve üst çubuk mushafın başlığının üstüne
+    biniyordu (mobilde logo ve şehir seçici görünüyordu). Çözüm
+    `<html>`e yazılan `data-immersive` imi ve `base.css`'teki iki satır.
+    İm sayfadan çıkarken `onUnmounted` ile silinir, yoksa gezinme bir
+    daha hiç görünmez.
+  - **Güvenli alan DÖRT kenarda** verilir. Yalnızca alt kenara verilmişti
+    ve ana ekrana eklenmiş uygulamada `inset: 0` durum çubuğunun altına
+    girip denetim şeridini örtüyordu.
+  - Mushaf sayfası ekrana ÖLÇÜLEREK sığdırılır (`fitPage`), CSS
+    tahminiyle değil. Önce `min(7.2cqw, (100svh − 6rem)/27)` denendi ve
+    tutmadı: denetim şeridinin boyu cihaza göre değişiyor, sure başlığı
+    olan sayfalar daha uzun. Ölçülen: 393×852 ekranda 656 piksellik
+    alana 697 piksellik sayfa düşüyordu. Bir mushaf sayfası kaydırılarak
+    okunmaz. Meal açıksa sayfanın altında kalır ve orası kaydırılır.
+- **Satır oturtma yalnızca GENİŞLİK değişince çalışır** (`MushafSheet`):
+  `fitLines` satırların puntosunu değiştiriyor, bu da kutunun boyunu
+  değiştiriyor — yükseklik de dinlenseydi `ResizeObserver` kendi
+  sonucunu tetikleyip döngüye girerdi.
+- **Okunan ayet adreste durur** (`?a=2:255`): önce yalnızca sayfa
+  yazılıyordu ve yenileyince vurgu kayboluyordu, "ayete gitmek" sayfaya
+  gitmeye düşüyordu. Yalnızca `a` verilen bir bağlantı sayfayı ayetten
+  hesaplar.
+- **Seçicide sure adının kendi görseli vardır**: ad glifi sabit genişlikte
+  bir kolonda (değişken olsaydı adlar satırdan satıra kayıp listeyi
+  taranamaz hâle getirirdi). Font gelmezse satır sade kalır, liste
+  çalışmaya devam eder.
+- **Yazı tipi seçici okurken de açılır** (`FontSheet.vue`) ve her satır
+  KENDİ yazı tipiyle örnek gösterir: adı değil görüntüsü seçtirir.
+  Liste `data/quranFonts.js`'te, ayarlar sayfasıyla ortak — biri eklenip
+  öbüründe unutulmasın.
 - **Tecvitli V4 YOK ve bu ölçülmüş bir sınır**: V4 sayfa fontları CDN'de
   duruyor ama kendi glif kodlarını istiyor, V1 kodlarıyla harfler
   birleşmiyor; API `code_v4` vermiyor. Yeniden denemeden önce ROADMAP'teki
@@ -817,6 +899,97 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
 - Okuma sayfası adres çubuğunda: `?s=<sayfa>&b=hatim`. Paylaşılabilsin ve
   geri tuşu sayfalar arasında çalışsın diye.
 
+## Dinleme (mukabele)
+
+- **Ayrı bir "Dinle" sayfası YOK.** Dinleme, okunan sayfanın üstüne
+  oturan bir şerittir (`ListenBar.vue`, `MushafView`in `bar` yuvası):
+  ses çalarken okunan ayet mushafta vurgulanır ve kıraat sayfanın
+  sonuna varınca sayfa kendiliğinden çevrilir. Dinlemek ve okumak aynı
+  anda olan bir iş; iki ekrana bölmek gözü mushaftan koparıyor.
+- Şerit sayfanın ÜSTÜNDE: altta denendi, gezinme düğmelerindeki
+  sorunun aynısı çıktı — sayfanın uzunluğuna göre yer değiştiriyordu.
+- **Vurgu için ayrı bir düzenek yazılmadı**: `focus` zaten vardı
+  (gitme kutusunun vurgusu), çalan ayet onu sürüyor. Ayet adrese de
+  yazılıyor (`?a=2:6`), yani dinlerken sayfayı paylaşmak okunan yeri
+  paylaşmak oluyor.
+- **Sayfa çevirme yalnızca İLERİ ve yalnızca bir adım**: hedef sayfa
+  o ankinin tam bir fazlaysa çevrilir. Kullanıcı elle başka bir yere
+  giderse ses onu geri sürüklemesin diye.
+- Ses SURE başına tek dosyadır; sayfadan başlamak için o sayfanın ilk
+  ayetinin damgasına atlanır (`startOf`). Damga yoksa baştan çalar.
+- **Damgası olmayan kârîde vurgu YAPILMAZ ve bu söylenir** ("ayet
+  takibi yok"). Ayet sürelerini eşit bölüp tahmin yürütmek okuyanı
+  yanlış yere baktırır; hiç vurgulamamak dürüst olanı.
+- Zaman damgaları `utils/recitation.js` üzerinden okunur
+  (`src/data/recitation/<kari>/ayah.json`, kârî başına ~100 kB / 46 kB
+  gzip, `import.meta.glob` ile tembel). Ayet araması ikili aramadır:
+  `timeupdate` saniyede birkaç kez geliyor ve bir surede 286 ayet
+  olabiliyor. Ayetler arası nefes payına düşen an ÖNCEKİ ayete sayılır,
+  yoksa vurgu bir an sönüp yanıyor.
+- Damga verisi QUL'dan gelir ve indirme GİRİŞ ister; dosya elle
+  indirilip `scripts/import-qul-recitation.js` ile çevrilir. Betik
+  114 sure / 6236 ayet, sıra ve aralık denetimi yapar ve ses adresi
+  kalıbını ekrana basar — Turé'nin adresi (hiçbir katalogda yoktu)
+  böyle bulundu.
+- **Damga belirli bir KAYDA aittir; eşleşme süreyle sınanır.** Aynı
+  kârînin birden çok okuyuşu dolaşımda ve zamanlar birbirinin yerine
+  KULLANILAMAZ. Sınav: QUL'un `surah_list.duration` değeri ile bizim
+  aynaladığımız dosyanın gerçek süresi (ffprobe). Ölçüldü — mücevved
+  Abdülbasit 78=78 ✓, Benna 47=47 ✓, Alakmî 55≈54 ✓, Turé 46=46 ✓;
+  ama Hüsarî 57≠48 ✗ ve murattal Abdülbasit 47≠41 ✗. Bu ikisinin
+  kaynağı damgaların ait olduğu kayda çevrildi
+  (`qdc/khalil_al_husary/murattal/`, `qdc/abdul_baset/murattal/`).
+- **Bir QUL dosyasında iki kayıt olabilir** (228 sure satırı, 12472
+  damga): Hüsarî'de hem `khalil_al_husary/murattal` (48 sn) hem
+  `..._iza3a` radyo kaydı (34 sn) var. İçe aktarıcı, `reciters.js`'teki
+  adrese UYAN kümeyi seçer; uymazsa uyarıp ilkini alır.
+- **QUL'un `verses` şemalı dosyaları AYET kaydıdır** (Şüreym böyle):
+  zamanlar ayetin kendi dosyasına görelidir, sure dosyası çalarken
+  kullanılamaz. İçe aktarıcı bunu tanıyıp açıklamayla çıkar — ayet
+  düzeninde vurgu için zaten damga gerekmiyor.
+- **Tempo Fâtiha'nın süresinden ölçülür** (`tempoOf`): aynı sure
+  herkeste aynı metin, süre farkı doğrudan tempo farkı. Ölçülen aralık
+  35–78 sn; eşikler 45 ve 55. Kârî seçicide üç kare + söz olarak
+  gösterilir — yalnızca kare bırakmak "üç kare hızlı mı ağır mı"
+  sorusunu okurun tahminine bırakırdı.
+- **Dinle düğmesi nota değil KULAKLIKTIR**: nota müziği çağrıştırıyor,
+  buradaki iş kıraat dinlemek.
+- **Esnek görünümde ayet numarası madalyondur**, düz rakam değil: akan
+  metinde küçük bir rakam seçilmiyordu, ayetin nerede bittiğini gözle
+  aramak gerekiyordu. Ölçü `em` cinsinden — yazı boyu %70–180 arasında
+  değişiyor, madalyon onunla büyüyüp küçülmeli.
+- **Yayıncı dosya adları tek biçim değil**: çoğu sıfır dolgulu
+  (`001.mp3`), Turé ve mücevved Abdülbasit dolgusuz (`1.mp3`).
+  `sourceFile()` bunu `padded: false` ile ayırır; AYNADAKİ ad hep
+  dolguludur. Dolgulu istemek 404 veriyor ve kârî sessizce atlanıyordu.
+
+## Kârî Kayıtları
+
+- Kütük `src/data/reciters.js`. **Sesi biz taşımıyoruz, ikinci kopya
+  tutuyoruz**: çalma sırası önce kaydın KENDİ kaynağı (yayıncının
+  CDN'i), hata verirse bizim aynamız (`VITE_AUDIO_MIRROR_BASE`, R2).
+  Normal halde bize bant genişliği maliyeti çıkmıyor, kaynak düşerse
+  okuma durmuyor. **Fontlarda sıra TERSTİR** ve sebebi farklı: ses
+  büyüktür (bir hatim ~1 GB), font küçüktür ve her sayfada gerekir.
+- Adresi doğrulanmış kârîler: Abdülbasit (murattal + mücevved), Hüsarî,
+  Şüreym, Benna, Alakmî — `download.quranicaudio.com`. Kalan ikisi
+  (Hadi Turé, Fatih Seferagić) quranicaudio kataloğunda (177 kârî) YOK
+  ve QUL ses adresini betikle kuruyor, HTML'de geçmiyor: adres
+  bulunana kadar `base`/`path` boş ve `availableReciters()` onları
+  listelemiyor. Yarım bir kayıt göstermektense göstermemek doğru.
+- Ayna ağacı kaynaktakiyle aynı DEĞİL, `<kari>/<sure>.mp3` diye
+  düzleniyor: yayıncıların yol düzenleri birbirini tutmuyor, aynada tek
+  düzen olmalı ki `audioSources()` tahmin yürütmesin.
+- İndirme betikleri (`scripts/mirror-recitations.js`,
+  `scripts/mirror-mushaf-fonts.js`) hedef ağacı **CDN'de görünecek
+  yolun birebir aynısı** olarak kurar (`<out>/ses/…`, `<out>/mushaf/…`),
+  böylece yükleme tek dizin kopyalamaya iner. Hedef `--out` ile verilir
+  (varsayılan `.mirror/`, gitignore'da). Kova `alaturkavakitler-assets`,
+  alan adı `cdn.alaturkavakitler.com`: mushaf ve ses ayrı kova değil
+  ayrı ÖN EK — tek alan adı, tek ayar.
+- QUL kayıt numaraları (`qul`) kütükte duruyor: **ses için değil, zaman
+  damgası için** — kelime vurgulama o veriden gelecek.
+
 ## Yedekleme
 
 - Uygulamanın bütün hafızası tarayıcıdadır ve geri getirecek bir sunucu
@@ -881,6 +1054,17 @@ VITE_GA_ID=                 # GA4 measurement ID (Faz 2)
   görüntü aldığı için `aksamCutoff`'u doğrudan çağırır).
 
 ## Geliştirme Notları
+- **Yükleme hızı SINIRLI tutulur.** Hattın yükleme tavanı ~2,5–3 MB/s;
+  tamamı doldurulduğunda internet kullanılamaz hâle geliyor (yaşandı —
+  CDN'e ses yüklerken). Kural: `--bwlimit 1M` (en çok 1,5M), iki eşzamanlı
+  aktarım. `scripts/upload-cdn.sh` bunu zaten uyguluyor, elle `rclone`
+  çağırma.
+- **Aynı hedefe iki rclone birden çalıştırma**: bir kez üç kopyalama
+  üst üste bindi (biri kullanıcının, ikisi benim) ve hat tıkandı.
+  Başlamadan `pgrep -fa rclone` ile bak.
+- R2 ilk istekte sık sık `501 Not Implemented` döner, ikinci denemede
+  geçer — `--s3-disable-checksum --retries 10 --low-level-retries 20`
+  ile sessizleşir. Hata değil, gürültü.
 
 - `git commit` GPG imzası gerektirir — Claude doğrudan commit atamaz, kullanıcı atar.
 - `npm ci` yerine `npm install` kullan (package-lock.json değişiyor).

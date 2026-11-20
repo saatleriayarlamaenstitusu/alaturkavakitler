@@ -1,4 +1,7 @@
-import { rangesOfPage } from '@/utils/mushaf'
+import { JUZ_PAGES } from '@/data/mushafPages'
+import { SURAHS } from '@/data/kuranMeta'
+
+const surahOfId = (id) => SURAHS.find((x) => x.id === id)?.name ?? ''
 
 /**
  * Satır satır mushaf dizimi (QPC).
@@ -35,9 +38,15 @@ const CDN = 'https://static.qurancdn.com/fonts/quran'
  * `code_v1` ve `code_v2`. Tecvit için QUL'un V4 dizim verisi gerekiyor;
  * bkz. ROADMAP.
  */
+/*
+ * Etiketler baskı YILIDIR, "Mushaf/Klasik" değil. İlk hâlinde V2'nin
+ * adı "Mushaf"tı ve görünüm düğmesindeki "Mushaf" ile yan yana düşüp
+ * ikisi karışıyordu (kullanıcı bildirdi). İkisi de Medine (KFGQPC)
+ * nesihi; aralarındaki tek gerçek fark baskı yılı.
+ */
 export const MUSHAF_SCRIPTS = [
-  { id: 'v2', label: 'Mushaf', note: '1421H baskısı', dir: 'hafs/v2', code: 'code_v2' },
-  { id: 'v1', label: 'Klasik', note: '1405H baskısı', dir: 'hafs/v1', code: 'code_v1' },
+  { id: 'v2', label: '1421H', note: 'Medine mushafı, 1421H baskısı', dir: 'hafs/v2', code: 'code_v2' },
+  { id: 'v1', label: '1405H', note: 'Medine mushafı, 1405H baskısı', dir: 'hafs/v1', code: 'code_v1' },
 ]
 
 export const scriptById = (id) =>
@@ -64,8 +73,9 @@ export const suraNameGlyph = (surah) =>
 
 export function ensureNameFont() {
   if (namesLoading) return namesLoading
-  const face = new FontFace(NAME_FAMILY, `url(${CDN}/surah-names/v1/sura_names.woff2)`)
-  namesLoading = face.load().then((f) => { document.fonts.add(f); return NAME_FAMILY })
+  // Sayfa fontlarıyla aynı kural: önce ayna, sonra yayıncının CDN'i.
+  namesLoading = loadFace(NAME_FAMILY, mirrorFirst('surah-names/v1/sura_names.woff2'))
+  namesLoading.catch(() => { namesLoading = null })
   return namesLoading
 }
 
@@ -81,105 +91,242 @@ export function pageFamily(scriptId, page) {
   return `QPC-${scriptId}-${page}`
 }
 
+/**
+ * Sayfa fontunun kaynağı: önce BİZİM aynamız, sonra yayıncının CDN'i.
+ *
+ * Ölçüldü: 604 sayfa V2'de ~75 MB, V1'de ~38 MB eder (ilk sayfalar
+ * küçük olduğu için önce 25 MB sanılmıştı). Bu git deposuna konmaz;
+ * ayna Cloudflare R2'de durur ve kökü `VITE_MUSHAF_FONT_BASE` ile
+ * verilir. Tanımlı değilse doğrudan CDN kullanılır — yani ayna
+ * kurulmadan da çalışır.
+ *
+ * Sıra "ayna önce"dir, seste olduğunun TERSİ: ses dosyası büyüktür ve
+ * bant genişliğini yayıncıya bırakmak doğru; font küçüktür, her sayfada
+ * gerekir ve kendi kaynağımızdan gelmesi okuma hızını bize bağlar.
+ */
+const FONT_MIRROR = (import.meta.env?.VITE_MUSHAF_FONT_BASE ?? '').replace(/\/$/, '')
+
+/** Aynadaki ve yayıncıdaki yol AYNIDIR; tek fark kök. */
+function mirrorFirst(tail) {
+  const urls = []
+  if (FONT_MIRROR) urls.push(`${FONT_MIRROR}/${tail}`)
+  urls.push(`${CDN}/${tail}`)
+  return urls
+}
+
+function fontUrls(scriptId, page) {
+  return mirrorFirst(`${scriptById(scriptId).dir}/woff2/p${page}.woff2`)
+}
+
+async function loadFace(family, urls) {
+  let last
+  for (const url of urls) {
+    try {
+      const face = await new FontFace(family, `url(${url})`).load()
+      document.fonts.add(face)
+      return family
+    } catch (e) { last = e }
+  }
+  throw last ?? new Error('Sayfa yazı tipi yüklenemedi')
+}
+
 export function ensurePageFont(scriptId, page) {
   const family = pageFamily(scriptId, page)
   const hit = pageFonts.get(family)
   if (hit) return hit
-  const { dir } = scriptById(scriptId)
-  const face = new FontFace(family, `url(${CDN}/${dir}/woff2/p${page}.woff2)`)
-  const task = face.load().then((f) => { document.fonts.add(f); return family })
+  const task = loadFace(family, fontUrls(scriptId, page))
+  // Başarısız bir deneme önbellekte kalmasın: sayfa yeniden açıldığında
+  // bir daha denenebilmeli.
+  task.catch(() => pageFonts.delete(family))
   pageFonts.set(family, task)
   return task
 }
 
 /**
- * Dizim önbelleği.
+ * Dizim verisi DEPODA durur, ağdan değil.
  *
- * Sayfa ~1,5 kB; hepsini tutmak localStorage kotasını yiyeceği için son
- * okunanlar saklanır. Sıra anahtarların sırasıyla taşınır: en eski baştan
- * atılır.
+ * Önce her sayfa açılışında quran.com'dan çekiliyordu: değişmeyen bir
+ * tablo için her seferinde ağa çıkmak, tek bir sağlayıcıya bağlı kalmak
+ * ve çevrimdışı okumayı imkânsız kılmak demekti. Veri bir kez indirilip
+ * cüz cüz depoya yazıldı (`scripts/export-mushaf-lines.js`,
+ * `src/data/mushaf/juz-NN.json`).
+ *
+ * Cüz başına ~110 kB ham, ~13 kB sıkıştırılmış; yalnızca okunan cüzün
+ * dosyası yüklenir ve bir daha istenmez.
+ *
+ * Her kelime İKİ glif kodunu birden taşır (`a` = V1, `b` = V2): hat
+ * okurken değişiyor, ikinci bir indirme gerektirmemeli.
+ *
+ * API yalnızca YEDEK: depoda olmayan bir cüz (veri güncellenmeden yeni
+ * bir sayfa biçimi eklenirse) ya da bir yükleme hatası durumunda.
  */
-const CACHE_KEY = 'qpcLines'
-const CACHE_MAX = 90
+const juzFiles = import.meta.glob('../data/mushaf/juz-*.json')
+const juzCache = new Map()
 
-function readCache() {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}') } catch { return {} }
+function juzOf(page) {
+  let juz = 1
+  for (let i = 0; i < JUZ_PAGES.length; i++) if (page >= JUZ_PAGES[i]) juz = i + 1
+  return juz
 }
 
-function writeCache(map) {
-  const keys = Object.keys(map)
-  if (keys.length > CACHE_MAX) for (const k of keys.slice(0, keys.length - CACHE_MAX)) delete map[k]
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify(map)) } catch { /* kota: önbelleksiz devam */ }
+async function localLines(page) {
+  const name = `../data/mushaf/juz-${String(juzOf(page)).padStart(2, '0')}.json`
+  const loader = juzFiles[name]
+  if (!loader) return null
+  if (!juzCache.has(name)) juzCache.set(name, loader().then((m) => m.default ?? m))
+  const map = await juzCache.get(name)
+  return map?.[page] ?? null
 }
 
 /**
  * Kullanılmayan satırları başlıklara dağıtır.
  *
- * Bir sure sayfanın ortasında başlıyorsa, ilk kelimesinin HEMEN ÜSTÜNDEKİ
- * boş satırlar ona aittir: iki boş satır varsa üsttekine ad, alttakine
- * besmele; bir boş satır varsa yalnızca ad. Tevbe suresi besmelesizdir ve
- * veride de tek boş satır bırakıyor — ayrıca kural yazmak gerekmiyor,
- * sayım kendiliğinden doğru çıkıyor.
+ * Bir sure sayfanın ortasında başlıyorsa ilk kelimesinin HEMEN
+ * ÜSTÜNDEKİ boş satırlar ona aittir: iki boş satır varsa üsttekine ad,
+ * alttakine besmele; bir boş satır varsa yalnızca ad. Tevbe suresi
+ * besmelesizdir ve veride de tek boş satır bırakıyor — ayrıca kural
+ * yazmak gerekmiyor, sayım kendiliğinden doğru çıkıyor (293 ve 187 ile
+ * doğrulandı).
  */
-function headerLines(page, used) {
+function headerLines(starts, firstLineOf, usedLines) {
   const marks = {}
-  const starts = rangesOfPage(page).filter((g) => g.from === 1)
-  for (const g of starts) {
-    const first = used.get(g.surah)
+  for (const surah of starts) {
+    const first = firstLineOf.get(surah)
     if (!first) continue
-    let free = []
+    const free = []
     for (let n = first - 1; n >= 1 && !marks[n]; n--) {
-      if (used.lines.has(n)) break
+      if (usedLines.has(n)) break
       free.unshift(n)
     }
     if (!free.length) continue
-    marks[free[0]] = { kind: 'name', surah: g.surah, name: g.surahName }
-    if (free.length > 1) marks[free[1]] = { kind: 'basmala', surah: g.surah }
+    marks[free[0]] = { kind: 'name', surah, name: surahOfId(surah) }
+    if (free.length > 1) marks[free[1]] = { kind: 'basmala', surah }
   }
   return marks
 }
 
-async function fetchLines(page, codeField) {
+/** Yedek yol: aynı biçimi API'den kurar. */
+async function remoteLines(page) {
   const url = `${API}/verses/by_page/${page}?words=true&per_page=50`
-    + `&word_fields=line_number,${codeField}`
+    + '&word_fields=line_number,code_v1,code_v2'
   const res = await fetch(url)
   if (!res.ok) throw new Error(`Mushaf dizimi alınamadı (HTTP ${res.status})`)
   const data = await res.json()
 
   const rows = new Map()
-  const used = new Map()          // sure → o surenin sayfadaki ilk satırı
-  used.lines = new Set()
+  const firstLineOf = new Map()
+  const usedLines = new Set()
+  const starts = []
   for (const v of data.verses ?? []) {
     const [surah, verse] = v.verse_key.split(':').map(Number)
+    if (verse === 1) starts.push(surah)
     for (const w of v.words ?? []) {
       const n = w.line_number
       if (!n) continue
-      used.lines.add(n)
-      if (!used.has(surah) || n < used.get(surah)) used.set(surah, n)
+      usedLines.add(n)
+      if (!firstLineOf.has(surah) || n < firstLineOf.get(surah)) firstLineOf.set(surah, n)
       if (!rows.has(n)) rows.set(n, [])
-      rows.get(n).push({ g: w[codeField] ?? '', e: w.char_type_name === 'end' ? 1 : 0, s: surah, v: verse })
+      rows.get(n).push({
+        a: w.code_v1 ?? '', b: w.code_v2 ?? '',
+        e: w.char_type_name === 'end' ? 1 : 0, s: surah, v: verse,
+      })
     }
   }
 
-  const marks = headerLines(page, used)
+  const marks = headerLines(starts, firstLineOf, usedLines)
   const lines = []
   for (let n = 1; n <= LINES_PER_PAGE; n++) {
     if (marks[n]) lines.push({ n, ...marks[n] })
     else if (rows.has(n)) lines.push({ n, kind: 'text', words: rows.get(n) })
-    // Ne kelime ne başlık: sayfa 15 satırdan kısa (son sayfalar). Satır
-    // hiç basılmaz, boş bir kutu bırakmak sayfayı yanlış gösterirdi.
   }
   return lines
 }
 
-/** Sayfanın satırları — önbellekten ya da ağdan. */
+/**
+ * Sayfanın satırları, seçili hattın glifleriyle.
+ *
+ * Depodaki kayıt hattan bağımsız (iki kod birden); seçim burada yapılır,
+ * böylece hat değiştirmek yeni bir yükleme değil yalnızca yeniden çizim.
+ */
 export async function pageLines(page, scriptId) {
-  const { code } = scriptById(scriptId)
-  const key = `${code}-${page}`
-  const cache = readCache()
-  if (cache[key]) return cache[key]
-  const lines = await fetchLines(page, code)
-  cache[key] = lines
-  writeCache(cache)
-  return lines
+  const key = scriptById(scriptId).code === 'code_v1' ? 'a' : 'b'
+  let raw = null
+  try {
+    raw = await localLines(page)
+  } catch { /* yedek yola düş */ }
+  if (!raw) raw = await remoteLines(page)
+  return raw.map((l) => (l.kind === 'text'
+    ? { ...l, words: l.words.map((w) => ({ g: w[key] ?? '', e: w.e, s: w.s, v: w.v })) }
+    : l))
+}
+
+/**
+ * Tecvitli metin (esnek görünüm).
+ *
+ * Mushaf görünümünde tecvit YOK: oradaki metin glif kodlarından geliyor
+ * ve quran.com kelime seviyesinde tecvit etiketi vermiyor (ölçüldü —
+ * `text_uthmani_tajweed` kelimede düz metin dönüyor). Ayet seviyesinde
+ * ise renk etiketli veriyor, akan metinde kullanılabiliyor.
+ */
+const TAJWEED_KEY = 'qpcTajweed'
+
+/** Tanınan tecvit sınıfları. Listede olmayan sınıf renklenmez. */
+export const TAJWEED_RULES = [
+  'ham_wasl', 'madda_normal', 'madda_permissible', 'madda_necessary',
+  'madda_obligatory', 'qalqalah', 'ikhafa', 'ikhafa_shafawi',
+  'idgham_shafawi', 'idgham_with_ghunnah', 'idgham_wo_ghunnah',
+  'idgham_mimi', 'iqlab', 'ghunnah', 'slnt', 'laam_shamsiyah',
+]
+
+/**
+ * Gelen işaretlemeyi GÜVENLİ hâle getirir.
+ *
+ * Uzaktan gelen HTML'i olduğu gibi `v-html`e vermek olmaz. Belge
+ * ayrıştırılıp yeniden kuruluyor: yalnızca tanınan sınıfa sahip
+ * `<tajweed>` öğeleri `<span class="tj tj-…">` olarak geçiyor, geri
+ * kalan her şey DÜZ METNE indirgeniyor. Öznitelik taşınmıyor.
+ */
+export function safeTajweed(html) {
+  if (typeof DOMParser === 'undefined') return ''
+  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, 'text/html')
+  const walk = (node) => {
+    let out = ''
+    for (const child of node.childNodes) {
+      if (child.nodeType === 3) {
+        out += child.textContent.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))
+        continue
+      }
+      if (child.nodeType !== 1) continue
+      const rule = child.getAttribute?.('class')
+      if (child.tagName.toLowerCase() === 'tajweed' && TAJWEED_RULES.includes(rule))
+        out += `<span class="tj tj-${rule}">${walk(child)}</span>`
+      else if (child.tagName.toLowerCase() === 'span' && rule === 'end')
+        continue          // ayet numarasını kendimiz basıyoruz
+      else
+        out += walk(child)
+    }
+    return out
+  }
+  return walk(doc.body.firstChild)
+}
+
+/** Sayfadaki ayetlerin tecvitli metni: `{ '2:255': '<span …>' }`. */
+export async function pageTajweed(page) {
+  const cache = (() => {
+    try { return JSON.parse(localStorage.getItem(TAJWEED_KEY) || '{}') } catch { return {} }
+  })()
+  if (cache[page]) return cache[page]
+
+  const res = await fetch(
+    `${API}/verses/by_page/${page}?fields=text_uthmani_tajweed&per_page=50`)
+  if (!res.ok) throw new Error(`Tecvitli metin alınamadı (HTTP ${res.status})`)
+  const data = await res.json()
+  const map = {}
+  for (const v of data.verses ?? []) map[v.verse_key] = safeTajweed(v.text_uthmani_tajweed ?? '')
+
+  cache[page] = map
+  const keys = Object.keys(cache)
+  if (keys.length > 40) for (const k of keys.slice(0, keys.length - 40)) delete cache[k]
+  try { localStorage.setItem(TAJWEED_KEY, JSON.stringify(cache)) } catch { /* kota */ }
+  return map
 }

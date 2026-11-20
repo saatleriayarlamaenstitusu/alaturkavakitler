@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSettingsStore } from '@/stores/settings'
 import { useHatimStore } from '@/stores/hatim'
@@ -15,6 +15,9 @@ import HatimPanel from '@/components/quran/HatimPanel.vue'
 import PickerSheet from '@/components/quran/PickerSheet.vue'
 import MealSheet from '@/components/quran/MealSheet.vue'
 import SurahInfoSheet from '@/components/quran/SurahInfoSheet.vue'
+import FontSheet from '@/components/quran/FontSheet.vue'
+import ListenBar from '@/components/quran/ListenBar.vue'
+import ReciterSheet from '@/components/quran/ReciterSheet.vue'
 
 /**
  * Kuran sayfası — iki sekme: Oku ve Hatim.
@@ -59,9 +62,30 @@ const reading = ref(known(route.query.h ?? null))
 
 const readingHatim = computed(() => hatim.list.find((h) => h.id === reading.value) ?? null)
 
-// Açılış sayfası: adres verilmişse o; hatim okunuyorsa kaldığı yer; yoksa baştan.
+/**
+ * Adresteki ayet (`?a=2:255`).
+ *
+ * Önce yalnızca sayfa yazılıyordu: aranan ayet bulunuyor, vurgulanıyor,
+ * ama sayfa yenilenince ya da bağlantı paylaşılınca vurgu kayboluyordu —
+ * "ayete gitmek" sayfaya gitmeye düşüyordu. Ayet de adrese yazılıyor ve
+ * açılışta geri kuruluyor.
+ */
+function parseAyah(q) {
+  const m = /^(\d+):(\d+)$/.exec(String(q ?? ''))
+  if (!m) return null
+  const surah = Number(m[1])
+  const verse = Number(m[2])
+  return surah >= 1 && surah <= 114 && verse >= 1 ? { surah, verse } : null
+}
+
+const startAyah = parseAyah(route.query.a)
+
+// Açılış sayfası: adres verilmişse o; ayet verilmişse ayetin sayfası;
+// hatim okunuyorsa kaldığı yer; yoksa baştan.
 const page = ref(clampPage(
-  route.query.s ?? (readingHatim.value ? hatim.nextPage(readingHatim.value) : 1)))
+  route.query.s
+  ?? (startAyah ? pageOfVerse(startAyah.surah, startAyah.verse) : null)
+  ?? (readingHatim.value ? hatim.nextPage(readingHatim.value) : 1)))
 
 // Arapça yazı tipi ayardan gelir; yalnızca o aile indirilir.
 const fontFamily = computed(() => getFont(settings.quranFont).family)
@@ -75,6 +99,7 @@ watch([page, tab, reading], ([p, t, h]) => {
       s: String(p),
       b: t === 'hatim' ? 'hatim' : undefined,
       h: h ?? undefined,
+      a: focusVerse.value ? `${focusVerse.value.surah}:${focusVerse.value.verse}` : undefined,
     },
   })
 })
@@ -124,17 +149,79 @@ const mealLang = computed(() =>
 const picker = ref(false)
 /** Meal seçici açık mı. */
 const mealPick = ref(false)
+/**
+ * Dinleme açık mı ve kârî seçici.
+ *
+ * Dinlemek ayrı bir sayfa değil, okunan sayfanın altına oturan bir
+ * şerit: ses çalarken okunan ayet mushafta vurgulanıyor (vurgu için
+ * zaten `focus` var, ayrıca bir şey gerekmedi) ve kıraat sayfanın
+ * sonuna varınca sayfa kendiliğinden çevriliyor.
+ */
+const listening = ref(false)
+const reciterPick = ref(false)
+
+/**
+ * Ayete çift dokunmak o ayeti seslendirir; çalıyorsa durdurur.
+ *
+ * Şerit kapalıysa önce açılır — "dinlemeye başla" ile "şuradan başla"
+ * tek harekette oluyor. Karar (çal/dur) şeride ait, burada yalnızca
+ * istek iletiliyor; sayaç, aynı ayete ikinci kez dokunmanın da yeni
+ * bir istek sayılmasını sağlıyor.
+ */
+const listenRequest = ref(null)
+let tapCount = 0
+
+function onAyahTap(v) {
+  listening.value = true
+  listenRequest.value = { ...v, n: ++tapCount }
+}
+
+/** Çalarken okunan ayet; durunca vurgu düşer. */
+function onRecited(v) {
+  focus.value = v ? { ...v, page: pageOfVerse(v.surah, v.verse) } : null
+}
+
 /** Künyesi açılan sure (null = kapalı). */
 const infoSurah = ref(null)
+/** Yazı tipi seçici açık mı. */
+const fontPick = ref(false)
+/**
+ * Tam ekran okuma.
+ *
+ * Gezinme ve üst çubuk `<html>`e yazılan bir imle gizleniyor
+ * (`base.css`). `z-index` yetmedi ve sebebi ölçüldü: `.app-content`
+ * kendi yığın bağlamını açıyor (`position: relative; z-index: 1`),
+ * içerideki 50 o bağlamın İÇİNDE kalıyor ve üst çubuk sayfanın üstüne
+ * biniyordu — mobilde logo ve şehir seçici mushafın başlığının üstünde
+ * görünüyordu.
+ */
+const immersive = ref(false)
+
+watch(immersive, (on) => {
+  document.documentElement.toggleAttribute('data-immersive', on)
+})
+// Sayfadan çıkarken imi bırakma: gezinme bir daha hiç görünmezdi.
+onUnmounted(() => document.documentElement.removeAttribute('data-immersive'))
 
 /**
  * Gitme kutusundan gelen hedef. Vurgu SAYFAYA bağlı tutuluyor: sayfa
  * başka bir yolla değişince (ok, kaydırma) vurgu kendiliğinden düşer,
  * ayrı bir temizleme izleyicisi gerekmez.
  */
-const focus = ref(null)
+const focus = ref(startAyah ? { ...startAyah, page: page.value } : null)
 const focusVerse = computed(() =>
   focus.value && focus.value.page === page.value ? focus.value : null)
+
+// Vurgu değişince adres de değişsin: sayfa aynı kalarak başka bir ayete
+// gidilebiliyor (aynı sayfadaki iki ayet), sayfa izleyicisi bunu görmez.
+watch(focusVerse, () => {
+  router.replace({
+    query: {
+      ...route.query,
+      a: focusVerse.value ? `${focusVerse.value.surah}:${focusVerse.value.verse}` : undefined,
+    },
+  })
+})
 
 function goTo(p, verse) {
   page.value = p
@@ -150,8 +237,8 @@ function goShortcut(sc) {
 </script>
 
 <template>
-  <div class="quran-page" :style="{ '--quran-ar': fontFamily }">
-    <header class="head">
+  <div class="quran-page" :class="{ immersive }" :style="{ '--quran-ar': fontFamily }">
+    <header v-if="!immersive" class="head">
       <h1 class="page-title">kur'an</h1>
       <nav class="tabs">
         <button
@@ -165,11 +252,11 @@ function goShortcut(sc) {
     </header>
 
     <template v-if="tab === 'oku' || readingHatim">
-      <button v-if="readingHatim" class="back" @click="closeReader">‹ Hatme dön</button>
+      <button v-if="readingHatim && !immersive" class="back" @click="closeReader">‹ Hatme dön</button>
 
       <!-- Tek kutuyla gitme + meal seçimi. Dört ayrı açılır liste vardı ve
            bir ayete gitmenin yolu yoktu. -->
-      <div class="jump">
+      <div v-if="!immersive" class="jump">
         <GoTo @go="goTo" />
         <!-- Yazarak aramanın yanında göz gezdirerek seçmek: aynı işin
              iki yolu, farklı iki alışkanlık için. -->
@@ -184,7 +271,7 @@ function goShortcut(sc) {
 
       <!-- Mushafta en çok dönülen yerler. Hatim okuyucusunda yok: orada
            sıralı okunuyor, sıçramak akışı bozar. -->
-      <nav v-if="!readingHatim" class="shortcuts" aria-label="Hızlı erişim">
+      <nav v-if="!readingHatim && !immersive" class="shortcuts" aria-label="Hızlı erişim">
         <button
           v-for="sc in QURAN_SHORTCUTS"
           :key="sc.label"
@@ -202,10 +289,43 @@ function goShortcut(sc) {
         @update:page="page = $event"
         @toggle-read="toggle"
         @info="infoSurah = $event"
-      />
+        @font="fontPick = true"
+        :listening="listening"
+        @listen="listening = !listening"
+        @ayah="onAyahTap"
+        :immersive="immersive"
+        @update:immersive="immersive = $event"
+      >
+        <template #bar>
+        <ListenBar
+          v-if="listening"
+          :page="page"
+          :reciter="settings.quranReciter"
+          :request="listenRequest"
+          @verse="onRecited"
+          @update:page="page = $event"
+          @pick-reciter="reciterPick = true"
+          @close="listening = false; focus = null"
+        />
+        </template>
+      </MushafView>
     </template>
 
     <HatimPanel v-else @read="openHatim" />
+
+    <ReciterSheet
+      :open="reciterPick"
+      :value="settings.quranReciter"
+      @close="reciterPick = false"
+      @select="settings.quranReciter = $event"
+    />
+
+    <FontSheet
+      :open="fontPick"
+      :value="settings.quranFont"
+      @close="fontPick = false"
+      @select="settings.quranFont = $event"
+    />
 
     <SurahInfoSheet
       :open="infoSurah !== null"
@@ -231,6 +351,46 @@ function goShortcut(sc) {
 
 <style scoped>
 .quran-page { padding-bottom: 2rem; }
+
+/* Tam ekran okuma: sayfa kabuğun dışına çıkar ve ekranı kaplar.
+   Gezinme çubuğunun üstünü örter — App.vue'ya dokunmadan, çünkü bu
+   bir ROTA özelliği değil, sayfanın geçici bir kipi.
+
+   Zemin mat kurulur: `--surface` bazı paletlerde saydam ve altındaki
+   gezinme çubuğu sayfanın içinden görünüyor. */
+.quran-page.immersive {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  /* Güvenli alan ÜSTTE de gerekli: ana ekrana eklenmiş uygulamada
+     `inset: 0` durum çubuğunun/çentiğin altına giriyor ve sayfanın
+     tepesindeki denetim şeridi örtülüyor. */
+  padding:
+    calc(0.4rem + env(safe-area-inset-top))
+    calc(0.6rem + env(safe-area-inset-right))
+    calc(0.4rem + env(safe-area-inset-bottom))
+    calc(0.6rem + env(safe-area-inset-left));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--surface), var(--surface));
+}
+
+.quran-page.immersive :deep(.mushaf) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Meal açıksa sayfanın altında kalır ve kaydırılır; kapalıyken
+   kaydırılacak bir şey olmaz. */
+.quran-page.immersive :deep(.sheet) {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
 
 .head {
   display: flex;

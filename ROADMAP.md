@@ -416,6 +416,127 @@ fontu, sure adı süslemesi ve besmele satırı.
 - [ ] Diyanet mushafıyla gözle karşılaştırma (birkaç sayfa) — hatim takibi
       sayfa numarasına bağlı
 
+#### Diyanet (Türkiye) mushafı dizilimi
+
+Sayfa numarası kullanıcının ELİNDEKİ nüshayla karşılaştırılıyor; iki
+mushaf farklı numaralandırıyor. Ölçüm ve kısmi eşleme `utils/mushaf.js`
+içindeki `diyanetPage()` başlığında.
+
+- [x] Fark ölçüldü ve belgelendi: Diyanet = Medine − 1 (2–583 arası),
+      son cüzde sayfa sınırları da ayrışıyor, numaralar 603'te örtüşüyor
+- [x] Bilinen aralıkta Diyanet numarası sayfa başlığında yan yana yazılıyor
+- [ ] **Tam eşleme** için Diyanet dizilim verisi gerekiyor. Denenen ve
+      BAŞARISIZ olan ucuz yol: PDF'teki ayet sonu işaretlerini sayıp
+      sınırları çıkarmak — gliflerin CID'leri sayfa başına değişiyor
+      (aynı işaret 2. sayfada başka, 293. sayfada başka kod), frekans
+      sayımı tutmuyor
+  - [ ] Kalan yol: CID → Unicode deşifresi (sayfa fontu alt kümeleriyle
+        hizalama) ya da sayfa görüntülerinden işaret tanıma
+  - [ ] Ya da Diyanet'e doğrudan sorulabilir: dizilim verisi yayımlıyorlar mı
+- [ ] QUL'da Türk/Osmanlı (ayet-berkenar) dizilimi YOK — 12 dizilimin hepsi
+      Medine, Indopak ya da Katar. Oradan çıkmıyor
+
+#### CDN: tek kova, iki ön ek
+
+Kova **`alaturkavakitler-assets`** (EEUR), özel alan adı
+**`cdn.alaturkavakitler.com`** — ikisi de zaten var ve etkin.
+Mushaf ile ses ayrı kova değil ayrı ÖN EK: tek alan adı, tek ayar,
+tek fatura.
+
+```
+cdn.alaturkavakitler.com/mushaf/hafs/v2/woff2/p42.woff2
+cdn.alaturkavakitler.com/mushaf/hafs/v1/woff2/p42.woff2
+cdn.alaturkavakitler.com/mushaf/surah-names/v1/sura_names.woff2
+cdn.alaturkavakitler.com/ses/husary/036.mp3
+```
+
+İndirme betikleri bu ağacı **birebir** kurar; yükleme tek bir dizin
+kopyalamaya iner:
+
+```bash
+node scripts/mirror-mushaf-fonts.js --out /media/abdullah/F929-FA97/alaturka
+node scripts/mirror-recitations.js  --out /media/abdullah/F929-FA97/alaturka
+
+rclone copy /media/abdullah/F929-FA97/alaturka/mushaf r2:alaturkavakitler-assets/mushaf
+rclone copy /media/abdullah/F929-FA97/alaturka/ses    r2:alaturkavakitler-assets/ses
+```
+
+Sonra Cloudflare Pages ortam değişkenleri:
+
+```
+VITE_MUSHAF_FONT_BASE=https://cdn.alaturkavakitler.com/mushaf
+VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses
+```
+
+- [x] CORS kuralı yazıldı: `infra/r2-cors.json` (+ `infra/README.md`)
+  - [ ] Uygula: `npx wrangler r2 bucket cors set alaturkavakitler-assets --file infra/r2-cors.json`
+  - [ ] Doğrula: `npx wrangler r2 bucket cors list alaturkavakitler-assets`
+- [ ] Dizim JSON'ları CDN'e KONMAZ: repoda duruyorlar, derlemeye
+      giriyorlar ve çevrimdışı çalışıyorlar — CDN'e taşımak onları
+      yeniden ağa bağımlı yapardı
+
+#### Veriyi kendi depomuzda tutmak
+
+- [x] **Dizim verisi depoya alındı** (`src/data/mushaf/juz-NN.json`, 3,3 MB
+      ham / cüz başına ~13 kB gzip, `scripts/export-mushaf-lines.js`).
+      Okuma artık API'siz: 293. sayfa açılırken sıfır istek ölçüldü.
+      quran.com yalnızca yedek yol
+- [x] Font kaynağı ayna-önce kuruldu (`VITE_MUSHAF_FONT_BASE`); ayna
+      tanımlı değilse CDN'e düşer, yani kurulum beklemeden çalışır
+- [ ] **Fontları R2'ye yükle.** ÖLÇÜLDÜ: V2 ~75 MB, V1 ~38 MB (604 sayfa).
+      Önceki 25 MB tahmini yanlıştı — ilk sayfalar küçük, orta sayfalar
+      130–220 kB. Git deposuna girmez
+  - [x] İndirme betiği hazır: `scripts/mirror-mushaf-fonts.js`
+  - [ ] Var olan kovaya yükle: **`alaturkavakitler-assets`**, özel alan adı
+        **`cdn.alaturkavakitler.com`** (etkin). Yeni kova gerekmiyor;
+        mushaf ve ses aynı kovada ayrı ön eklerde durur
+  - [ ] `VITE_MUSHAF_FONT_BASE=https://cdn.alaturkavakitler.com/mushaf`
+- [ ] Service worker'a font + cüz dosyaları için `CacheFirst`: okunan
+      sayfalar cihazda kalsın, çevrimdışı hatim mümkün olsun
+- [ ] **Lisans netleştirilecek**: KFGQPC fontlarının dağıtım şartları.
+      QUL'un kendi lisans sayfaları 404 veriyor (ölçüldü), Credits var —
+      gerekirse doğrudan sorulacak. Aynaya koymak "yeniden dağıtmak"tır,
+      okumaktan farklıdır
+
+#### Seslendirme: kaynak kendi, yedek bizim
+
+- [x] Kârî kütüğü (`src/data/reciters.js`) + ayna indirme betiği
+      (`scripts/mirror-recitations.js`, hedef `.mirror/`, repoya girmez)
+- [x] Çalma sırası: önce yayıncının CDN'i, hata verirse `VITE_AUDIO_MIRROR_BASE`
+- [x] Adresi doğrulananlar: Abdülbasit (murattal + mücevved), Hüsarî,
+      Şüreym, Benna, Alakmî — `download.quranicaudio.com`
+- [ ] **Adresi bulunamayan ikisi**: Hadi Turé (QUL 421) ve Fatih Seferagić.
+      quranicaudio kataloğunda (177 kârî) yoklar; QUL ses adresini
+      betikle kuruyor, sayfa HTML'inde geçmiyor
+  - [ ] QUL'un ağ isteklerini tarayıcıda izleyip adresi çıkar, ya da sor
+  - [ ] Seferagić tam hatim değil: hangi sureler var, listelenecek
+- [x] İndirme betiği hazır: `scripts/mirror-recitations.js`
+- [ ] `alaturkavakitler-assets` kovasına `ses/` ön ekiyle yükle, sonra
+      `VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses`
+- [ ] Zaman damgaları QUL'dan (`qul` numaraları kütükte): kelime
+      vurgulama bu veriden gelecek, ses değil damga indirilecek
+- [x] **Dinleme şeridi çalışıyor** (`ListenBar.vue`): sure sure çalma,
+      okunan ayetin mushafta vurgulanması, sayfanın kendiliğinden
+      çevrilmesi, kârî seçici şeridin içinde. Uçtan uca denendi:
+      İhlâs'ta ayet takibi, Bakara'da 2:5 → 2:6 geçişinde sayfa 2 → 3
+- [x] QUL damga içe aktarıcısı (`scripts/import-qul-recitation.js`);
+      Turé içe aktarıldı (114 sure / 6236 ayet)
+- [x] Altı kârînin damgası içe aktarıldı: Abdülbasit murattal +
+      mücevved, Hüsarî, Benna, Alakmî, Turé (her biri 114/6236)
+- [x] Kayıt eşleşmesi Fâtiha süresiyle sınandı (QUL `duration` ↔ ffprobe)
+- [ ] **Hüsarî ve murattal Abdülbasit yeniden indirilecek**: damgalar
+      başka bir okuyuşa aitti, kaynak değişti
+      (`qdc/khalil_al_husary/murattal/{n}.mp3`,
+      `qdc/abdul_baset/murattal/{n}.mp3`, ikisi de DOLGUSUZ).
+      Eski dosyalar silinmeli, yoksa ayna yanlış kaydı sunar
+- [ ] Şüreym'in QUL dosyası AYET kaydı: sure dosyası için damga yok.
+      Ya ayet düzeninde dinlenir ya da sure kaydının damgası aranır
+- [ ] Kelime kelime vurgulama (veri hazır: `w/<sure>.json`)
+- [ ] Hatimle bağ: dinlenen sayfa da okundu sayılsın mı (karar)
+- [ ] Sure bitince sonrakine geçme, ayet tekrarı, aralık seçme
+- [ ] Kelime damgaları repoda 1,5 MB/kârî tutuyor; yedi kârîde ~10 MB.
+      Ayet damgaları kalsın, kelime damgaları CDN'e taşınsın
+
 #### Sure künyesi ve ayet konuları
 
 - [x] **Sure künyesi** (`src/data/surahInfo.js`, `scripts/export-surah-info.js`):
@@ -446,9 +567,9 @@ quran.com API'si `code_v4` vermiyor. Tecvit için iki yol kaldı:
 
 - [ ] QUL'un **KFGQPC V4 (1441H)** dizimini indirip (sqlite) kendi JSON'umuza
       çevirmek — veri repoya girer, lisans netleştirilmeli
-- [ ] Ya da tecvidi **esnek görünüme** almak: quran.com'un
-      `text_uthmani_tajweed` alanı renk etiketli HTML veriyor, sayfa dizimi
-      gerektirmiyor. Daha ucuz, mushaf sadakati yok
+- [x] Tecvit **esnek görünüme** alındı: quran.com'un `text_uthmani_tajweed`
+      alanı renk etiketli veriyor, sayfa dizimi gerektirmiyor. Mushaf
+      sadakati yok ama renkli tecvit okunabiliyor
 
 Aşağıdaki alternatifler hâlâ geçerli — kendi kopyamızı tutmaya karar
 verilirse (çevrimdışı okuma, V4 tecvit) başvurulacak yerler.

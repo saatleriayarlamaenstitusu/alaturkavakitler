@@ -4,6 +4,7 @@ import { SURAHS } from '@/data/kuranMeta'
 import { PAGE_COUNT, pageOfSurah, pageOfJuz, juzOfPage, surahOfPage } from '@/utils/mushaf'
 import { JUZ_PAGES } from '@/data/mushafPages'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
+import { ensureNameFont, suraNameGlyph } from '@/utils/qpc'
 
 /**
  * Sure / sayfa / cüz seçici — yerel `select` DEĞİL.
@@ -29,6 +30,19 @@ const TABS = [
   { id: 'cuz', label: 'Cüz' },
 ]
 const tab = ref('sure')
+
+/**
+ * Sure adının kendi görseli — ad glifi (vektörel, tek karakter).
+ *
+ * Latin harfli ad listeyi okutuyor ama sure ADI aslında bir şekildir;
+ * mushafta da öyle durur. Font tek dosya (~87 kB) ve yalnızca seçici
+ * ilk açıldığında inmeye başlar; gelmezse satır sade kalır, liste
+ * çalışmaya devam eder.
+ */
+const names = ref('')
+watch(() => props.open, (open) => {
+  if (open && !names.value) ensureNameFont().then((f) => { names.value = f }).catch(() => {})
+}, { immediate: true })
 const list = ref(null)
 
 const here = computed(() => ({
@@ -41,6 +55,7 @@ const rows = computed(() => {
     return SURAHS.map((s) => ({
       key: s.id,
       lead: String(s.id),
+      glyph: s.id,
       main: s.name,
       sub: `s. ${pageOfSurah(s.id)}`,
       on: s.id === here.value.surah,
@@ -54,6 +69,7 @@ const rows = computed(() => {
     return JUZ_PAGES.map((p, i) => ({
       key: i + 1,
       lead: String(i + 1),
+      glyph: surahOfPage(p)?.id ?? null,
       main: surahOfPage(p)?.name ?? '',
       sub: `s. ${p}`,
       on: i + 1 === here.value.juz,
@@ -65,6 +81,7 @@ const rows = computed(() => {
     return {
       key: p,
       lead: String(p),
+      glyph: surahOfPage(p)?.id ?? null,
       main: surahOfPage(p)?.name ?? '',
       sub: `${juzOfPage(p)}. cüz`,
       on: p === props.page,
@@ -114,6 +131,13 @@ function pick(row) {
         @click="pick(r)"
       >
         <span class="row-lead">{{ r.lead }}</span>
+        <span
+          v-if="names && r.glyph"
+          class="row-glyph"
+          :style="{ fontFamily: names }"
+          aria-hidden="true"
+        >{{ suraNameGlyph(r.glyph) }}</span>
+        <span v-else class="row-glyph" aria-hidden="true"></span>
         <span class="row-main">{{ r.main }}</span>
         <span class="row-sub">{{ r.sub }}</span>
       </button>
@@ -147,7 +171,7 @@ function pick(row) {
 .row {
   width: 100%;
   display: grid;
-  grid-template-columns: 2.2rem 1fr auto;
+  grid-template-columns: 2.2rem 4.6rem 1fr auto;
   align-items: center;
   gap: 0.6rem;
   padding: 0.55rem 0.8rem;
@@ -172,6 +196,19 @@ function pick(row) {
   color: var(--text-muted);
   text-align: end;
 }
+
+/* Glif sabit bir kolonda durur: değişken genişlikte olsaydı adlar
+   satırdan satıra kayardı ve liste taranamaz hâle gelirdi. */
+.row-glyph {
+  font-size: 1.35rem;
+  line-height: 1;
+  text-align: center;
+  color: var(--text-muted);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.row.on .row-glyph { color: var(--text); }
 
 .row-main {
   font-size: 0.88rem;

@@ -101,3 +101,39 @@ export function pageOfSurah(surahId) {
     if (versesOfPage(p).some((v) => v.surah === surahId && v.verse === 1)) return p
   return 1
 }
+
+/**
+ * Medine sayfa numarasından Diyanet (Türkiye) mushafının numarasına.
+ *
+ * **Ölçüldü** (Diyanet'in bilgisayar hatlı PDF'i, basılı numaralar
+ * okunarak):
+ *
+ * | Diyanet | içerik            | Medine |
+ * |---------|-------------------|--------|
+ * | (yok)   | Fâtiha            | 1      |
+ * | (yok)   | Bakara 1–5        | 2      |
+ * | 2       | Bakara 6–16       | 3      |
+ * | 293     | Kehf 5–15         | 294    |
+ * | 582     | Nebe 31 – Nâziât 15 | 583  |
+ * | 603     | Kâfirûn+Nasr+Tebbet | 603  |
+ *
+ * Türk mushafında Fâtiha ile Bakara'nın başı tezhipli AÇILIŞ SAYFASIDIR
+ * ve numara taşımaz; numaralandırma Bakara 6'dan, 2 ile başlar. Bu
+ * yüzden kitabın büyük kısmında **Diyanet = Medine − 1**.
+ *
+ * Son cüzde iki mushaf yalnızca numarada değil SAYFA SINIRLARINDA da
+ * ayrışıyor (Diyanet 594'te Beled'in sonu + Şems'in tamamı var, Medine'de
+ * böyle bir sayfa yok) ve numaralar 603'te örtüşüyor. Ayrışmanın tam
+ * yeri bilinmiyor: doğrulanan son nokta 582/583. Bu yüzden 583'ten
+ * sonrası için `null` dönülüyor — bilinmeyen bir sayfa numarası
+ * uydurmaktansa göstermemek doğru.
+ *
+ * Tam eşleme için Diyanet dizilim verisi gerekiyor (bkz. ROADMAP).
+ */
+export function diyanetPage(page) {
+  const p = Number(page)
+  if (!Number.isInteger(p) || p < 1 || p > PAGE_COUNT) return null
+  if (p <= 2) return 1            // tezhipli açılış: ikisi bir arada
+  if (p <= 583) return p - 1
+  return null                      // ölçülmedi; uydurulmuyor
+}
