@@ -6,6 +6,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { useVakitNotifications } from '@/composables/useVakitNotifications'
 import TopNav from '@/components/nav/TopNav.vue'
 import BottomNav from '@/components/nav/BottomNav.vue'
+import MiniPlayer from '@/components/quran/MiniPlayer.vue'
 
 const appStore = useAppStore()
 const settings = useSettingsStore()
@@ -75,6 +76,9 @@ watch(() => settings.colorStyle, applyPalette)
         <router-view />
       </div>
     </div>
+    <!-- Kıraat Kur'an sayfasından çıkınca da sürer; mini oynatıcı
+         onun uygulama düzeyindeki kumandası (bkz. MiniPlayer.vue). -->
+    <MiniPlayer v-if="!chromeless" />
     <BottomNav v-if="!chromeless" />
   </div>
 </template>

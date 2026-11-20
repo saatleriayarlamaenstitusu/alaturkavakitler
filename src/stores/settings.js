@@ -31,7 +31,11 @@ export const useSettingsStore = defineStore('settings', () => {
   const quranFont = ref(load('quranFont', 'lateef'))
   // Görünüm: 'mushaf' basılı sayfanın satır satır dizimi, 'esnek' akan
   // metin. Mushaf varsayılan — sayfa numarası zaten basılı nüshanın.
-  const quranView = ref(load('quranView', 'mushaf'))    // 'mushaf' | 'esnek'
+  const quranView = ref(load('quranView', 'mushaf'))    // 'mushaf' | 'esnek' | 'ayet'
+  // Kıraat ilerledikçe okunan ayeti ekranın ortasında tut. Dinlerken
+  // istenen bu; elle okurken sayfanın kendiliğinden kayması rahatsız
+  // edici olduğu için yalnızca ses ÇALARKEN uygulanıyor.
+  const quranAutoScroll = ref(load('quranAutoScroll', true))
   const quranScript = ref(load('quranScript', 'v2'))    // QPC hattı (bkz. utils/qpc)
   // Esnek görünümde Arapça metnin boyu, yüzde olarak (100 = taban).
   const quranFontSize = ref(load('quranFontSize', 100))
@@ -42,7 +46,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // dinlerken verilen bir karar.
   const quranReciter = ref(load('quranReciter', 'husary'))
 
-  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, quranMeal, quranFont, quranView, quranScript, quranFontSize, quranTajweed, quranReciter, darkMode, colorStyle, homeClock }
+  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, quranMeal, quranFont, quranView, quranAutoScroll, quranScript, quranFontSize, quranTajweed, quranReciter, darkMode, colorStyle, homeClock }
 
   // `deep`: ayarların çoğu düz değer ama `notifyOffsets` bir obje —
   // içindeki tek bir vakit değişince de kaydedilmeli.

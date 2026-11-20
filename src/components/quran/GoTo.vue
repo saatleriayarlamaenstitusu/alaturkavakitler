@@ -78,7 +78,16 @@ function suggest(raw) {
           push({ label: verseLabel(s, num), hint: `sayfa ${page}`, page, verse: { surah: s.id, verse: num } })
         } else if (!num) {
           const page = pageOfSurah(s.id)
-          push({ label: `${s.id}. ${s.name}`, hint: `sayfa ${page} · ${juzOfPage(page)}. cüz`, page })
+          // Sure hedefi İLK AYETİNİ de taşır: sure sayfanın ortasında
+          // başlıyor olabiliyor (Kehf 293'te) ve yalnızca sayfa
+          // verilirse hem vurgu hem kıraat sayfanın başındaki ÖNCEKİ
+          // sureden başlıyordu.
+          push({
+            label: `${s.id}. ${s.name}`,
+            hint: `sayfa ${page} · ${juzOfPage(page)}. cüz`,
+            page,
+            verse: { surah: s.id, verse: 1 },
+          })
         }
       }
     }
@@ -90,7 +99,12 @@ function suggest(raw) {
     const n = Number(bare[1])
     if (n >= 1 && n <= PAGE_COUNT) push({ label: `Sayfa ${n}`, hint: `${juzOfPage(n)}. cüz`, page: n })
     const s = SURAHS.find((x) => x.id === n)
-    if (s) push({ label: `${s.id}. ${s.name}`, hint: `sayfa ${pageOfSurah(s.id)}`, page: pageOfSurah(s.id) })
+    if (s) push({
+      label: `${s.id}. ${s.name}`,
+      hint: `sayfa ${pageOfSurah(s.id)}`,
+      page: pageOfSurah(s.id),
+      verse: { surah: s.id, verse: 1 },
+    })
     if (n >= 1 && n <= 30) push({ label: `${n}. cüz`, hint: `sayfa ${pageOfJuz(n)}`, page: pageOfJuz(n) })
   }
 

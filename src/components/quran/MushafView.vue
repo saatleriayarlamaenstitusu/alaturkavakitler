@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
 import { rangesOfPage, versesOfPage, juzOfPage, surahOfPage, clampPage, diyanetPage, PAGE_COUNT } from '@/utils/mushaf'
 import { fetchRange, eastern } from '@/utils/kuran'
@@ -8,6 +8,8 @@ import { MUSHAF_SCRIPTS, scriptById, pageTajweed } from '@/utils/qpc'
 import { quranFontById } from '@/data/quranFonts'
 import MushafSheet from '@/components/quran/MushafSheet.vue'
 import { createDoubleTap } from '@/utils/doubleTap'
+import { centerInScroller } from '@/utils/scrollCenter'
+import { playing as reciting } from '@/stores/recitation'
 import SurahHeader from '@/components/quran/SurahHeader.vue'
 
 /**
@@ -64,16 +66,75 @@ const surah = computed(() => surahOfPage(props.page))
 const diyanet = computed(() => diyanetPage(props.page))
 const meal = computed(() => AUTHORS.find((a) => a.id === settings.quranMeal) ?? AUTHORS[0])
 
+/**
+ * Oto kaydırma: okunan ayeti ekranın ortasında tut.
+ *
+ * YALNIZCA ses çalarken: elle okurken sayfanın kendiliğinden kayması
+ * okuyanı yerinden ediyor. Ayet ayet görünümünde grup bloğu, esnekte
+ * ayetin kendisi, mushafta o ayetin ilk kelimesi hedeftir — üçü de
+ * `data-v` taşıyor, bu yüzden tek arama yetiyor.
+ *
+ * Bekleme (`nextTick`) gerekiyor: sayfa kıraatle birlikte çevrildiğinde
+ * vurgu yeni sayfa çizilmeden önce yazılıyor ve eleman henüz yok.
+ */
+const root = ref(null)
+
+watch(() => props.focusVerse, async (f) => {
+  if (!f || !settings.quranAutoScroll || !reciting.value) return
+  await nextTick()
+  const el = root.value?.querySelector(`[data-v="${f.surah}:${f.verse}"]`)
+  centerInScroller(el)
+})
+
 const tap = createDoubleTap()
 const onVerseTap = (surah, verse) =>
   tap(`${surah}:${verse}`, () => emit('ayah', { surah, verse }))
 
-const mushaf = computed(() => settings.quranView !== 'esnek')
+/**
+ * Üç görünüm var ve üçü de aynı sayfa biriminde çalışır:
+ *
+ *  - `mushaf` — basılı sayfanın satır satır kendisi
+ *  - `esnek`  — ayetler akar, meal altta ayrı bir liste
+ *  - `ayet`   — ayet, hemen altında meali; sonra sonraki ayet
+ *
+ * Üçüncüsü akan metinde "bu cümlenin karşılığı hangisiydi" sorusunu
+ * ortadan kaldırıyor: karşılaştırarak okuyan için ayrı listeye bakmak
+ * sürekli göz kaydırmak demekti.
+ *
+ * Bilinmeyen bir değer mushafa düşer (kayıtta eski bir ad durabilir).
+ */
+const VIEWS = ['mushaf', 'esnek', 'ayet']
+const view = computed(() =>
+  (VIEWS.includes(settings.quranView) ? settings.quranView : 'mushaf'))
+const mushaf = computed(() => view.value === 'mushaf')
+const flowing = computed(() => view.value === 'esnek')
+const byVerse = computed(() => view.value === 'ayet')
 // Kayıtta artık sunulmayan bir hat durabilir (V4 kaldırıldı):
 // listeyi değil, listenin çözdüğü kimliği ölçüt al.
 const scriptId = computed(() => scriptById(settings.quranScript).id)
 const fontLabel = computed(() => quranFontById(settings.quranFont).label)
-const toggleView = () => { settings.quranView = mushaf.value ? 'esnek' : 'mushaf' }
+const setView = (id) => { settings.quranView = id }
+
+/**
+ * Ayet ayet dizim.
+ *
+ * Satırlar MEAL gruplarından çıkıyor: bazı mealler ayetleri
+ * gruplayarak çeviriyor (Diyanet'te Fatiha 2-4) ve o grubun ayetleri
+ * tek bir karşılığı paylaşıyor — ayrı ayrı basılsa aynı cümle art arda
+ * üç kez çıkardı. Meal kapalıyken her ayet kendi satırıdır.
+ */
+function verseRows(g) {
+  if (!settings.quranMeal)
+    return g.verses.map((v) => ({ key: v.no, from: v.no, to: v.no, label: String(v.no), verses: [v], text: '' }))
+  return g.meals.map((m) => ({
+    key: m.from,
+    from: m.from,
+    to: m.to,
+    label: m.label,
+    verses: g.verses.filter((v) => v.no >= m.from && v.no <= m.to),
+    text: m.text,
+  }))
+}
 
 /**
  * Esnek görünümde yazı boyu. Adım yüzde, sınır dar tutuldu: 70'in
@@ -107,9 +168,11 @@ function mealRows(verses) {
   return rows.map((r) => ({
     ...r,
     label: r.from === r.to ? String(r.from) : `${r.from}–${r.to}`,
-    text: r.from === r.to
-      ? r.text
-      : r.text.replace(new RegExp(`^\\(${r.from}\\s*[-–]\\s*${r.to}\\)\\s*`), ''),
+    // Baştaki numara işareti atılır: satırın kendisi zaten "2–4" diyor.
+    // Kalıp meale göre değişiyor — kimi "(2-4)" yazıyor, kimi
+    // "(1-2-3-4)" diye tek tek sayıyor; ikisi de yalnızca rakam, tire
+    // ve boşluktan oluştuğu için tek desenle yakalanıyor.
+    text: r.from === r.to ? r.text : r.text.replace(/^\(\s*\d+(?:\s*[-–]\s*\d+)*\s*\)\s*/, ''),
   }))
 }
 
@@ -186,7 +249,7 @@ function onUp(e) {
 </script>
 
 <template>
-  <div class="mushaf" :style="{ '--quran-scale': settings.quranFontSize / 100 }">
+  <div ref="root" class="mushaf" :style="{ '--quran-scale': settings.quranFontSize / 100 }">
     <!-- Hatim okuyucusunda hangi hatimde olduğun her an yazılı durur:
          işaretleme ona yazıyor, belirsiz kalmamalı. -->
     <p v-if="hatimName" class="in-hatim">
@@ -220,15 +283,11 @@ function onUp(e) {
          gösterir: mushafta hat, esnekte yazı boyu. İkisini birden
          göstermek çalışmayan bir ayarı göstermek olurdu. -->
     <div class="viewbar">
-      <button
-        class="view-toggle"
-        :aria-pressed="mushaf"
-        :title="mushaf ? 'Esnek görünüme geç' : 'Mushaf görünümüne geç'"
-        @click="toggleView"
-      >
-        <span class="view-opt" :class="{ on: mushaf }">Mushaf</span>
-        <span class="view-opt" :class="{ on: !mushaf }">Esnek</span>
-      </button>
+      <div class="view-toggle" role="group" aria-label="Görünüm">
+        <button class="view-opt" :class="{ on: mushaf }" :aria-pressed="mushaf" @click="setView('mushaf')">Mushaf</button>
+        <button class="view-opt" :class="{ on: flowing }" :aria-pressed="flowing" @click="setView('esnek')">Esnek</button>
+        <button class="view-opt" :class="{ on: byVerse }" :aria-pressed="byVerse" @click="setView('ayet')">Ayet ayet</button>
+      </div>
 
       <nav v-if="mushaf" class="scripts" aria-label="Hat">
         <span class="bar-label">Hat</span>
@@ -320,14 +379,16 @@ function onUp(e) {
           :surah="g.surah"
           :name="g.name"
           @info="emit('info', $event)"
+          @play="emit('ayah', { surah: $event, verse: 1 })"
         />
 
-        <p v-if="!mushaf" class="ar" dir="rtl" lang="ar">
+        <p v-if="flowing" class="ar" dir="rtl" lang="ar">
           <template v-for="v in g.verses" :key="v.no">
             <span
               v-if="tajweed[`${g.surah}:${v.no}`]"
               class="ar-verse"
               :class="{ focus: focusVerse && focusVerse.surah === g.surah && focusVerse.verse === v.no }"
+              :data-v="`${g.surah}:${v.no}`"
               v-html="tajweed[`${g.surah}:${v.no}`]"
               @pointerup="onVerseTap(g.surah, v.no)"
             />
@@ -335,13 +396,51 @@ function onUp(e) {
               v-else
               class="ar-verse"
               :class="{ focus: focusVerse && focusVerse.surah === g.surah && focusVerse.verse === v.no }"
+              :data-v="`${g.surah}:${v.no}`"
               @pointerup="onVerseTap(g.surah, v.no)"
             >{{ v.ar }}</span>
             <span class="ar-no">{{ eastern(v.no) }}</span>
           </template>
         </p>
 
-        <ul v-if="settings.quranMeal" class="meal">
+        <!-- Ayet ayet: her satır ayetin kendisi ve hemen altında
+             karşılığı. Gruplanmış mealde grubun ayetleri aynı satırda
+             toplanır, karşılık bir kez yazılır. -->
+        <div v-if="byVerse" class="vrs">
+          <div
+            v-for="r in verseRows(g)"
+            :key="r.key"
+            class="vb"
+            :class="{ focus: focusVerse && focusVerse.surah === g.surah
+                      && focusVerse.verse >= r.from && focusVerse.verse <= r.to }"
+            :data-v="`${g.surah}:${r.from}`"
+          >
+            <p class="ar vb-ar" dir="rtl" lang="ar">
+              <template v-for="v in r.verses" :key="v.no">
+                <span
+                  v-if="tajweed[`${g.surah}:${v.no}`]"
+                  class="ar-verse"
+                  :data-v="`${g.surah}:${v.no}`"
+                  v-html="tajweed[`${g.surah}:${v.no}`]"
+                  @pointerup="onVerseTap(g.surah, v.no)"
+                />
+                <span
+                  v-else
+                  class="ar-verse"
+                  :data-v="`${g.surah}:${v.no}`"
+                  @pointerup="onVerseTap(g.surah, v.no)"
+                >{{ v.ar }}</span>
+                <span class="ar-no">{{ eastern(v.no) }}</span>
+              </template>
+            </p>
+            <p v-if="r.text" class="vb-tr">
+              <span class="vb-no">{{ r.label }}</span>
+              <span>{{ r.text }}</span>
+            </p>
+          </div>
+        </div>
+
+        <ul v-if="settings.quranMeal && !byVerse" class="meal">
           <li
             v-for="m in g.meals"
             :key="m.from"
@@ -459,12 +558,19 @@ function onUp(e) {
   cursor: pointer;
 }
 
+/* Seçenekler artık AYRI düğme (üç tane oldu, biri "öbürü" değil):
+   her biri doğrudan kendi görünümünü seçer. */
 .view-opt {
+  font: inherit;
   font-size: 0.68rem;
   letter-spacing: 0.06em;
   padding: 0.25rem 0.7rem;
+  border: none;
   border-radius: 999px;
+  background: transparent;
   color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .view-opt.on {
@@ -629,6 +735,42 @@ function onUp(e) {
   color: var(--text-muted);
   padding-top: 0.35em;
 }
+
+/* Ayet ayet: her ayet kendi bloğu, aralarında ince bir çizgi. Kutu
+   ya da zemin verilseydi sayfa kart listesine dönerdi; okunan şey
+   hâlâ akan bir metin. */
+.vrs { display: flex; flex-direction: column; }
+
+.vb { padding: 0.9rem 0; border-top: 1px solid var(--border); }
+.vb:first-child { border-top: none; padding-top: 0.2rem; }
+
+/* Vurgu bloğun TAMAMINA: burada ayet ve meali bir birimdir. */
+.vb.focus {
+  background: color-mix(in srgb, var(--accent-ui) 12%, transparent);
+  border-radius: 6px;
+}
+
+/* Blok içindeki Arapça ortalanmaz: tek ayet iki yana yaslanınca
+   kelimeler arası uçuyor. */
+.vb-ar {
+  margin: 0;
+  text-align: right;
+  text-align-last: right;
+}
+
+.vb-tr {
+  display: grid;
+  grid-template-columns: 2.4rem 1fr;
+  gap: 0.5rem;
+  margin: 0.45rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.vb.focus .vb-no { color: var(--text); }
+
+.vb-no { font-size: 0.66rem; color: var(--text-muted); padding-top: 0.35em; }
 
 .sheet-foot {
   padding-top: 1rem;

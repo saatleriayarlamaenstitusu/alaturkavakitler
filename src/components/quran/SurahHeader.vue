@@ -22,7 +22,7 @@ const props = defineProps({
   /** Sure adı fontu yüklendiyse ailesi; yoksa glif basılmaz. */
   nameFont: { type: String, default: '' },
 })
-const emit = defineEmits(['info'])
+const emit = defineEmits(['info', 'play'])
 
 const info = computed(() => infoOf(props.surah))
 const title = computed(() => info.value?.name ?? props.name)
@@ -42,6 +42,11 @@ const title = computed(() => info.value?.name ?? props.name)
       <span v-if="info" class="sh-meaning">{{ info.meaning }}</span>
       <span v-if="info" class="sh-dot">·</span>
       <span v-if="info" class="sh-meta">{{ info.place }} · {{ info.verses }} ayet</span>
+      <!-- Sureyi dinle: ayete çift dokunmak zaten kıraati o ayetten
+           başlatıyor, ama sure BAŞINDAN dinlemek en sık istenen şey ve
+           çift dokunuş onu bilinmez bir hareketin arkasında bırakıyor.
+           Künyenin sonunda, bilgi düğmesinin yanında duruyor. -->
+      <button class="sh-play" aria-label="Sureyi başından dinle" @click="emit('play', surah)">▶</button>
       <button class="sh-info" aria-label="Sure hakkında" @click="emit('info', surah)">i</button>
     </div>
   </div>
@@ -103,8 +108,9 @@ const title = computed(() => info.value?.name ?? props.name)
   color: var(--text-muted);
 }
 
-/* Bilgi düğmesi künyenin SONUNDA, ayrı bir köşede değil: okunan
-   satırın devamı, "daha fazlası" demek. */
+/* Dinle ve bilgi düğmeleri aynı kalıpta: aynı boy, aynı yuvarlaklık,
+   ikisi de künye satırının devamı. */
+.sh-play,
 .sh-info {
   flex: 0 0 auto;
   width: 1.15rem;
@@ -121,5 +127,9 @@ const title = computed(() => info.value?.name ?? props.name)
   cursor: pointer;
 }
 
+.sh-play:hover,
 .sh-info:hover { border-color: var(--accent-ui); color: var(--text); }
+
+/* Üçgen yuvarlağın içinde optik olarak sola kaçıyor. */
+.sh-play { font-size: 0.5rem; font-style: normal; padding-left: 0.08em; }
 </style>

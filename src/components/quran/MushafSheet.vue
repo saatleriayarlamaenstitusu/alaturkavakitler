@@ -187,6 +187,7 @@ const hit = (w) =>
           :name="l.name"
           :name-font="names"
           @info="emit('info', $event)"
+          @play="emit('ayah', { surah: $event, verse: 1 })"
         />
 
         <div v-else-if="l.kind === 'basmala'" class="qpc-basmala">
@@ -199,6 +200,7 @@ const hit = (w) =>
             :key="i"
             class="qpc-word"
             :class="{ end: w.e, focus: hit(w) }"
+            :data-v="`${w.s}:${w.v}`"
             @pointerup="onWord(w)"
           >{{ w.g }}</span>
         </div>

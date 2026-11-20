@@ -17,6 +17,7 @@ import MealSheet from '@/components/quran/MealSheet.vue'
 import SurahInfoSheet from '@/components/quran/SurahInfoSheet.vue'
 import FontSheet from '@/components/quran/FontSheet.vue'
 import ListenBar from '@/components/quran/ListenBar.vue'
+import * as player from '@/stores/recitation'
 import ReciterSheet from '@/components/quran/ReciterSheet.vue'
 
 /**
@@ -92,17 +93,6 @@ const fontFamily = computed(() => getFont(settings.quranFont).family)
 onMounted(() => ensureFont(settings.quranFont))
 watch(() => settings.quranFont, (id) => ensureFont(id))
 
-watch([page, tab, reading], ([p, t, h]) => {
-  router.replace({
-    query: {
-      ...route.query,
-      s: String(p),
-      b: t === 'hatim' ? 'hatim' : undefined,
-      h: h ?? undefined,
-      a: focusVerse.value ? `${focusVerse.value.surah}:${focusVerse.value.verse}` : undefined,
-    },
-  })
-})
 
 const read = computed(() => hatim.isRead(readingHatim.value, page.value))
 
@@ -150,36 +140,47 @@ const picker = ref(false)
 /** Meal seçici açık mı. */
 const mealPick = ref(false)
 /**
- * Dinleme açık mı ve kârî seçici.
+ * Dinleme.
  *
- * Dinlemek ayrı bir sayfa değil, okunan sayfanın altına oturan bir
- * şerit: ses çalarken okunan ayet mushafta vurgulanıyor (vurgu için
- * zaten `focus` var, ayrıca bir şey gerekmedi) ve kıraat sayfanın
- * sonuna varınca sayfa kendiliğinden çevriliyor.
+ * Oynatıcının kendisi uygulama düzeyinde yaşıyor
+ * (`stores/recitation.js`), bu sayfa yalnızca iki şeyi yapıyor:
+ * şeridi göstermek ve ÇALAN AYETİ sayfaya bağlamak — vurgu ve sayfa
+ * çevirme. Sayfa numarasını bilen burası, o yüzden çevirme kuralı da
+ * burada.
  */
-const listening = ref(false)
 const reciterPick = ref(false)
+
+/** Kârî ayardan gelir; oynatıcı sayfadan bağımsız olduğu için ona yazılır. */
+watch(() => settings.quranReciter, (id) => player.setReciter(id), { immediate: true })
 
 /**
  * Ayete çift dokunmak o ayeti seslendirir; çalıyorsa durdurur.
- *
- * Şerit kapalıysa önce açılır — "dinlemeye başla" ile "şuradan başla"
- * tek harekette oluyor. Karar (çal/dur) şeride ait, burada yalnızca
- * istek iletiliyor; sayaç, aynı ayete ikinci kez dokunmanın da yeni
- * bir istek sayılmasını sağlıyor.
+ * Karar oynatıcıya ait — hangi ayetin çaldığını yalnızca o biliyor.
  */
-const listenRequest = ref(null)
-let tapCount = 0
+const onAyahTap = (v) => player.requestVerse(v.surah, v.verse)
 
-function onAyahTap(v) {
-  listening.value = true
-  listenRequest.value = { ...v, n: ++tapCount }
+/** Kulaklık düğmesi: şeridi açar; kapatırken kıraati de bırakır. */
+function toggleBar() {
+  if (player.barOpen.value) player.stop()
+  else player.barOpen.value = true
 }
 
-/** Çalarken okunan ayet; durunca vurgu düşer. */
-function onRecited(v) {
-  focus.value = v ? { ...v, page: pageOfVerse(v.surah, v.verse) } : null
-}
+/**
+ * Çalan ayet vurgulanır ve gerekirse sayfa çevrilir.
+ *
+ * Çevirme yalnızca İLERİ ve yalnızca bir adım: hedef sayfa o ankinin
+ * tam bir fazlaysa çevrilir. Kullanıcı elle başka bir yere giderse ses
+ * onu geri sürüklemesin diye.
+ */
+watch([player.curSurah, player.curVerse], ([s, v]) => {
+  if (!s || !v) {
+    if (!player.playing.value) focus.value = null
+    return
+  }
+  const p = pageOfVerse(s, v)
+  focus.value = { surah: s, verse: v, page: p }
+  if (p === page.value + 1) page.value = p
+})
 
 /** Künyesi açılan sure (null = kapalı). */
 const infoSurah = ref(null)
@@ -212,13 +213,23 @@ const focus = ref(startAyah ? { ...startAyah, page: page.value } : null)
 const focusVerse = computed(() =>
   focus.value && focus.value.page === page.value ? focus.value : null)
 
-// Vurgu değişince adres de değişsin: sayfa aynı kalarak başka bir ayete
-// gidilebiliyor (aynı sayfadaki iki ayet), sayfa izleyicisi bunu görmez.
-watch(focusVerse, () => {
+/**
+ * Adres çubuğu TEK yerden yazılır.
+ *
+ * Önce iki izleyici vardı (biri sayfa/sekme, biri vurgu) ve ikisi de
+ * `route.query`yi yayıyordu: aynı turda ikisi birden tetiklendiğinde
+ * her biri DİĞERİNDEN ÖNCEKİ anlık görüntüyü yayıyor ve sonra yazan
+ * öbürünün anahtarını düşürüyordu. Ölçüldü: Kehf'e gidince adres
+ * `?s=1&a=18:1` kalıyordu — sayfa 293 olmuşken.
+ */
+watch([page, tab, reading, focusVerse], ([p, t, h, f]) => {
   router.replace({
     query: {
       ...route.query,
-      a: focusVerse.value ? `${focusVerse.value.surah}:${focusVerse.value.verse}` : undefined,
+      s: String(p),
+      b: t === 'hatim' ? 'hatim' : undefined,
+      h: h ?? undefined,
+      a: f ? `${f.surah}:${f.verse}` : undefined,
     },
   })
 })
@@ -232,7 +243,7 @@ function goTo(p, verse) {
 function goShortcut(sc) {
   if (sc.juz) return goTo(pageOfJuz(sc.juz), null)
   if (sc.verse) return goTo(pageOfVerse(sc.surah, sc.verse), { surah: sc.surah, verse: sc.verse })
-  goTo(pageOfSurah(sc.surah), null)
+  goTo(pageOfSurah(sc.surah), { surah: sc.surah, verse: 1 })
 }
 </script>
 
@@ -290,22 +301,18 @@ function goShortcut(sc) {
         @toggle-read="toggle"
         @info="infoSurah = $event"
         @font="fontPick = true"
-        :listening="listening"
-        @listen="listening = !listening"
+        :listening="player.barOpen.value"
+        @listen="toggleBar"
         @ayah="onAyahTap"
         :immersive="immersive"
         @update:immersive="immersive = $event"
       >
         <template #bar>
         <ListenBar
-          v-if="listening"
+          v-if="player.barOpen.value"
           :page="page"
-          :reciter="settings.quranReciter"
-          :request="listenRequest"
-          @verse="onRecited"
-          @update:page="page = $event"
+          :start="focusVerse"
           @pick-reciter="reciterPick = true"
-          @close="listening = false; focus = null"
         />
         </template>
       </MushafView>
@@ -344,7 +351,7 @@ function goShortcut(sc) {
       :open="picker"
       :page="page"
       @close="picker = false"
-      @go="goTo($event, null)"
+      @go="goTo"
     />
   </div>
 </template>

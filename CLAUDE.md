@@ -669,6 +669,10 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   için döndürüyor — ekranda aynı cümle üç kez çıkıyordu. Ardışık ve aynı
   metinli ayetler tek satırda toplanıp "2–4" diye etiketleniyor, metnin
   başındaki "(2-4)" işareti atılıyor.
+  Baştaki numara işareti satırın kendisinde olduğu için atılır ve
+  deseni meale göre değişiyor: kimi "(2-4)" yazıyor, kimi
+  "(1-2-3-4)" diye tek tek sayıyor — ikisi de yalnızca rakam,
+  tire ve boşluktan oluştuğu için tek desenle yakalanıyor.
 - **Gitme kutusu tek alandır** (`GoTo.vue`): sure adı, `2:255`, `bakara 255`,
   `s42`, `c5` — ne yazıldığını kendisi anlar ve seçenekleri listeler. Önce
   dört ayrı açılır liste vardı (sure/cüz/sayfa/meal) ve bir AYETE gitmenin
@@ -687,14 +691,23 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   HİÇ kayıt yokken (`localStorage.getItem` → `null`) kurulur: kullanıcı
   hatmini sildiyse kayıt artık boş bir liste olarak vardır ve bir daha
   tohumlanmaz — "sildim ama geri geldi" olmaz.
-- **İki görünüm var, tepeden tek dokunuşla değişir** (`settings.quranView`):
+- **Üç görünüm var, tepeden tek dokunuşla değişir** (`settings.quranView`):
   - **Mushaf** (varsayılan) — basılı sayfanın satır satır kendisi:
     15 satır, sayfaya ait QPC fontu (`MushafSheet.vue`, `utils/qpc.js`).
     Satır sonları bizim kırdığımız yerler değil, mushafın kırdığı yerler.
-  - **Esnek** — ayetler akar, yazı boyu %70–180 arası ayarlanır. Küçük
-    ekranda ve meal eşliğinde okumak için.
+  - **Esnek** — ayetler akar, yazı boyu %70–180 arası ayarlanır; meal
+    altta ayrı bir listedir. Küçük ekranda okumak için.
+  - **Ayet ayet** — ayet, hemen altında meali, sonra sonraki ayet.
+    Karşılaştırarak okuyan için: akan metinde "bu cümlenin karşılığı
+    hangisiydi" diye aşağıdaki listeye göz kaydırmak gerekmiyor.
+    Satırlar MEAL gruplarından çıkar — gruplanmış çeviride (Diyanet'te
+    Fâtiha 2-4) o grubun ayetleri tek blokta toplanır ve karşılık bir
+    kez yazılır; ayrı ayrı basılsa aynı cümle art arda çıkardı. Meal
+    kapalıyken her ayet kendi bloğudur. Blok içindeki Arapça iki yana
+    YASLANMAZ (tek ayette kelime araları uçuyor), sağa yaslanır.
+  Bilinmeyen bir `quranView` değeri mushafa düşer.
   Değişen yalnızca dizim: sayfa birimi, hatim işaretlemesi, kaydırma ve
-  adres çubuğu iki görünümde de aynı.
+  adres çubuğu üç görünümde de aynı.
 - **Dizim verisi DEPODADIR, ağdan gelmez** (`src/data/mushaf/juz-NN.json`,
   `scripts/export-mushaf-lines.js`). Değişmeyen bir tablo için her sayfa
   açılışında ağa çıkmak tek bir sağlayıcıya bağlı kalmak ve çevrimdışı
@@ -901,6 +914,29 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
 
 ## Dinleme (mukabele)
 
+- **Oynatıcı sayfaya değil UYGULAMAYA aittir** (`stores/recitation.js`).
+  Önce bütün düzenek `ListenBar`ın içindeydi ve `<audio>` onun
+  şablonunda duruyordu: Kur'an sayfasından çıkmak elemanı DOM'dan
+  silip sesi kesiyordu. Dinlemek sayfaya bağlı bir iş değil —
+  vakitlere bakarken kıraat sürer. Ses elemanı, damga tablosu ve çalma
+  durumu artık bir modülde (ES modülü zaten tekil; Pinia gerekmedi,
+  kalıcılaştırılacak bir şey yok), şerit yalnızca onun GÖRÜNÜMÜ.
+  - Eleman şablonda olmadığı için `<source>` çocukları da yok: yedeğe
+    geçiş (`yayıncı → aynamız`) elle yapılıyor, konum korunarak.
+  - `currentTime` süre bilinmeden yazılamıyor; hedef `pendingSeek`te
+    bekler ve `loadedmetadata`da uygulanır.
+  - **Duraklattıktan sonra bir `timeupdate` daha gelebiliyor**:
+    korumasız bırakılınca "bırak" dedikten sonra ayet yeniden yazılıyor,
+    mushaftaki vurgu ve adresteki ayet asılı kalıyordu (ölçüldü).
+  - Sayfa çevirme oynatıcıda DEĞİL: hangi sayfada olduğunu bilen
+    Kur'an sayfası, orada çalan ayet izlenip vurgu ve çevirme yapılıyor
+    (kural aynı: yalnızca ileri, yalnızca bir adım).
+- **Kur'an sayfasının dışında mini oynatıcı var** (`MiniPlayer.vue`,
+  kabukta `BottomNav`un üstünde): ne çaldığı (sure, ayet, kârî) yazar,
+  duraklatılır, bırakılır ve bir dokunuşla okunan yere dönülür —
+  kontrolsüz çalan bir ses olmasın diye. Kur'an sayfasında
+  GÖSTERİLMEZ, orada tam şerit var. Masaüstünde alt gezinme sol raya
+  döndüğü için akışta yeri yok: sağ alt köşede durur.
 - **Ayrı bir "Dinle" sayfası YOK.** Dinleme, okunan sayfanın üstüne
   oturan bir şerittir (`ListenBar.vue`, `MushafView`in `bar` yuvası):
   ses çalarken okunan ayet mushafta vurgulanır ve kıraat sayfanın
@@ -952,8 +988,52 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   35–78 sn; eşikler 45 ve 55. Kârî seçicide üç kare + söz olarak
   gösterilir — yalnızca kare bırakmak "üç kare hızlı mı ağır mı"
   sorusunu okurun tahminine bırakırdı.
+- **Okunan ayet ekranın ortasında tutulur** (`Takip` anahtarı,
+  `settings.quranAutoScroll`, varsayılan açık). Anahtar şeritte durur,
+  ayarlar sayfasında değil: dinlerken verilen bir karar ve etkisi
+  hemen aynı ekranda görülüyor. Kaydırma YALNIZCA ses çalarken yapılır
+  — elle okurken sayfanın kendiliğinden kayması okuyanı yerinden eder.
+  - Hedef `data-v="sure:ayet"` ile bulunur; üç görünüm de bu işareti
+    taşıyor (mushafta ayetin ilk kelimesi, esnekte ayetin kendisi,
+    ayet ayet görünümünde hem blok hem ayet), böylece tek arama yetiyor.
+  - `scrollIntoView` KULLANILMAZ (`utils/scrollCenter.js`): yoldaki
+    bütün kaydırma kutularını birden kaydırıyor ve iç içe kutularda
+    (sayfa kutusu, tam ekran kabuğu, belge) biri kayarken öbürü
+    yerinden oynuyor. Yalnızca elemanın ilk kaydırılabilir atası
+    kaydırılır; ölçüldü: ayet değişiminde kutunun merkezinden sapma 0px.
+  - Kaydırma `nextTick` sonrası yapılır: sayfa kıraatle çevrildiğinde
+    vurgu yeni sayfa çizilmeden yazılıyor ve eleman henüz yok.
 - **Dinle düğmesi nota değil KULAKLIKTIR**: nota müziği çağrıştırıyor,
   buradaki iş kıraat dinlemek.
+- **Sistem oynatıcısına künye yazılır** (Media Session): bildirim
+  alanında ve kilit ekranında başlıkta sure numarası, adı ve okunan
+  ayet, sanatçı alanında kârî ve okuyuş (`Hadi Turé · Murattal`),
+  kapakta uygulama simgesi durur. Yazılmazsa orada sayfanın başlığı ve
+  dosya adı (`001.mp3`) görünüyor — ne okunduğu da kimin okuduğu da
+  belli olmuyordu. Başlık okunan ayetle güncellenir, bu yüzden çalan
+  ayet artık bir `ref` (`lastVerse`) ve sayfa çevirmeyle aynı kaynaktan
+  sürülür. İleri/geri düğmeleri PARÇA değil AYET değiştirir
+  (`step(±1)`) — mukabelede istenen hareket bu. `setPositionState`
+  yalnızca süre bilindiğinde çağrılır, yoksa tarayıcı hata atıyor.
+- **Sure hedefi İLK AYETİNİ de taşır.** Bir sure sayfanın ortasında
+  başlıyor olabiliyor (Kehf 293. sayfanın ortasında); hedef yalnızca
+  sayfa olarak verilince hem vurgu hem kıraat sayfanın başındaki ÖNCEKİ
+  sureden başlıyordu (Kehf'e tıklayınca İsrâ okunuyordu). Üç giriş de
+  (`GoTo`, `PickerSheet`, hızlı erişim) artık `{ surah, verse: 1 }`
+  yolluyor. Kıraatin başlangıcı buna bağlandı: `ListenBar`'ın `start`
+  prop'u işaretli ayettir, çalınan sure ve başlama noktası ondan gelir;
+  işaret yoksa eski davranış sürer (sayfanın ilk suresi).
+- **Adres çubuğu TEK izleyiciden yazılır.** Sayfa/sekme ve vurgu için
+  iki ayrı `router.replace` vardı ve ikisi aynı turda tetiklendiğinde
+  her biri `route.query`nin DİĞERİNDEN ÖNCEKİ halini yayıp öbürünün
+  anahtarını düşürüyordu — ölçüldü: Kehf'e gidince adres `?s=1&a=18:1`
+  kalıyor, sayfa 293 olmuşken.
+- **Sure künyesinde "başından dinle" düğmesi var**: ayete çift dokunmak
+  kıraati o ayetten başlatıyor ama sureyi BAŞINDAN dinlemek en sık
+  istenen şey ve çift dokunuş onu bilinmez bir hareketin arkasında
+  bırakıyordu. Düğme ayrı bir düzenek kurmaz, mevcut `ayah` olayını
+  `{ surah, verse: 1 }` ile yollar — şerit kapalıysa açılması ve
+  besmele de oradan geliyor.
 - **Esnek görünümde ayet numarası madalyondur**, düz rakam değil: akan
   metinde küçük bir rakam seçilmiyordu, ayetin nerede bittiğini gözle
   aramak gerekiyordu. Ölçü `em` cinsinden — yazı boyu %70–180 arasında

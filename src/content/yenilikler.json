@@ -1,5 +1,11 @@
 [
   {
+    "id": "ayet-ayet-ve-surekli-kiraat",
+    "title": "Ayet ayet okuma, kesilmeyen kıraat",
+    "date": "2026-11-20",
+    "body": "Kur'an sayfasına üçüncü bir görünüm eklendi: **Ayet ayet**. Ayetin hemen altında meali duruyor, sonra bir sonraki ayet — karşılaştırarak okurken aşağıdaki listeye göz kaydırmak gerekmiyor. Mushaf ve Esnek görünümler olduğu gibi duruyor, üçü de tepedeki aynı düğmeden seçiliyor.\n\n**Kıraat artık sayfayla birlikte durmuyor.** Dinlerken vakitlere ya da takvime geçerseniz okuma sürüyor; sayfanın altında küçük bir oynatıcı çıkıyor: ne okunduğu, hangi ayet ve hangi kârî yazıyor, oradan duraklatabiliyor, bir dokunuşla okunan yere dönebiliyorsunuz.\n\nTelefonun **bildirim alanında ve kilit ekranında** da düzgün bir künye var artık: sure, ayet ve kârî adı. İleri ve geri düğmeleri parçayı değil **ayeti** değiştiriyor.\n\nSure künyesindeki **oynat düğmesiyle** sureyi başından dinleyebilirsiniz. Bir de sure seçince (örneğin Kehf) okuma artık sayfanın başındaki önceki sureden değil, **surenin kendi ilk ayetinden** başlıyor.\n\nDinleme şeridine bir de **Takip** anahtarı eklendi: açıkken okunan ayet kendiliğinden ekranın ortasına geliyor, sayfayı elle kaydırmanız gerekmiyor. Kapatırsanız sayfa yerinde kalır."
+  },
+  {
     "id": "kiraat-dinleme",
     "title": "Kıraat dinleme",
     "date": "2026-11-20",

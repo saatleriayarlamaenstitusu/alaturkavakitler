@@ -59,7 +59,10 @@ const rows = computed(() => {
       main: s.name,
       sub: `s. ${pageOfSurah(s.id)}`,
       on: s.id === here.value.surah,
-      go: () => emit('go', pageOfSurah(s.id)),
+      // Sure, sayfanın ORTASINDA başlıyor olabilir: hedef yalnızca
+      // sayfa olursa vurgu da kıraat da sayfanın başındaki önceki
+      // sureden başlıyor.
+      go: () => emit('go', pageOfSurah(s.id), { surah: s.id, verse: 1 }),
     }))
 
   // Cüzde numara zaten solda duruyor; satırın adı da "1. cüz" olursa
