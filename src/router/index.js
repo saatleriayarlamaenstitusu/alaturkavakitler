@@ -13,6 +13,10 @@ const routes = [
   { path: '/yenilikler', component: () => import('@/pages/BlogPage.vue'), props: { page: 'yenilikler' } },
   { path: '/detay/:page/:id', component: () => import('@/pages/BlogDetailPage.vue') },
   { path: '/amentu', component: () => import('@/pages/AmentuPage.vue') },
+  // Site ve eklenti AYRI politikalar; ikincisinin adresi Chrome Web
+  // Store'a verilen bağlantıdır (bkz. src/data/privacy.js).
+  { path: '/gizlilik', component: () => import('@/pages/PrivacyPage.vue'), props: { which: 'site' } },
+  { path: '/gizlilik/yeni-sekme', component: () => import('@/pages/PrivacyPage.vue'), props: { which: 'eklenti' } },
   { path: '/:pathMatch(.*)*', component: () => import('@/pages/NotFoundPage.vue') },
 ]
 

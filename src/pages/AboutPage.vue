@@ -107,6 +107,15 @@ useSeo({
       </div>
 
     <section class="about-footer">
+      <!-- Gizlilik bağlantısı burada: gezinme menüsünde her gün
+           bakılacak bir sayfa değil, ama aranınca bulunabilir bir
+           yerde durmalı. -->
+      <nav class="about-legal">
+        <RouterLink to="/gizlilik">Gizlilik politikası</RouterLink>
+        <span aria-hidden="true">·</span>
+        <RouterLink to="/gizlilik/yeni-sekme">Yeni Sekme eklentisi</RouterLink>
+      </nav>
+
       <a href="https://github.com/saatleriayarlamaenstitusu/" title="Saatleri Ayarlama Enstitüsü" target="_blank" rel="noopener">
         <img src="/Icons/sae.svg" alt="Saatleri Ayarlama Enstitüsü" id="sae" />
       </a>
@@ -115,6 +124,19 @@ useSeo({
 </template>
 
 <style scoped>
+.about-legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.about-legal a { color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.about-legal a:hover { color: var(--text); border-color: var(--accent-ui); }
+
 .about-page {
   padding-bottom: 4rem;
 }
