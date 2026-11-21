@@ -147,7 +147,7 @@ const onFocus = () => { if (items.value.length) openList.value = true }
       class="goto-input"
       type="text"
       inputmode="text"
-      placeholder="Sure, ayet, sayfa veya cüz — “bakara 255”, “2:255”, “s42”"
+      placeholder="Ara: bakara 255 · 2:255 · s42 · c5"
       autocomplete="off"
       spellcheck="false"
       @input="onInput"

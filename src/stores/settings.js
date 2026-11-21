@@ -1,10 +1,22 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { normalizeOffsets } from '@/data/vakitNotify'
+import { AUTHORS } from '@/data/kuranMeta'
 
 function load(key, defaultValue) {
   const stored = localStorage.getItem(`settings_${key}`)
   return stored !== null ? JSON.parse(stored) : defaultValue
+}
+
+/**
+ * Meal listesini temizler: tanınan kimlikler, tekrarsız, AUTHORS
+ * sırasında. 0 (kapalı) ve bilinmeyen kimlikler atılır — boş liste
+ * "meal kapalı" demektir, ayrı bir anahtar tutmaya gerek yok.
+ */
+function normalizeMeals(value) {
+  const ids = Array.isArray(value) ? value : [value]
+  const want = new Set(ids.map(Number).filter((n) => AUTHORS.some((a) => a.id === n)))
+  return AUTHORS.filter((a) => want.has(a.id)).map((a) => a.id)
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -27,7 +39,17 @@ export const useSettingsStore = defineStore('settings', () => {
   // Kuran gösterimi: okuma sayfası, hatim ve ileride kıraat kesitleri
   // aynı tercihi okur — ayet nasıl görünsün sorusu bir kez sorulur.
   // 0 = meal kapalı, yalnızca Arapça metin.
-  const quranMeal = ref(load('quranMeal', 11))          // Diyanet İşleri
+  // Meal ARTIK ÇOKLU: birden fazla mütercim yan yana okunabiliyor.
+  // Karşılaştırmalı okuma bu sayfanın en çok istenen işi ve tek seçimle
+  // her defasında seçiciyi açıp kapatmak gerekiyordu. Sıra AUTHORS
+  // sırasıdır (seçim sırası değil), yoksa aynı iki meal farklı sırada
+  // seçildiğinde sayfa başka türlü diziliyor.
+  // Eski tek değer (`quranMeal`) kayıttan taşınır; 0 = kapalı.
+  const quranMeals = ref(normalizeMeals(load('quranMeals', null) ?? [load('quranMeal', 11)]))
+  // Meal yazı tipi: Arapça metnin hattı seçilebilirken karşılığının
+  // yazısı sabit kalıyordu. Üç küme — sans (taban), serif (Baskervville)
+  // ve monospace; ailelerin kendisi `src/data/mealFonts.js`'te.
+  const quranMealFont = ref(load('quranMealFont', 'sans'))
   const quranFont = ref(load('quranFont', 'lateef'))
   // Görünüm: 'mushaf' basılı sayfanın satır satır dizimi, 'esnek' akan
   // metin. Mushaf varsayılan — sayfa numarası zaten basılı nüshanın.
@@ -44,9 +66,11 @@ export const useSettingsStore = defineStore('settings', () => {
   const quranTajweed = ref(load('quranTajweed', false))
   // Son seçilen kârî. Dinleme şeridinde değişir, ayarlarda değil:
   // dinlerken verilen bir karar.
-  const quranReciter = ref(load('quranReciter', 'husary'))
+  // Varsayılan kârî Hadi Turé: ağır olmayan bir murattal okuyuş ve
+  // damgaları bizde (ayet takibi ilk açılışta çalışıyor).
+  const quranReciter = ref(load('quranReciter', 'toure'))
 
-  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, quranMeal, quranFont, quranView, quranAutoScroll, quranScript, quranFontSize, quranTajweed, quranReciter, darkMode, colorStyle, homeClock }
+  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, quranMeals, quranMealFont, quranFont, quranView, quranAutoScroll, quranScript, quranFontSize, quranTajweed, quranReciter, darkMode, colorStyle, homeClock }
 
   // `deep`: ayarların çoğu düz değer ama `notifyOffsets` bir obje —
   // içindeki tek bir vakit değişince de kaydedilmeli.

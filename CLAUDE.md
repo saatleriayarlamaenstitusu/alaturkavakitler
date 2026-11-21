@@ -540,6 +540,22 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
 
 ---
 
+## Derin Bağlantılar (SPA yönlendirmesi)
+
+- Uygulama history modunda çalışıyor; `/kuran`, `/vakitler` gibi
+  yollar sunucuda DOSYA DEĞİL. Cloudflare Pages'te bunu
+  `public/_redirects` çözüyor: `/*  /index.html  200`.
+- **`public/404.html` SİLİNDİ ve geri eklenmemeli.** v1'den kalan
+  GitHub Pages hilesiydi (`spa-github-pages`): yolu sorgu dizesine
+  çevirip `/?/kuran&a=4:58` adresine yönlendiriyor, ama onu geri
+  çözecek betik `index.html`de yok. Ölçüldü: canlıda `/kuran`,
+  `/vakitler`, `/takvim`, `/hakkinda` — hepsi **404** dönüyor ve
+  ana sayfaya düşüyordu, yani paylaşılan her derin bağlantı
+  kırıktı. Pages, çıktıda bir `404.html` varsa onu `_redirects`
+  kuralından önce servis ediyor.
+- Yeni bir derin bağlantı eklerken kontrol: `curl -o /dev/null -w
+  "%{http_code}" https://alaturkavakitler.com/<yol>` → 200 olmalı.
+
 ## Yapısal Veri (JSON-LD)
 
 - **Site geneli graf `index.html`de STATİKTİR**: Organization + WebSite +
@@ -789,6 +805,16 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
     olan sayfalar daha uzun. Ölçülen: 393×852 ekranda 656 piksellik
     alana 697 piksellik sayfa düşüyordu. Bir mushaf sayfası kaydırılarak
     okunmaz. Meal açıksa sayfanın altında kalır ve orası kaydırılır.
+- **Doğal olarak kısa satır iki yana YASLANMAZ** (`MushafSheet`,
+  `LOOSE = 0.82`): `space-between` satırı doldurmak için kelime
+  aralarını geriyor ve dolu bir mushaf satırında bu doğru — basılı
+  sayfada da satır sayfanın enini doldurur. Ama tezhipli açılış
+  sayfalarında (Fâtiha) ve son cüzün kısa surelerinde satır kısadır;
+  gerildiğinde iki kelime sayfanın iki ucuna yapışıyordu, masaüstünde
+  kutu geniş olduğu için daha da belirgin. Doğal en `scrollWidth` ile
+  ÖLÇÜLEMİYOR (`space-between` taşmayan satırda da kutuya eşit çıkıyor):
+  kelimelerin kendi genişlikleri toplanıyor ve bunun için `.qpc-word`
+  küçülmeye kapalı (`flex: none`).
 - **Satır oturtma yalnızca GENİŞLİK değişince çalışır** (`MushafSheet`):
   `fitLines` satırların puntosunu değiştiriyor, bu da kutunun boyunu
   değiştiriyor — yükseklik de dinlenseydi `ResizeObserver` kendi
@@ -818,6 +844,26 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   karışık ve açılır kutuda hangisinin Türkçe olduğu ancak addan tahmin
   ediliyordu. Satırda **TR/EN rozeti** var, liste dile göre bölünmüş,
   "Meal kapalı" en üstte (yalnızca Arapça okumak sık yapılan bir iş).
+- **Meal ÇOKLU seçilir** (`settings.quranMeals`, dizi; boş = kapalı).
+  Satıra dokunmak açar/kapatır ve sayfa açık kalır — karşılaştırmalı
+  okuma için meal seçmek bir değil birkaç dokunuştur. Sıra her zaman
+  `AUTHORS` sırasıdır, seçim sırası değil: yoksa aynı iki meal farklı
+  sırada seçildiğinde sayfa başka türlü diziliyor. Eski tek değer
+  (`quranMeal`) ilk açılışta diziye taşınır.
+- **Satır dizimini BİRİNCİ meal belirler** (`rowsOf`): hangi ayetlerin
+  tek satırda toplandığı onun gruplamasından çıkar, öbür mealler o
+  aralığa düşen metinlerini verir (aralıkta farklı metinler varsa
+  birleştirilir, aynıysa bir kez yazılır). Her mütercimin kendi
+  gruplamasına göre dizilseydi satırlar hiç hizalanmaz ve
+  karşılaştırma imkânsızlaşırdı. Mütercim adı YALNIZCA birden fazla
+  meal seçiliyken yazar; tekse zaten düğmede duruyor.
+- **Meal yazı tipi seçilebilir** (`src/data/mealFonts.js`,
+  `settings.quranMealFont`): sans (uygulamanın yazısı, ek indirme yok),
+  serif (Baskervville) ve mono (Courier Prime). Arapça metnin hattı
+  seçilebiliyordu ama uzun uzun okunan şey karşılığıdır. Aile
+  `--meal-font` değişkeniyle iniyor; `ensureFont` ile yalnızca
+  seçilen indirilir. Seçici MEAL alt sayfasının başında — karar aynı
+  yerde verilsin diye.
 - **Sure başlarında zeminli künye bloğu** (`SurahHeader.vue`): mushafta
   sayfanın kendi süslemesi (tek glif) + altında Türkçe ad, anlamı,
   iniş yeri ve ayet sayısı; esnek görünümde süsleme olmadan aynısı.
@@ -837,6 +883,24 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   haliyle onaltılık basamaklara yazılır (12 → `U+E012`, 114 → `U+E114`).
   Sıralı sayıldığında 18. surenin yerine Yusuf çıkıyordu (ölçüldü).
   Fontun 116 glifi ve E009→E010, E099→E100 boşlukları bunu doğruluyor.
+- **Sayfanın başlığı seçicinin KENDİSİDİR**: üstte ayrı bir "Seç ▾"
+  düğmesi vardı, neyi seçtiği de nerede olduğun da yazmıyordu, üstelik
+  sure adı bir satır yukarıda zaten duruyordu — aynı bilgi iki yerde,
+  biri tıklanabilir biri değil. Şimdi büyük sure adı + "cüz · sayfa"
+  satırı bir düğmedir ve `PickerSheet`i açar (`MushafView` `@pick`).
+- **Üst taraf katlanır**: hat, yazı boyu, tecvit ve hızlı erişim
+  kısayolları ⋯ düğmesinin arkasındadır (`tools`). Bir kez kurulup
+  bırakılan ayarlar her sayfada yer kaplıyordu — üst taraf altı satır
+  ediyor ve mushaf ekranın yarısından sonra başlıyordu. Dışarıda kalan
+  tek şey görünüm seçimi (mushaf/esnek/ayet): en sık dokunulan o.
+  Gitme kutusu ve meal düğmesi de araç şeridinin İÇİNDE, `MushafView`in
+  `jump` yuvasından geliyor. Hayalet başlık (`.page-title`) bu sayfada
+  küçültüldü; global ölçü değişmez, öbür sayfalarda o ölçü
+  kompozisyonun kendisi.
+- **Sekmeler ne YAPTIĞINI söyler**: "Oku"/"Hatim" değil "Serbest okuma"
+  (açık kitap) ve "Hatimlerim" (halka). İkisinde de Kur'an okunuyor,
+  fark okumanın bir hatme YAZILIP yazılmaması; eski adlar bunu
+  söylemiyordu. Okuyucudaki geri düğmesi de "Hatimlerime dön".
 - **Seçici yerel `select` değildir** (`PickerSheet.vue`): 114 seçenekli bir
   `select` Android'de aranamayan, ağır bir listeye dönüşüyor ve sure ile
   sayfasını yan yana gösteremiyor. Alt sayfa olarak açılır, üç sekmesi var
@@ -901,6 +965,11 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   yazıldığına bakmaksızın — hatim bitip yenisi başladığında süreklilik
   orada görünür. (Bu, kaldırılan "etkin hatim" bloğundan farklı: o, hangi
   hatme baktığın kayıyordu; bu toplam hiç değişmiyor.)
+- Kartlar arasında boşluk var ve ayırıcı çizgi yerini kartın kendi
+  kenarlığına bıraktı: satırlar birbirine çok yakınken hangi niyetin
+  hangi tarihe ait olduğu karışıyordu. Zemin ve soldaki aksan çubuğu
+  YALNIZCA açık karttadır — kalınlaşan niyet yazısı tek başına "şu an
+  buna bakıyorum" demeye yetmiyordu.
 - Silme düğmesi okuma düğmesinin yanında DURMAZ, satırın öbür ucundadır:
   ikisi yan yanayken yanlış olana basmak bir dokunuş uzaklıkta.
 - **Takvim sayfası da okumayı gösterir**: seçili günde hangi hatimden kaç
@@ -988,6 +1057,36 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   35–78 sn; eşikler 45 ve 55. Kârî seçicide üç kare + söz olarak
   gösterilir — yalnızca kare bırakmak "üç kare hızlı mı ağır mı"
   sorusunu okurun tahminine bırakırdı.
+- **Açık bir "şuraya git" isteği kaydırılır** (`MushafView`in `jump`
+  prop'u, her hedefte artan bir sayaç). Oto kaydırma yalnızca ses
+  ÇALARKEN devrede, ama üstten bir sure seçmek açık bir istektir:
+  sayfa değişiyordu ve sure sayfanın ortasında başlıyorsa ekran
+  sayfanın başında kalıyordu. Hedef surenin BAŞIYSA önce künye bloğu
+  aranır (`data-sh`) — ayetin ilk kelimesi ortalandığında başlık
+  yukarıda kalıyor ve "sureye gittim" hissi vermiyordu. Eleman hemen
+  var olmayabildiği için (dizim + font bekleniyor) birkaç tur denenir.
+- **Sayfaya dönünce okunan yere gidilir**: adreste `a` yoksa ve kıraat
+  sürüyorsa açılış ayeti ÇALAN ayettir. Vakitlere bakıp Kur'an'a
+  dönünce takip açık olduğu hâlde mushaf birinci sayfada açılıyordu —
+  ses Kehf'i okurken ekran Fâtiha'yı gösteriyordu.
+- **Elle sarma sayfayı da götürür** (`seekSeq`): kendiliğinden çevirme
+  yalnızca ileri ve bir adımdır (ses kullanıcıyı geri sürüklemesin),
+  ama sürgüyü çekmek ya da bildirim alanından ileri almak açık bir
+  istektir ve sayfa kaç adım uzakta olursa olsun okunan ayete gidilir.
+  Sarmada ayet `playing` şartı OLMADAN yeniden çözülür (`syncVerse`):
+  ses bir yeri okurken ekranın başka yeri göstermesi en şaşırtanıydı.
+- **Oynatıcı ekranı** (`PlayerSheet.vue`, ortak `BottomSheet` kabuğunun
+  dördüncü müşterisi): sürgü, kalan süre, ayet ayet ilerleme ve okunan
+  ayetin metni + seçili mealleri. Şerit okurken bakılan yerdir (tek
+  satır); bunlar oraya sığmıyor ve sığdırılsa şerit mushafın üstünde
+  bir denetim paneline dönüyordu. Hem şeritten hem MİNİ oynatıcıdan
+  açılır — Kur'an sayfasının dışında dinlerken yapılabilecek tek şey
+  duraklatmaktı.
+- **Kârî bağlama App.vue'da**: kârî seçici artık Kur'an sayfasının
+  dışından da (mini oynatıcıdan) açılabiliyor, `setReciter` izleyicisi
+  sayfada kalsaydı orada yapılan seçim oynatıcıya hiç ulaşmazdı.
+  Varsayılan kârî **Hadi Turé**: damgaları bizde, yani ayet takibi ilk
+  açılışta çalışıyor.
 - **Okunan ayet ekranın ortasında tutulur** (`Takip` anahtarı,
   `settings.quranAutoScroll`, varsayılan açık). Anahtar şeritte durur,
   ayarlar sayfasında değil: dinlerken verilen bir karar ve etkisi
@@ -1069,6 +1168,32 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   ayrı ÖN EK — tek alan adı, tek ayar.
 - QUL kayıt numaraları (`qul`) kütükte duruyor: **ses için değil, zaman
   damgası için** — kelime vurgulama o veriden gelecek.
+
+## Hazır Arka Planlar
+
+- `src/data/backgrounds.js` — dokuz görselin kütüğü. Dosyalar bizim
+  CDN'imizde (`cdn.alaturkavakitler.com/gorsel/bg/`), her birinin tam
+  (2560px) ve küçük (`-k`, 640px) hâli var; küçük olan yalnızca seçici
+  içindir.
+- **Görseller Pexels'ten seçilip kopyalandı.** Pexels şu an API
+  anahtarı vermiyor ve koleksiyon sayfası betikle çekilmiyor (403);
+  görseller tarayıcıda açılan koleksiyon sayfalarından okunan
+  kimliklerle `images.pexels.com` üzerinden indirildi. Her açılışta
+  başkasının sunucusuna gitmek, sayfanın açılış hızını başkasının
+  eline bırakmak demek — bu yüzden kopya bizde.
+- Seçim ölçütü: YATAY ve yazıyı boğmayan kareler. Kalabalık olanlar
+  (vapur kuyruğu, orman kulübeleri, araç içinden yol) elendi; `tone`
+  alanı ortalama parlaklıktır ve açık görsellerde karartmaya bir taban
+  ekleniyor.
+- **Görsel oluşturucuda hazır görsel seçmek, onu İNDİRİP data URI'ye
+  çevirir** (`pickPreset`): dışa aktarım belgeyi rasterize ediyor ve
+  uzaktaki bir görsel orada CORS'a takılıp tuvali kirletiyor. İndirilen
+  görsel, galeriden seçilmiş bir fotoğraftan farksız davranır.
+- Aynı kütük yeni sekme eklentisinde de duruyor
+  (`alaturka-newtab/src/data/backgrounds.js`): iki ayrı depo, ortak
+  paket yok. Biri değişirse öbürü de değişmeli.
+- Yükleme: `SRC_ROOT=<depo>/.mirror scripts/upload-cdn.sh gorsel/bg`
+  (hız sınırı betiğin içinde).
 
 ## Yedekleme
 

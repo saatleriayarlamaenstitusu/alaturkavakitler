@@ -33,6 +33,15 @@ export const reciterId = ref('')
 /** Çalan kayıt: sure ve ayet (0 = henüz bilinmiyor). */
 export const curSurah = ref(0)
 export const curVerse = ref(0)
+/**
+ * Çalan dosyanın konumu ve süresi (saniye).
+ *
+ * Oynatıcı ekranındaki sürgü ve "kalan süre" buradan besleniyor.
+ * `position` yalnızca `timeupdate` ile değil sarma anında da yazılıyor:
+ * sürgü bırakıldığı yerden geri zıplamasın diye.
+ */
+export const position = ref(0)
+export const duration = ref(0)
 /** Zaman damgaları; kârî değişince yeniden yüklenir. */
 const timings = ref(null)
 
@@ -223,22 +232,67 @@ function onMeta() {
     el.currentTime = pendingSeek
     pendingSeek = null
   }
+  duration.value = Number.isFinite(el.duration) ? el.duration : 0
+  position.value = el.currentTime
   syncState()
 }
 
 function onTime() {
-  // Duraklattıktan SONRA bir `timeupdate` daha gelebiliyor; korumasız
-  // bırakılınca "bırak" dedikten sonra ayet yeniden yazılıyor ve
-  // mushaftaki vurgu ile adresteki ayet asılı kalıyordu (ölçüldü).
-  if (!playing.value || !el || !timings.value || !curSurah.value) return
+  if (!el) return
+  // Konum her tikte yazılır — duraklatılmışken de doğru olmalı, sürgü
+  // onu okuyor.
+  position.value = el.currentTime
+  if (!duration.value && Number.isFinite(el.duration)) duration.value = el.duration
+  // AYET ise yalnızca çalarken yazılır: duraklattıktan SONRA bir
+  // `timeupdate` daha gelebiliyor ve korumasız bırakılınca "bırak"
+  // dedikten sonra ayet yeniden yazılıyor, mushaftaki vurgu ile
+  // adresteki ayet asılı kalıyordu (ölçüldü).
+  if (!playing.value) return
+  syncVerse()
+}
+
+/**
+ * Konumdan ayeti çöz.
+ *
+ * Sarmada da çağrılıyor ve orada `playing` şartı YOK: bildirim
+ * alanından ya da oynatıcı ekranından ileri alınca mushaftaki vurgu
+ * eski ayette kalıyordu — ses başka yeri okurken ekran başka yeri
+ * gösteriyordu.
+ */
+function syncVerse() {
+  if (!el || !timings.value || !curSurah.value) return
   const v = verseAt(timings.value, curSurah.value, el.currentTime * 1000)
   if (!v || v === curVerse.value) return
   curVerse.value = v
 }
 
+/**
+ * Elle sarma sayacı.
+ *
+ * Kıraat sayfayı kendiliğinden yalnızca İLERİ ve yalnızca bir adım
+ * çevirir (kullanıcı başka bir yere gittiyse ses onu geri
+ * sürüklemesin). Ama sürgüyü çekmek ya da bildirim alanından ileri
+ * almak AÇIK bir istektir: orada sayfa kaç adım uzakta olursa olsun
+ * okunan ayete gidilmeli. Kur'an sayfası bu sayıyı izliyor.
+ */
+export const seekSeq = ref(0)
+
+/** Belirli bir saniyeye sar — sürgü ve sistem oynatıcısı için. */
+export function seekTo(sec) {
+  if (!el) return
+  const max = Number.isFinite(el.duration) ? el.duration : null
+  const at = Math.max(0, max ? Math.min(sec, max) : sec)
+  el.currentTime = at
+  position.value = at
+  syncVerse()
+  syncState()
+  seekSeq.value += 1
+}
+
 function onEnded() {
   playing.value = false
   curVerse.value = 0
+  position.value = 0
   syncState()
 }
 
@@ -327,11 +381,11 @@ function bindMedia() {
   on('stop', () => stop())
   on('nexttrack', () => step(1))
   on('previoustrack', () => step(-1))
-  on('seekto', (d) => {
-    if (!el || d.seekTime == null) return
-    el.currentTime = d.seekTime
-    syncState()
-  })
+  on('seekto', (d) => { if (d.seekTime != null) seekTo(d.seekTime) })
+  // Bildirim alanındaki 10 sn'lik atlamalar: varsayılanı tarayıcı
+  // uyguluyor ama ayeti yeniden çözen biz olduğumuz için elle.
+  on('seekbackward', (d) => seekTo((el?.currentTime ?? 0) - (d?.seekOffset ?? 10)))
+  on('seekforward', (d) => seekTo((el?.currentTime ?? 0) + (d?.seekOffset ?? 10)))
 }
 
 watch([mediaTitle, mediaArtist], syncMeta)

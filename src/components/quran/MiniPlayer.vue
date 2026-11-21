@@ -1,6 +1,9 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useSettingsStore } from '@/stores/settings'
+import PlayerSheet from '@/components/quran/PlayerSheet.vue'
+import ReciterSheet from '@/components/quran/ReciterSheet.vue'
 import {
   playing, loading, error, reciter, surahName, curSurah, curVerse, curPage, active,
   toggle, stop,
@@ -20,6 +23,17 @@ import {
  */
 const route = useRoute()
 const router = useRouter()
+const settings = useSettingsStore()
+
+/**
+ * Oynatıcı ekranı buradan da açılır.
+ *
+ * Kur'an sayfasında şerit var, burada yoksa dinlerken yapılabilecek tek
+ * şey duraklatmaktı: sesi bir yere sarmak ya da okunan ayetin mealine
+ * bakmak için mushafa dönmek gerekiyordu. Alt sayfa her rotada açılıyor.
+ */
+const playerOpen = ref(false)
+const reciterPick = ref(false)
 
 const show = computed(() => active.value && route.path !== '/kuran')
 
@@ -51,7 +65,26 @@ function goBack() {
       </span>
     </button>
 
+    <button class="mini-open" aria-label="Oynatıcıyı aç" title="Oynatıcı" @click="playerOpen = true">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+        <path d="M4 10h2.5v9H4zm6.75-5h2.5v14h-2.5zM17.5 13H20v6h-2.5z" />
+      </svg>
+    </button>
+
     <button class="mini-x" aria-label="Kıraati bırak" @click="stop()">×</button>
+
+    <PlayerSheet
+      :open="playerOpen"
+      @close="playerOpen = false"
+      @pick-reciter="playerOpen = false; reciterPick = true"
+    />
+
+    <ReciterSheet
+      :open="reciterPick"
+      :value="settings.quranReciter"
+      @close="reciterPick = false"
+      @select="settings.quranReciter = $event"
+    />
   </div>
 </template>
 
@@ -117,6 +150,22 @@ function goBack() {
 }
 
 .mini-warn { color: var(--accent-ui); }
+
+.mini-open {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.mini-open:hover { border-color: var(--accent-ui); color: var(--text); }
 
 .mini-x {
   flex: 0 0 auto;

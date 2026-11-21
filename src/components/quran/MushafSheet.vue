@@ -117,16 +117,40 @@ function relayout() {
   fitPage()
 }
 
+/**
+ * Satır kutudan bu orandan DAHA dar kalıyorsa iki yana yaslanmaz.
+ *
+ * `space-between` satırı doldurmak için kelime aralarını geriyor ve
+ * dolu bir mushaf satırında bu doğru: basılı sayfada da satır sayfanın
+ * enini doldurur. Ama tezhipli açılış sayfalarında (Fâtiha, Bakara'nın
+ * başı) ve son cüzün kısa surelerinde satır doğal olarak kısadır;
+ * gerildiğinde iki kelime sayfanın iki ucuna yapışıyor, aralarında
+ * parmak kadar boşluk kalıyordu — masaüstünde kutu geniş olduğu için
+ * daha da belirgin.
+ */
+const LOOSE = 0.82
+
 function fitLines() {
   const root = sheet.value
   if (!root) return
   for (const line of root.querySelectorAll('.qpc-line')) {
     line.style.fontSize = ''
-    const natural = line.scrollWidth
+    line.classList.remove('loose')
     const box = line.clientWidth
-    if (!box || natural <= box) continue
-    const base = parseFloat(getComputedStyle(line).fontSize)
-    line.style.fontSize = `${base * (box / natural)}px`
+    if (!box) continue
+    // Doğal en: kelimelerin kendi genişlikleri + aralar. `scrollWidth`
+    // kullanılamıyor çünkü `space-between` taşmayan satırda da kutuya
+    // eşit çıkıyor ve "bu satır dar mı" sorusunu cevaplamıyor.
+    const gap = parseFloat(getComputedStyle(line).columnGap) || 0
+    let natural = gap * Math.max(0, line.children.length - 1)
+    for (const w of line.children) natural += w.getBoundingClientRect().width
+    if (!natural) continue
+    if (natural > box) {
+      const base = parseFloat(getComputedStyle(line).fontSize)
+      line.style.fontSize = `${base * (box / natural)}px`
+      continue
+    }
+    if (natural < box * LOOSE) line.classList.add('loose')
   }
 }
 
@@ -185,6 +209,7 @@ const hit = (w) =>
           variant="mushaf"
           :surah="l.surah"
           :name="l.name"
+          :data-sh="l.surah"
           :name-font="names"
           @info="emit('info', $event)"
           @play="emit('ayah', { surah: $event, verse: 1 })"
@@ -237,7 +262,12 @@ const hit = (w) =>
 
 .qpc-line:only-child { justify-content: center; }
 
-.qpc-word { white-space: nowrap; }
+/* Doğal olarak kısa satır: ortalanır ve kelime araları normal kalır. */
+.qpc-line.loose { justify-content: center; gap: 0.35em; }
+
+/* Kelime KÜÇÜLMEZ: esnek kutuda küçülmesine izin verilirse satırın
+   doğal eni ölçülemiyor (`fitLines`) ve metin kutudan taşıyor. */
+.qpc-word { white-space: nowrap; flex: none; }
 
 /* Yeni sayfa yüklenirken eski sayfa soluklaşır: yerini korur ama
    "bu artık bakmakta olduğun sayfa değil" der. */

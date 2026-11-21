@@ -922,6 +922,13 @@ Uygulama mobile-first; geniş ekranlarda içerik gereksiz yayılıyor.
       yıllar Umm al-Qura'dan tamamlanıyor. Kütüphaneye taşınırken hedef,
       tabloyu her yıl elle güncellemek yerine Diyanet'in kullandığı hesabî
       ölçütü (kavuşum + görünürlük) doğrudan hesaplamak olmalı.
+- [ ] **Ayet notları ve kaydedilen ayetler** — bir ayete not düşmek ve
+      ayeti bir listeye kaydetmek (yer imi). Veri tarayıcıda durur, yani
+      yedeğe de girmesi gerekir (`src/utils/backup.js` anahtar listesi).
+      Arayüz: ayete uzun basmak bir eylem sayfası açar (dinle / kaydet /
+      not). **Mobil uygulama yapılırsa** burası onunla birlikte
+      düşünülmeli: not alıp ona geri dönmek bildirim ve çevrimdışı
+      senkron isteyen bir iş, web tarafında yarım kalır.
 - [ ] Hicri tablo kapsamı 2036'da bitiyor; Diyanet yeni yılları yayımladıkça
       `src/data/hijriMonths.js` içindeki satırları doğrula.
 

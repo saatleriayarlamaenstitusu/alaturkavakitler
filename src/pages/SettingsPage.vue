@@ -4,6 +4,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { COLOR_STYLES } from '@/data/colorStyles'
 import { NOTIFY_KEYS, NOTIFY_CHOICES, VAKIT_LABELS } from '@/data/vakitNotify'
 import { AUTHORS } from '@/data/kuranMeta'
+import { MEAL_FONTS } from '@/data/mealFonts'
 import { downloadBackup, readBackup, applyBackup } from '@/utils/backup'
 import { supportsNotifications, requestNotificationPermission } from '@/composables/useVakitNotifications'
 import { useSeo } from '@/composables/useSeo'
@@ -60,6 +61,14 @@ const notifyOptions = [
 // Kuran sayfasının yazı tipi. Liste bilinçli dar: mushaf nesih hattıyla
 // okunur, talik ve kufi başka işler içindir. Hepsi `shareFonts.js`te
 // tanımlı, yalnızca seçilen aile indirilir.
+/** Meal seçimi çoklu: sıra AUTHORS sırasında tutulur. */
+function toggleMeal(id) {
+  const want = new Set(settings.quranMeals)
+  if (want.has(id)) want.delete(id)
+  else want.add(id)
+  settings.quranMeals = AUTHORS.filter((a) => want.has(a.id)).map((a) => a.id)
+}
+
 const quranFontOptions = [
   { value: 'lateef', label: 'Lateef' },
   { value: 'scheherazade', label: 'Scheherazade' },
@@ -254,11 +263,34 @@ const firstPageOptions = [
         </button>
       </div>
 
+      <!-- Meal ÇOKLU seçilebiliyor (Kur'an sayfasındaki seçicide de
+           öyle): karşılaştırmalı okuma için birkaçı yan yana açılıyor.
+           Burada kareler, çünkü sayfa zaten kare seçicilerle kurulu. -->
       <span class="sub-label sub-label--spaced">Meal</span>
-      <select v-model.number="settings.quranMeal" class="notify-select meal-select">
-        <option :value="0">Kapalı — yalnızca Arapça</option>
-        <option v-for="a in AUTHORS" :key="a.id" :value="a.id">{{ a.name }}</option>
-      </select>
+      <div class="theme-selector">
+        <button
+          v-for="a in AUTHORS"
+          :key="a.id"
+          class="theme-btn"
+          :class="{ active: settings.quranMeals.includes(a.id) }"
+          @click="toggleMeal(a.id)"
+        >
+          <span>{{ a.name }}</span>
+        </button>
+      </div>
+
+      <span class="sub-label sub-label--spaced">Meal yazı tipi</span>
+      <div class="theme-selector">
+        <button
+          v-for="f in MEAL_FONTS"
+          :key="f.id"
+          class="theme-btn"
+          :class="{ active: settings.quranMealFont === f.id }"
+          @click="settings.quranMealFont = f.id"
+        >
+          <span>{{ f.label }}</span>
+        </button>
+      </div>
     </section>
 
     <section class="setting-block">

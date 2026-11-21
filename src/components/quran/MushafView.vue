@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
 import { rangesOfPage, versesOfPage, juzOfPage, surahOfPage, clampPage, diyanetPage, PAGE_COUNT } from '@/utils/mushaf'
 import { fetchRange, eastern } from '@/utils/kuran'
-import { AUTHORS } from '@/data/kuranMeta'
+import { authorById } from '@/data/kuranMeta'
+import { mealFontById } from '@/data/mealFonts'
 import { MUSHAF_SCRIPTS, scriptById, pageTajweed } from '@/utils/qpc'
 import { quranFontById } from '@/data/quranFonts'
 import MushafSheet from '@/components/quran/MushafSheet.vue'
@@ -38,8 +39,19 @@ const props = defineProps({
   immersive: { type: Boolean, default: false },
   /** Dinleme şeridi açık mı — düğme basılı görünsün. */
   listening: { type: Boolean, default: false },
+  /**
+   * Açık bir "şuraya git" isteği sayacı.
+   *
+   * Oto kaydırma yalnızca ses ÇALARKEN çalışıyor (elle okurken sayfanın
+   * kendiliğinden kayması okuyanı yerinden eder). Ama üstten bir sure
+   * seçmek açık bir istektir: sayfa değişiyordu ve sure sayfanın
+   * ortasında başlıyorsa ekran onun başında değil sayfanın başında
+   * kalıyordu. Çağıran her hedefte bu sayıyı artırır, burada bir kerelik
+   * kaydırma yapılır.
+   */
+  jump: { type: Number, default: 0 },
 })
-const emit = defineEmits(['update:page', 'toggle-read', 'info', 'font', 'listen', 'ayah', 'update:immersive'])
+const emit = defineEmits(['update:page', 'toggle-read', 'info', 'font', 'listen', 'ayah', 'update:immersive', 'pick'])
 
 const settings = useSettingsStore()
 
@@ -64,7 +76,17 @@ const surah = computed(() => surahOfPage(props.page))
 // numarasızdır); elindeki nüshayla karşılaştırabilmek için yan yana
 // yazılıyor. Son sayfalarda eşleme ölçülmediği için boş geçiliyor.
 const diyanet = computed(() => diyanetPage(props.page))
-const meal = computed(() => AUTHORS.find((a) => a.id === settings.quranMeal) ?? AUTHORS[0])
+/**
+ * Seçili mealler — ÇOKLU.
+ *
+ * Birincisi (listedeki ilk) dizimi belirler: satırların nerede
+ * başlayıp bittiği onun gruplamasından çıkar (bkz. `rowsOf`). Boş
+ * liste "meal kapalı" demektir.
+ */
+const meals = computed(() =>
+  settings.quranMeals.map((id) => authorById(id)).filter(Boolean))
+const hasMeal = computed(() => meals.value.length > 0)
+const mealFamily = computed(() => mealFontById(settings.quranMealFont).family)
 
 /**
  * Oto kaydırma: okunan ayeti ekranın ortasında tut.
@@ -79,12 +101,44 @@ const meal = computed(() => AUTHORS.find((a) => a.id === settings.quranMeal) ?? 
  */
 const root = ref(null)
 
-watch(() => props.focusVerse, async (f) => {
+/**
+ * Hedefi ekranın ortasına getir.
+ *
+ * Eleman hemen var olmayabiliyor: sayfa kıraatle çevrildiğinde vurgu
+ * yeni sayfa çizilmeden yazılıyor, mushaf görünümünde ayrıca dizim ve
+ * font bekleniyor. Bu yüzden bir kaç tur denenir ve hedef değişirse
+ * bırakılır (iki kaydırma birbiriyle yarışmasın).
+ *
+ * Surenin BAŞI hedefse önce künye bloğu aranır (`data-sh`): ayetin ilk
+ * kelimesi ortalandığında başlık ekranın üstünde kalıyor ve "sureye
+ * gittim" hissi vermiyordu.
+ */
+async function centerFocus(tries = 16) {
+  const f = props.focusVerse
+  if (!f) return
+  const key = `${f.surah}:${f.verse}`
+  for (let i = 0; i < tries; i++) {
+    await nextTick()
+    if (props.focusVerse && `${props.focusVerse.surah}:${props.focusVerse.verse}` !== key) return
+    const el = (f.verse === 1 && root.value?.querySelector(`[data-sh="${f.surah}"]`))
+      || root.value?.querySelector(`[data-v="${key}"]`)
+    if (el) { centerInScroller(el); return }
+    await new Promise((r) => setTimeout(r, 120))
+  }
+}
+
+watch(() => props.focusVerse, (f) => {
   if (!f || !settings.quranAutoScroll || !reciting.value) return
-  await nextTick()
-  const el = root.value?.querySelector(`[data-v="${f.surah}:${f.verse}"]`)
-  centerInScroller(el)
+  centerFocus(3)
 })
+
+// Açık istek (sure/ayet seçimi): çalma şartı yok, bekleme payı uzun —
+// mushafta dizim ve font gelene kadar hedef DOM'da olmuyor.
+watch(() => props.jump, () => centerFocus())
+
+// Sayfa dışarıdan bir ayetle açıldıysa (adres çubuğu ya da mini
+// oynatıcıdan "okunan yere dön") oraya kaydırılır.
+onMounted(() => { if (props.focusVerse) centerFocus() })
 
 const tap = createDoubleTap()
 const onVerseTap = (surah, verse) =>
@@ -116,24 +170,60 @@ const fontLabel = computed(() => quranFontById(settings.quranFont).label)
 const setView = (id) => { settings.quranView = id }
 
 /**
- * Ayet ayet dizim.
+ * Satır dizimi — hem "ayet ayet" görünümünün blokları hem meal listesi.
  *
- * Satırlar MEAL gruplarından çıkıyor: bazı mealler ayetleri
- * gruplayarak çeviriyor (Diyanet'te Fatiha 2-4) ve o grubun ayetleri
- * tek bir karşılığı paylaşıyor — ayrı ayrı basılsa aynı cümle art arda
- * üç kez çıkardı. Meal kapalıyken her ayet kendi satırıdır.
+ * Satırlar BİRİNCİ mealin gruplamasından çıkıyor: bazı mealler ayetleri
+ * gruplayarak çeviriyor (Diyanet'te Fâtiha 2-4) ve API grubun metnini o
+ * gruptaki HER ayet için döndürüyor — ayrı ayrı basılsa aynı cümle art
+ * arda üç kez çıkardı. Meal kapalıyken her ayet kendi satırıdır.
+ *
+ * Çoklu mealde dizimi tek bir mealin belirlemesi bilinçli: her mütercim
+ * başka yerde gruplarsa satırlar hiç hizalanmaz ve karşılaştırma
+ * imkânsızlaşır. Öbür mealler o aralığa düşen metinlerini verir;
+ * aralıkta farklı metinler varsa birleştirilir.
  */
-function verseRows(g) {
-  if (!settings.quranMeal)
-    return g.verses.map((v) => ({ key: v.no, from: v.no, to: v.no, label: String(v.no), verses: [v], text: '' }))
-  return g.meals.map((m) => ({
-    key: m.from,
-    from: m.from,
-    to: m.to,
-    label: m.label,
-    verses: g.verses.filter((v) => v.no >= m.from && v.no <= m.to),
-    text: m.text,
-  }))
+const STRIP_NO = /^\(\s*\d+(?:\s*[-–]\s*\d+)*\s*\)\s*/
+
+function joinText(verses, id, grouped) {
+  const out = []
+  for (const v of verses) {
+    const t = (v.trs?.[id] ?? '').trim()
+    if (!t) continue
+    // Baştaki numara işareti atılır: satırın kendisi zaten "2–4" diyor.
+    // Kalıp meale göre değişiyor — kimi "(2-4)" yazıyor, kimi
+    // "(1-2-3-4)" diye tek tek sayıyor; ikisi de yalnızca rakam, tire
+    // ve boşluktan oluştuğu için tek desenle yakalanıyor.
+    const clean = grouped ? t.replace(STRIP_NO, '') : t
+    if (out[out.length - 1] !== clean) out.push(clean)
+  }
+  return out.join(' ')
+}
+
+function rowsOf(verses) {
+  const primary = meals.value[0]?.id
+  const raw = []
+  for (const v of verses) {
+    const key = primary ? (v.trs?.[primary] ?? '') : ''
+    const last = raw[raw.length - 1]
+    if (primary && key && last && last.key === key && v.no === last.to + 1) {
+      last.to = v.no
+      last.verses.push(v)
+    } else {
+      raw.push({ key, from: v.no, to: v.no, verses: [v] })
+    }
+  }
+  return raw.map((r) => {
+    const grouped = r.from !== r.to
+    return {
+      from: r.from,
+      to: r.to,
+      label: grouped ? `${r.from}–${r.to}` : String(r.from),
+      verses: r.verses,
+      texts: meals.value
+        .map((a) => ({ id: a.id, name: a.name, lang: a.lang, text: joinText(r.verses, a.id, grouped) }))
+        .filter((t) => t.text),
+    }
+  })
 }
 
 /**
@@ -149,39 +239,12 @@ const sizeable = (d) => {
 }
 const resize = (d) => { if (sizeable(d)) settings.quranFontSize += d * SIZE_STEP }
 
-/**
- * Meal satırları — aynı metni paylaşan ardışık ayetler tek satırda.
- *
- * Bazı mealler ayetleri gruplayarak çeviriyor (Diyanet'te Fatiha 2-4 ve
- * 6-7 böyle): API grubun metnini o gruptaki HER ayet için döndürüyor ve
- * ekranda aynı cümle üst üste üç kez çıkıyordu. Birleştirince satır
- * "2–4" diye etiketleniyor; metnin başındaki "(2-4)" işareti de artık
- * satırın kendisinde olduğu için atılıyor.
- */
-function mealRows(verses) {
-  const rows = []
-  for (const v of verses) {
-    const last = rows[rows.length - 1]
-    if (last && last.text === v.tr && v.no === last.to + 1) last.to = v.no
-    else rows.push({ from: v.no, to: v.no, text: v.tr })
-  }
-  return rows.map((r) => ({
-    ...r,
-    label: r.from === r.to ? String(r.from) : `${r.from}–${r.to}`,
-    // Baştaki numara işareti atılır: satırın kendisi zaten "2–4" diyor.
-    // Kalıp meale göre değişiyor — kimi "(2-4)" yazıyor, kimi
-    // "(1-2-3-4)" diye tek tek sayıyor; ikisi de yalnızca rakam, tire
-    // ve boşluktan oluştuğu için tek desenle yakalanıyor.
-    text: r.from === r.to ? r.text : r.text.replace(/^\(\s*\d+(?:\s*[-–]\s*\d+)*\s*\)\s*/, ''),
-  }))
-}
-
 async function load(page) {
   const want = rangesOfPage(page)
   if (!want.length) return
   // Mushaf görünümünde metin sayfanın kendi fontundan gelir; meal de
   // kapalıysa bu isteğin getireceği bir şey yok.
-  if (mushaf.value && !settings.quranMeal) {
+  if (mushaf.value && !hasMeal.value) {
     state.value = { loading: false, error: '', groups: [] }
     return
   }
@@ -189,17 +252,21 @@ async function load(page) {
   // sıfırlanıyordu).
   state.value = { ...state.value, loading: true, error: '' }
   try {
+    const ids = meals.value.map((a) => a.id)
     const parts = await Promise.all(
-      want.map((g) => fetchRange(g.surah, g.from, g.to, [meal.value.id])))
+      want.map((g) => fetchRange(g.surah, g.from, g.to, ids)))
     const groups = parts.map((res, i) => {
       const g = want[i]
       const verses = res.ar.map((ar, n) => ({
         no: g.from + n,
         ar,
         tx: res.tx?.[n] ?? '',
-        tr: res.trs?.[meal.value.id]?.[n] ?? '',
+        // Mealler kimliğe göre: tek bir `tr` alanı çoklu seçimi
+        // taşıyamıyor ve satır dizimi hangi mealin ne dediğini
+        // ayrı ayrı bilmek zorunda.
+        trs: Object.fromEntries(ids.map((id) => [id, res.trs?.[id]?.[n] ?? ''])),
       }))
-      return { surah: g.surah, name: g.surahName, from: g.from, verses, meals: mealRows(verses) }
+      return { surah: g.surah, name: g.surahName, from: g.from, verses, rows: rowsOf(verses) }
     })
     // Sayfa değişmiş olabilir; geç gelen yanıt ekrandakini bozmasın.
     if (page === props.page) state.value = { loading: false, error: '', groups }
@@ -210,11 +277,23 @@ async function load(page) {
 }
 
 watch(() => props.page, (p) => { load(p); loadTajweed(p) }, { immediate: true })
-watch(() => [settings.quranMeal, settings.quranView], () => load(props.page))
+watch(() => [settings.quranMeals, settings.quranView], () => load(props.page), { deep: true })
 watch(() => [settings.quranTajweed, settings.quranView, props.page],
   () => loadTajweed(props.page))
 
 const go = (delta) => emit('update:page', clampPage(props.page + delta))
+
+/**
+ * Görünüm ayarları katlanır.
+ *
+ * Üst taraf altı satır ediyordu (başlık, gitme kutusu, kısayollar,
+ * sayfa gezinmesi, görünüm şeridi, dinleme şeridi) ve mushaf ekranın
+ * yarısından sonra başlıyordu. Her gün değişen tek şey sayfa; hat,
+ * yazı boyu, tecvit ve kısayollar bir kez kurulup bırakılıyor —
+ * onlar ⋯ düğmesinin arkasında. Görünüm seçimi (mushaf/esnek/ayet)
+ * dışarıda kaldı: en sık dokunulan o.
+ */
+const tools = ref(false)
 
 /**
  * Parmakla sayfa çevirme.
@@ -249,7 +328,11 @@ function onUp(e) {
 </script>
 
 <template>
-  <div ref="root" class="mushaf" :style="{ '--quran-scale': settings.quranFontSize / 100 }">
+  <div
+    ref="root"
+    class="mushaf"
+    :style="{ '--quran-scale': settings.quranFontSize / 100, '--meal-font': mealFamily }"
+  >
     <!-- Hatim okuyucusunda hangi hatimde olduğun her an yazılı durur:
          işaretleme ona yazıyor, belirsiz kalmamalı. -->
     <p v-if="hatimName" class="in-hatim">
@@ -265,8 +348,15 @@ function onUp(e) {
          basmak gerekiyordu. Burada sabit. -->
     <header class="sheet-head">
       <button class="page-btn" :disabled="page >= PAGE_COUNT" @click="go(1)" aria-label="Sonraki sayfa">‹</button>
-      <span class="meta">
-        <span class="meta-main">{{ surah?.name }}</span>
+      <!-- Başlık SEÇİCİNİN KENDİSİ.
+           Önce ayrı bir "Seç ▾" düğmesi vardı: neyi seçtiği de nerede
+           olduğun da yazmıyordu, üstelik sure adı bir satır yukarıda
+           zaten duruyordu — aynı bilgi iki yerde, biri tıklanabilir
+           biri değil. Şimdi bulunduğun yer hem başlık hem düğme.
+           Sure adı da büyüdü: 0.78rem'de sayfa numarasıyla aynı
+           ağırlıktaydı ve "hangi suredeyim" okunmuyordu. -->
+      <button class="meta" aria-label="Sure, sayfa veya cüz seç" @click="emit('pick')">
+        <span class="meta-main">{{ surah?.name }}<span class="caret" aria-hidden="true">▾</span></span>
         <span class="meta-sub">
           {{ juz }}. cüz · sayfa {{ page }}/{{ PAGE_COUNT }}
           <span
@@ -275,49 +365,31 @@ function onUp(e) {
             title="Türkiye'de basılan mushaflarda bu sayfanın numarası"
           >· Diyanet {{ diyanet }}</span>
         </span>
-      </span>
+      </button>
       <button class="page-btn" :disabled="page <= 1" @click="go(-1)" aria-label="Önceki sayfa">›</button>
     </header>
 
-    <!-- Görünüm tek dokunuşta değişir; yanındaki alan moda AİT olanı
-         gösterir: mushafta hat, esnekte yazı boyu. İkisini birden
-         göstermek çalışmayan bir ayarı göstermek olurdu. -->
-    <div class="viewbar">
+    <!-- Araç şeridi TEK satır: gitme kutusu (çağıranın yuvasından),
+         görünüm seçimi ve üç düğme. Hat/yazı boyu/tecvit ve kısayollar
+         ⋯ düğmesinin arkasında — bir kez kurulup bırakılan ayarlar her
+         sayfada yer kaplamasın. -->
+    <div class="toolbar">
+      <slot name="jump" />
+
       <div class="view-toggle" role="group" aria-label="Görünüm">
         <button class="view-opt" :class="{ on: mushaf }" :aria-pressed="mushaf" @click="setView('mushaf')">Mushaf</button>
         <button class="view-opt" :class="{ on: flowing }" :aria-pressed="flowing" @click="setView('esnek')">Esnek</button>
         <button class="view-opt" :class="{ on: byVerse }" :aria-pressed="byVerse" @click="setView('ayet')">Ayet ayet</button>
       </div>
 
-      <nav v-if="mushaf" class="scripts" aria-label="Hat">
-        <span class="bar-label">Hat</span>
-        <button
-          v-for="s in MUSHAF_SCRIPTS"
-          :key="s.id"
-          class="script"
-          :class="{ on: scriptId === s.id }"
-          :title="s.note"
-          @click="settings.quranScript = s.id"
-        >{{ s.label }}</button>
-      </nav>
+      <button
+        class="full-btn"
+        :class="{ on: tools }"
+        :aria-pressed="tools"
+        title="Hat, yazı boyu ve kısayollar"
+        @click="tools = !tools"
+      >⋯</button>
 
-      <div v-else class="sizer" role="group" aria-label="Yazı boyu">
-        <button class="script" @click="emit('font')">{{ fontLabel }}</button>
-        <button
-          class="script"
-          :class="{ on: settings.quranTajweed }"
-          :aria-pressed="settings.quranTajweed"
-          title="Renkli tecvit"
-          @click="settings.quranTajweed = !settings.quranTajweed"
-        >Tecvit</button>
-        <button class="size-btn" :disabled="!sizeable(-1)" aria-label="Küçült" @click="resize(-1)">A−</button>
-        <span class="size-val">{{ settings.quranFontSize }}%</span>
-        <button class="size-btn" :disabled="!sizeable(1)" aria-label="Büyüt" @click="resize(1)">A+</button>
-      </div>
-
-      <!-- Tam ekran: hatim okurken ekranda sayfadan başka bir şey
-           kalmasın. Mushaf modunda sayfa ekrana SIĞDIRILIR, kaydırma
-           olmaz — bir mushaf sayfası kaydırılarak okunmaz. -->
       <!-- Dinleme: okumayı bırakmadan açılıp kapanır, bu yüzden
            görünüm düğmeleriyle aynı şeritte. -->
       <button
@@ -334,12 +406,47 @@ function onUp(e) {
         </svg>
       </button>
 
+      <!-- Tam ekran: hatim okurken ekranda sayfadan başka bir şey
+           kalmasın. Mushaf modunda sayfa ekrana SIĞDIRILIR, kaydırma
+           olmaz — bir mushaf sayfası kaydırılarak okunmaz. -->
       <button
         class="full-btn"
         :aria-pressed="immersive"
         :title="immersive ? 'Tam ekrandan çık' : 'Tam ekran oku'"
         @click="emit('update:immersive', !immersive)"
       >{{ immersive ? '⤡' : '⤢' }}</button>
+    </div>
+
+    <div v-if="tools" class="toolbox">
+      <nav v-if="mushaf" class="scripts" aria-label="Hat">
+        <span class="bar-label">Hat</span>
+        <button
+          v-for="sc in MUSHAF_SCRIPTS"
+          :key="sc.id"
+          class="script"
+          :class="{ on: scriptId === sc.id }"
+          :title="sc.note"
+          @click="settings.quranScript = sc.id"
+        >{{ sc.label }}</button>
+      </nav>
+
+      <div v-else class="sizer" role="group" aria-label="Yazı boyu">
+        <button class="script" @click="emit('font')">{{ fontLabel }}</button>
+        <button
+          class="script"
+          :class="{ on: settings.quranTajweed }"
+          :aria-pressed="settings.quranTajweed"
+          title="Renkli tecvit"
+          @click="settings.quranTajweed = !settings.quranTajweed"
+        >Tecvit</button>
+        <button class="size-btn" :disabled="!sizeable(-1)" aria-label="Küçült" @click="resize(-1)">A−</button>
+        <span class="size-val">{{ settings.quranFontSize }}%</span>
+        <button class="size-btn" :disabled="!sizeable(1)" aria-label="Büyüt" @click="resize(1)">A+</button>
+      </div>
+
+      <!-- Mushafta en çok dönülen yerler: aynı kutunun içinde, çünkü
+           ikisi de "kurulup bırakılan" değil "ara sıra açılan" şeyler. -->
+      <slot name="shortcuts" />
     </div>
 
     <!-- Dinleme şeridi: sayfanın ÜSTÜNDE, denetimlerin hemen altında.
@@ -378,6 +485,7 @@ function onUp(e) {
           v-if="g.from === 1 && !mushaf"
           :surah="g.surah"
           :name="g.name"
+          :data-sh="g.surah"
           @info="emit('info', $event)"
           @play="emit('ayah', { surah: $event, verse: 1 })"
         />
@@ -408,8 +516,8 @@ function onUp(e) {
              toplanır, karşılık bir kez yazılır. -->
         <div v-if="byVerse" class="vrs">
           <div
-            v-for="r in verseRows(g)"
-            :key="r.key"
+            v-for="r in g.rows"
+            :key="r.from"
             class="vb"
             :class="{ focus: focusVerse && focusVerse.surah === g.surah
                       && focusVerse.verse >= r.from && focusVerse.verse <= r.to }"
@@ -433,23 +541,36 @@ function onUp(e) {
                 <span class="ar-no">{{ eastern(v.no) }}</span>
               </template>
             </p>
-            <p v-if="r.text" class="vb-tr">
-              <span class="vb-no">{{ r.label }}</span>
-              <span>{{ r.text }}</span>
-            </p>
+            <!-- Karşılıklar: tek meal seçiliyse mütercim adı yazmaz
+                 (zaten tepedeki düğmede duruyor); birden fazlaysa
+                 hangisinin kim olduğu satırın kendisinde olmalı. -->
+            <div v-if="r.texts.length" class="vb-trs">
+              <p v-for="t in r.texts" :key="t.id" class="vb-tr">
+                <span class="vb-no">{{ r.label }}</span>
+                <span class="vb-body">
+                  <span v-if="r.texts.length > 1" class="tr-who">{{ t.name }}</span>
+                  {{ t.text }}
+                </span>
+              </p>
+            </div>
           </div>
         </div>
 
-        <ul v-if="settings.quranMeal && !byVerse" class="meal">
+        <ul v-if="hasMeal && !byVerse" class="meal">
           <li
-            v-for="m in g.meals"
-            :key="m.from"
+            v-for="r in g.rows"
+            :key="r.from"
             class="meal-row"
             :class="{ focus: focusVerse && focusVerse.surah === g.surah
-                      && focusVerse.verse >= m.from && focusVerse.verse <= m.to }"
+                      && focusVerse.verse >= r.from && focusVerse.verse <= r.to }"
           >
-            <span class="meal-no">{{ m.label }}</span>
-            <span class="meal-text">{{ m.text }}</span>
+            <span class="meal-no">{{ r.label }}</span>
+            <span class="meal-texts">
+              <span v-for="t in r.texts" :key="t.id" class="meal-text">
+                <span v-if="r.texts.length > 1" class="tr-who">{{ t.name }}</span>
+                {{ t.text }}
+              </span>
+            </span>
           </li>
         </ul>
       </section>
@@ -489,11 +610,25 @@ function onUp(e) {
   align-items: center;
   gap: 0.15rem;
   text-align: center;
+  font: inherit;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
 }
 
+.meta:hover { border-color: var(--border); }
+.meta:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 1px; }
+
+.caret { margin-left: 0.3rem; font-size: 0.6rem; color: var(--text-muted); vertical-align: 0.15em; }
+
 .meta-main {
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
   color: var(--text);
 }
 
@@ -536,13 +671,29 @@ function onUp(e) {
 /* Dikey kaydırma serbest kalsın, yatay jest bize ait olsun. */
 .sheet { touch-action: pan-y; }
 
-/* Görünüm çubuğu: solda mod, sağda moda ait ayar. */
-.viewbar {
+/* Araç şeridi: gitme kutusu solda genişler, görünüm ve düğmeler sağda.
+   Sarmalı — mobilde iki satır, masaüstünde tek satır. */
+.toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+/* Katlanan kutu: hat / yazı boyu / tecvit ve kısayollar. Kendi zemini
+   var ki açıldığında nereye ait olduğu belli olsun — şeridin altında
+   serbest duran düğmeler sayfaya mı başlığa mı ait belli olmuyordu.
+   Zemin MAT: `--surface` bazı paletlerde saydam. */
+.toolbox {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--surface), var(--surface));
 }
 
 /* İki durumu BİR düğmede göstermek bilinçli: hangi moddasın ve bir
@@ -730,6 +881,23 @@ function onUp(e) {
   line-height: 1.6;
 }
 
+/* Meal yazı tipi ayardan gelir (`--meal-font`): Arapça metnin hattı
+   seçilebiliyordu ama uzun uzun okunan şey karşılığıdır. */
+.meal-texts, .vb-trs { display: flex; flex-direction: column; gap: 0.6rem; }
+.meal-text, .vb-body { font-family: var(--meal-font, var(--font1)); }
+
+/* Mütercim adı yalnızca birden fazla meal seçiliyken yazar; metnin
+   kendi yazısında değil arayüzün yazısında, çünkü bir etikettir. */
+.tr-who {
+  display: block;
+  font-family: var(--font1);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.1rem;
+}
+
 .meal-no {
   font-size: 0.66rem;
   color: var(--text-muted);
@@ -758,15 +926,21 @@ function onUp(e) {
   text-align-last: right;
 }
 
+.vb-trs { margin-top: 0.45rem; }
+
 .vb-tr {
   display: grid;
   grid-template-columns: 2.4rem 1fr;
   gap: 0.5rem;
-  margin: 0.45rem 0 0;
+  margin: 0;
   font-size: 0.88rem;
   line-height: 1.6;
   color: var(--text-muted);
 }
+
+/* İkinci ve sonraki mealde numara tekrar yazılmaz: aynı sayı alt alta
+   üç kez okunuyordu. Kolon yerinde kalır ki metinler hizalı dursun. */
+.vb-trs .vb-tr + .vb-tr .vb-no { visibility: hidden; }
 
 .vb.focus .vb-no { color: var(--text); }
 

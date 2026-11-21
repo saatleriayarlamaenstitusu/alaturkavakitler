@@ -1,24 +1,34 @@
 <script setup>
 import { computed } from 'vue'
 import { AUTHORS } from '@/data/kuranMeta'
+import { MEAL_FONTS } from '@/data/mealFonts'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 
 /**
- * Meal seçici.
+ * Meal seçici — ÇOKLU seçim.
  *
  * Yerel `select` yerine alt sayfa: dokuz meal arasında dili karışık bir
  * liste var ve açılır kutuda hangisinin Türkçe hangisinin İngilizce
  * olduğu ancak adından tahmin ediliyordu. Burada dil satırın kendisinde
  * bir rozet olarak duruyor.
  *
- * "Kapalı" listenin BAŞINDA: meali kapatmak bir meal seçmek kadar sık
- * yapılan bir iş (yalnızca Arapça okumak).
+ * Seçim artık tek değil: birden fazla meal işaretlenebiliyor ve sayfada
+ * yan yana okunuyor. Satıra dokunmak o meali açıp kapatır, sayfa açık
+ * kalır — karşılaştırmalı okuma için meal seçmek bir değil birkaç
+ * dokunuş. Liste boşsa meal kapalıdır; ayrı bir "kapalı" durumu yok,
+ * en üstteki düğme yalnızca hepsini birden temizler.
+ *
+ * Yazı tipi de burada: meal uzun uzun okunan metindir ve Arapça metnin
+ * hattı seçilebilirken karşılığının yazısı sabit kalıyordu.
  */
-defineProps({
+const props = defineProps({
+  /** Seçili meal kimlikleri. */
+  value: { type: Array, default: () => [] },
   open: { type: Boolean, default: false },
-  value: { type: Number, default: 0 },
+  /** Meal yazı tipi kimliği (`data/mealFonts.js`). */
+  font: { type: String, default: 'sans' },
 })
-const emit = defineEmits(['close', 'select'])
+const emit = defineEmits(['close', 'toggle', 'clear', 'font'])
 
 const LANGS = { tr: 'Türkçe', en: 'İngilizce' }
 
@@ -28,17 +38,35 @@ const groups = computed(() => {
   return Object.entries(by).map(([lang, list]) => ({ lang, label: LANGS[lang] ?? lang, list }))
 })
 
-function pick(id) {
-  emit('select', id)
-  emit('close')
-}
+const on = (id) => props.value.includes(id)
 </script>
 
 <template>
   <BottomSheet :open="open" label="Meal seç" @close="emit('close')">
-    <template #head><span class="title">Meal</span></template>
+    <template #head>
+      <span class="title">Meal</span>
+      <span class="count">{{ value.length ? `${value.length} seçili` : 'kapalı' }}</span>
+    </template>
 
-    <button class="row" :class="{ on: value === 0 }" @click="pick(0)">
+    <!-- Yazı tipi listenin BAŞINDA: meal seçildikten sonra aşağı
+         kaydırıp aramak gerekmesin, karar aynı yerde verilsin. -->
+    <p class="group">Yazı tipi</p>
+    <div class="fonts">
+      <button
+        v-for="f in MEAL_FONTS"
+        :key="f.id"
+        class="font"
+        :class="{ on: font === f.id }"
+        :style="{ fontFamily: f.family }"
+        @click="emit('font', f.id)"
+      >
+        <span class="font-label">{{ f.label }}</span>
+        <span class="font-note">{{ f.note }}</span>
+      </button>
+    </div>
+
+    <p class="group">Mealler</p>
+    <button class="row row--off" :class="{ on: !value.length }" @click="emit('clear')">
       <span class="row-main">Meal kapalı</span>
       <span class="row-note">yalnızca Arapça</span>
     </button>
@@ -49,9 +77,11 @@ function pick(id) {
         v-for="a in g.list"
         :key="a.id"
         class="row"
-        :class="{ on: value === a.id }"
-        @click="pick(a.id)"
+        :class="{ on: on(a.id) }"
+        :aria-pressed="on(a.id)"
+        @click="emit('toggle', a.id)"
       >
+        <span class="tick" aria-hidden="true">{{ on(a.id) ? '✓' : '' }}</span>
         <span class="row-main">{{ a.name }}</span>
         <span class="badge" :class="a.lang">{{ a.lang === 'tr' ? 'TR' : 'EN' }}</span>
       </button>
@@ -67,16 +97,45 @@ function pick(id) {
   color: var(--text-muted);
 }
 
+.count {
+  margin-left: 0.5rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-ui);
+}
+
 /* Dil başlığı rozeti tekrarlıyor gibi görünse de işi farklı: başlık
    listeyi BÖLER, rozet tek satırı okurken dili söyler. */
 .group {
-  margin: 0.6rem 0 0.2rem;
+  margin: 0.8rem 0 0.2rem;
   padding: 0 0.8rem;
   font-size: 0.58rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
+
+/* Her kare KENDİ yazısıyla yazar: adı değil görüntüsü seçtirir. */
+.fonts { display: flex; gap: 0.4rem; padding: 0 0.8rem; }
+
+.font {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.font.on { border-color: var(--accent-ui); background: color-mix(in srgb, var(--accent-ui) 12%, transparent); }
+.font-label { font-size: 0.85rem; }
+.font-note { font-size: 0.55rem; letter-spacing: 0.06em; color: var(--text-muted); font-family: var(--font1); }
 
 .row {
   width: 100%;
@@ -97,6 +156,14 @@ function pick(id) {
 .row.on {
   background: color-mix(in srgb, var(--accent-ui) 16%, transparent);
   box-shadow: inset 2px 0 0 var(--accent-ui);
+}
+
+/* Onay işareti sabit genişlikte bir kolonda: açılıp kapandıkça adlar
+   satırdan satıra kaymasın. */
+.tick {
+  flex: 0 0 1rem;
+  font-size: 0.75rem;
+  color: var(--accent-ui);
 }
 
 .row-main { flex: 1; min-width: 0; font-size: 0.88rem; }

@@ -11,6 +11,7 @@ import { holyDayLabel } from '@alaturkavakitler/core'
 import { convertMonth } from '@/utils/calendarGrid'
 import SettingControl from './SettingControl.vue'
 import SectionIcon from './SectionIcon.vue'
+import { BACKGROUNDS, bgUrl } from '@/data/backgrounds'
 
 const editor = useShareEditor()
 const { state, selected } = editor
@@ -303,6 +304,37 @@ watch(selected, (layer) => {
   if (layer) state.panelOpen = true
 })
 
+/**
+ * Hazır arka planlar.
+ *
+ * Görsel CDN'den İNDİRİLİP data URI'ye çevriliyor, adresi olduğu gibi
+ * verilmiyor: dışa aktarım belgeyi rasterize ediyor ve uzaktaki bir
+ * görsel orada ya CORS'a takılıyor ya da tuvali kirletiyor. İndirilen
+ * görsel, galeriden seçilmiş bir fotoğraftan farksız davranır.
+ */
+const bgLoading = ref('')
+
+async function pickPreset(id) {
+  if (bgLoading.value) return
+  bgLoading.value = id
+  try {
+    const res = await fetch(bgUrl(id))
+    if (!res.ok) throw new Error(String(res.status))
+    const blob = await res.blob()
+    const data = await new Promise((done, fail) => {
+      const r = new FileReader()
+      r.onload = () => done(r.result)
+      r.onerror = fail
+      r.readAsDataURL(blob)
+    })
+    editor.setBackground({ kind: 'photo', photo: data, dim: 0.3 })
+  } catch {
+    // Görsel gelmezse mevcut arka plan olduğu gibi kalır.
+  } finally {
+    bgLoading.value = ''
+  }
+}
+
 function pickPhoto(e) {
   const file = e.target.files?.[0]
   if (!file) return
@@ -455,6 +487,27 @@ function pickPhoto(e) {
             @change="pickPhoto"
           />
         </div>
+
+        <!-- Hazır görseller: galeriden dosya seçmeden de bir fotoğraf
+             arka planı kurulabilsin. Adlar değil görseller seçtirir. -->
+        <section class="group">
+          <h3 class="group-label static">
+            <SectionIcon name="arkaplan" />
+            <span>Hazır görseller</span>
+            <span class="group-rule" aria-hidden="true"></span>
+          </h3>
+          <div class="presets">
+            <button
+              v-for="b in BACKGROUNDS"
+              :key="b.id"
+              class="preset"
+              :class="{ busy: bgLoading === b.id }"
+              :title="b.label"
+              :style="{ backgroundImage: `url(${bgUrl(b.id, true)})` }"
+              @click="pickPreset(b.id)"
+            ><span class="sr">{{ b.label }}</span></button>
+          </div>
+        </section>
 
         <!-- Fotoğraf yokken tuvalin zemini: vakit gradyanı varsayılan,
              düz renk / gradyan / mesh de seçilebilir. -->
@@ -944,6 +997,35 @@ function pickPhoto(e) {
 }
 
 .chip.active .chip-hint { color: inherit; opacity: 0.7; }
+
+/* Hazır görsel ızgarası: şeritte yatay kaydırma YOK (masaüstünde
+   tekerlek dikey kaydırıyor ve şeridin sonu fark edilmiyordu). */
+.presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.6rem, 1fr));
+  gap: 0.3rem;
+}
+
+.preset {
+  height: 3rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.preset:hover { border-color: var(--accent-ui); }
+.preset.busy { opacity: 0.45; }
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
 
 /* Arka plan sekmesi grid ayarlarıyla uzayabiliyor. */
 .bg-tab {

@@ -34,7 +34,7 @@ const props = defineProps({
    */
   start: { type: Object, default: null },
 })
-const emit = defineEmits(['pick-reciter'])
+const emit = defineEmits(['pick-reciter', 'expand'])
 
 const settings = useSettingsStore()
 
@@ -97,6 +97,15 @@ function onPlay() {
     >
       <span class="follow-dot" aria-hidden="true" />
       Takip
+    </button>
+
+    <!-- Oynatıcı ekranı: sürgü, ayet ayet ilerleme ve okunan ayetin
+         meali şeride sığmıyor; sığdırılsa şerit mushafın üstünde bir
+         denetim paneline dönüyordu. -->
+    <button class="open" aria-label="Oynatıcıyı aç" title="Oynatıcı" @click="emit('expand')">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+        <path d="M4 10h2.5v9H4zm6.75-5h2.5v14h-2.5zM17.5 13H20v6h-2.5z" />
+      </svg>
     </button>
 
     <button class="x" aria-label="Dinlemeyi kapat" @click="stop()">×</button>
@@ -191,6 +200,22 @@ function onPlay() {
 }
 
 .warn { color: var(--primary); }
+
+.open {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.open:hover { border-color: var(--accent-ui); color: var(--text); }
 
 .x {
   flex: 0 0 auto;

@@ -219,8 +219,34 @@ const totals = computed(() => ({
 .input:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 1px; }
 .form-actions { display: flex; gap: 0.5rem; }
 
-.rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
-.card { border-bottom: 1px solid var(--border); }
+/* Satırlar birbirine çok yakındı ve hangi niyetin hangi tarihe ait
+   olduğu karışıyordu: kartlar arasına boşluk kondu ve ayırıcı çizgi
+   yerini kartın kendi kenarlığına bıraktı. Kapalı kart sade kalır —
+   zemin yalnızca AÇIK olanda var, "şu an buna bakıyorum" demek için. */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 0.75rem;
+  transition: background-color 0.14s;
+}
+
+/* Açık kart: mat zemin (`--surface` bazı paletlerde saydam) + solda
+   aksan çubuğu. Kalınlaşan niyet yazısı tek başına yetmiyordu. */
+.card.open {
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--surface), var(--surface));
+  border-color: color-mix(in srgb, var(--accent-ui) 45%, var(--border));
+  box-shadow: inset 3px 0 0 var(--accent-ui);
+}
 
 .card-head {
   display: flex;
@@ -234,7 +260,7 @@ const totals = computed(() => ({
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.9rem 0;
+  padding: 1.05rem 0;
   background: transparent;
   border: none;
   color: var(--text);
@@ -253,8 +279,8 @@ const totals = computed(() => ({
 }
 
 .card.open .card-niyet { font-size: 1.15rem; font-weight: 500; letter-spacing: -0.01em; }
-.card-sub { font-size: 0.66rem; color: var(--text-muted); }
-.card-body { padding-bottom: 1rem; }
+.card-sub { font-size: 0.66rem; line-height: 1.45; color: var(--text-muted); }
+.card-body { padding-bottom: 1rem; display: flex; flex-direction: column; gap: 0.9rem; }
 
 .resume {
   display: flex;
@@ -278,7 +304,7 @@ const totals = computed(() => ({
 .del {
   flex: 0 0 auto;
   align-self: flex-start;
-  margin-top: 0.9rem;
+  margin-top: 1.05rem;
   font: inherit;
   font-size: 0.65rem;
   letter-spacing: 0.06em;

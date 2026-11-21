@@ -7,6 +7,7 @@ import { useVakitNotifications } from '@/composables/useVakitNotifications'
 import TopNav from '@/components/nav/TopNav.vue'
 import BottomNav from '@/components/nav/BottomNav.vue'
 import MiniPlayer from '@/components/quran/MiniPlayer.vue'
+import * as player from '@/stores/recitation'
 
 const appStore = useAppStore()
 const settings = useSettingsStore()
@@ -25,6 +26,11 @@ const wide = computed(() => WIDE_ROUTES.includes(route.path))
 // Vakit hatırlatmaları kabukta yaşar: hangi sayfada olunduğundan
 // bağımsız çalışması gerekiyor.
 useVakitNotifications()
+
+// Kârî de kabukta bağlanıyor: oynatıcı uygulama düzeyinde yaşıyor ve
+// kârî artık Kur'an sayfasının dışından da (mini oynatıcının açtığı
+// seçiciden) değiştirilebiliyor.
+watch(() => settings.quranReciter, (id) => player.setReciter(id), { immediate: true })
 
 let systemMediaQuery = null
 

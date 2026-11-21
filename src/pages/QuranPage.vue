@@ -8,6 +8,7 @@ import { ensureFont } from '@/composables/useShareFonts'
 import { getFont } from '@/data/shareFonts'
 import { clampPage, juzOfPage, surahOfPage, pageOfSurah, pageOfJuz, pageOfVerse } from '@/utils/mushaf'
 import { AUTHORS } from '@/data/kuranMeta'
+import { mealFontById } from '@/data/mealFonts'
 import { QURAN_SHORTCUTS } from '@/data/quranShortcuts'
 import GoTo from '@/components/quran/GoTo.vue'
 import MushafView from '@/components/quran/MushafView.vue'
@@ -19,6 +20,7 @@ import FontSheet from '@/components/quran/FontSheet.vue'
 import ListenBar from '@/components/quran/ListenBar.vue'
 import * as player from '@/stores/recitation'
 import ReciterSheet from '@/components/quran/ReciterSheet.vue'
+import PlayerSheet from '@/components/quran/PlayerSheet.vue'
 
 /**
  * Kuran sayfası — iki sekme: Oku ve Hatim.
@@ -41,9 +43,26 @@ const router = useRouter()
 const settings = useSettingsStore()
 const hatim = useHatimStore()
 
+/**
+ * Sekmeler ne YAPTIĞINI söyler, nereye gittiğini değil.
+ *
+ * "Oku" ve "Hatim" iki ayrı işin adı gibi duruyordu ve hangisinin
+ * hangisi olduğu ancak girince anlaşılıyordu: ikisinde de Kur'an
+ * okunuyor, fark okumanın bir hatme YAZILIP yazılmaması. İkonlar da
+ * bunu taşıyor — açık kitap serbest okuma, halka hatim (hatim
+ * görselleştirmesi zaten halkadır).
+ */
 const TABS = [
-  { id: 'oku', label: 'Oku' },
-  { id: 'hatim', label: 'Hatim' },
+  {
+    id: 'oku',
+    label: 'Serbest okuma',
+    icon: 'M11 6.1C9.2 4.9 7.1 4.2 5 4.1A1.5 1.5 0 0 0 3.5 5.6v11.3c0 .8.6 1.5 1.4 1.5 2 .1 4.1.7 6.1 1.9V6.1zm2 0v14.2c2-1.2 4.1-1.8 6.1-1.9.8 0 1.4-.7 1.4-1.5V5.6A1.5 1.5 0 0 0 19 4.1c-2.1.1-4.2.8-6 2z',
+  },
+  {
+    id: 'hatim',
+    label: 'Hatimlerim',
+    icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 3.2a6.8 6.8 0 1 1 0 13.6 6.8 6.8 0 0 1 0-13.6zm0 3.3a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
+  },
 ]
 const tab = ref(route.query.b === 'hatim' ? 'hatim' : 'oku')
 
@@ -79,7 +98,18 @@ function parseAyah(q) {
   return surah >= 1 && surah <= 114 && verse >= 1 ? { surah, verse } : null
 }
 
+/**
+ * Açılışta işaretli ayet.
+ *
+ * Adreste `a` varsa o. Yoksa ve kıraat SÜRÜYORSA çalan ayet: başka bir
+ * sayfaya geçip (vakitler, takvim) Kur'an'a dönünce takip açık olduğu
+ * hâlde mushaf birinci sayfada açılıyordu — ses Kehf'i okurken ekran
+ * Fâtiha'yı gösteriyordu.
+ */
 const startAyah = parseAyah(route.query.a)
+  ?? (player.active.value
+    ? { surah: player.curSurah.value, verse: player.curVerse.value || 1 }
+    : null)
 
 // Açılış sayfası: adres verilmişse o; ayet verilmişse ayetin sayfası;
 // hatim okunuyorsa kaldığı yer; yoksa baştan.
@@ -129,11 +159,34 @@ const closeReader = () => { reading.value = null }
 // ve "hatme dön" oraya sızmamalı.
 watch(tab, () => { reading.value = null })
 
-/** Seçili mealin adı — düğmenin üstünde yazar. */
-const mealName = computed(() =>
-  AUTHORS.find((a) => a.id === settings.quranMeal)?.name ?? 'Meal kapalı')
-const mealLang = computed(() =>
-  AUTHORS.find((a) => a.id === settings.quranMeal)?.lang ?? null)
+/**
+ * Meal düğmesinin yazısı.
+ *
+ * Seçim çoklu olduğu için tek bir ad yetmiyor: biri seçiliyse adı,
+ * fazlası seçiliyse kaç tane. Hiç yoksa "Meal kapalı".
+ */
+const mealPicked = computed(() => settings.quranMeals.map((id) => AUTHORS.find((a) => a.id === id)).filter(Boolean))
+const mealName = computed(() => {
+  const list = mealPicked.value
+  if (!list.length) return 'Meal kapalı'
+  if (list.length === 1) return list[0].name
+  return `${list.length} meal`
+})
+const mealLang = computed(() => (mealPicked.value.length === 1 ? mealPicked.value[0].lang : null))
+
+/** Satıra dokunmak meali açar/kapatır; sıra AUTHORS sırasında kalır. */
+function toggleMeal(id) {
+  const want = new Set(settings.quranMeals)
+  if (want.has(id)) want.delete(id)
+  else want.add(id)
+  settings.quranMeals = AUTHORS.filter((a) => want.has(a.id)).map((a) => a.id)
+}
+
+/** Meal yazı tipi: seçilen aile yalnızca gerektiğinde indirilir. */
+const mealFont = computed(() => mealFontById(settings.quranMealFont))
+watch(() => mealFont.value.font, (f) => { if (f) ensureFont(f) }, { immediate: true })
+
+
 
 /** Sure/sayfa/cüz seçici açık mı. */
 const picker = ref(false)
@@ -149,9 +202,11 @@ const mealPick = ref(false)
  * burada.
  */
 const reciterPick = ref(false)
+/** Oynatıcı ekranı (sürgü + okunan ayet ve mealleri) açık mı. */
+const playerOpen = ref(false)
 
-/** Kârî ayardan gelir; oynatıcı sayfadan bağımsız olduğu için ona yazılır. */
-watch(() => settings.quranReciter, (id) => player.setReciter(id), { immediate: true })
+/* Kârî bağlama App.vue'da: seçici Kur'an sayfasının dışından da
+   (mini oynatıcıdan) açılabiliyor. */
 
 /**
  * Ayete çift dokunmak o ayeti seslendirir; çalıyorsa durdurur.
@@ -182,6 +237,20 @@ watch([player.curSurah, player.curVerse], ([s, v]) => {
   if (p === page.value + 1) page.value = p
 })
 
+/**
+ * Elle sarma: okunan ayete GİT.
+ *
+ * Kendiliğinden çevirme bir adımla sınırlı (bkz. aşağıdaki izleyici),
+ * ama sürgüyü çekmek ya da bildirim alanından ileri almak açık bir
+ * istek: ses Kehf 19'u okurken ekran 293. sayfada kalıyordu.
+ */
+watch(player.seekSeq, () => {
+  const s = player.curSurah.value
+  const v = player.curVerse.value
+  if (!s || !v) return
+  goTo(pageOfVerse(s, v), { surah: s, verse: v })
+})
+
 /** Künyesi açılan sure (null = kapalı). */
 const infoSurah = ref(null)
 /** Yazı tipi seçici açık mı. */
@@ -209,7 +278,18 @@ onUnmounted(() => document.documentElement.removeAttribute('data-immersive'))
  * başka bir yolla değişince (ok, kaydırma) vurgu kendiliğinden düşer,
  * ayrı bir temizleme izleyicisi gerekmez.
  */
-const focus = ref(startAyah ? { ...startAyah, page: page.value } : null)
+// Vurgunun sayfası AYETTEN hesaplanır, o anki sayfadan değil:
+// paylaşılmış bir `?s=` ile çalan ayet başka sayfalarda olabiliyor ve
+// vurgu yanlış sayfaya yazılıyordu.
+const focus = ref(startAyah
+  ? { ...startAyah, page: pageOfVerse(startAyah.surah, startAyah.verse) }
+  : null)
+/**
+ * Açık "şuraya git" isteği sayacı — MushafView onu izleyip bir kerelik
+ * kaydırma yapıyor. Oto kaydırma yalnızca ses çalarken devrede, ama
+ * üstten bir sure seçmek açık bir istektir ve kaydırılmalı.
+ */
+const jump = ref(0)
 const focusVerse = computed(() =>
   focus.value && focus.value.page === page.value ? focus.value : null)
 
@@ -237,6 +317,7 @@ watch([page, tab, reading, focusVerse], ([p, t, h, f]) => {
 function goTo(p, verse) {
   page.value = p
   focus.value = verse ? { ...verse, page: p } : null
+  if (verse) jump.value += 1
 }
 
 /** Hızlı erişim kısayolu: sure / ayet / cüz hedefini sayfaya çevirir. */
@@ -258,61 +339,75 @@ function goShortcut(sc) {
           class="tab"
           :class="{ on: tab === t.id }"
           @click="tab = t.id"
-        >{{ t.label }}</button>
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+            <path :d="t.icon" />
+          </svg>
+          {{ t.label }}
+        </button>
       </nav>
     </header>
 
     <template v-if="tab === 'oku' || readingHatim">
-      <button v-if="readingHatim && !immersive" class="back" @click="closeReader">‹ Hatme dön</button>
-
-      <!-- Tek kutuyla gitme + meal seçimi. Dört ayrı açılır liste vardı ve
-           bir ayete gitmenin yolu yoktu. -->
-      <div v-if="!immersive" class="jump">
-        <GoTo @go="goTo" />
-        <!-- Yazarak aramanın yanında göz gezdirerek seçmek: aynı işin
-             iki yolu, farklı iki alışkanlık için. -->
-        <button class="select pick" @click="picker = true">Seç ▾</button>
-        <button class="select meal" aria-label="Meal seç" @click="mealPick = true">
-          <span class="meal-name">{{ mealName }}</span>
-          <span v-if="mealLang" class="meal-lang" :class="mealLang">
-            {{ mealLang === 'tr' ? 'TR' : 'EN' }}
-          </span>
-        </button>
-      </div>
-
-      <!-- Mushafta en çok dönülen yerler. Hatim okuyucusunda yok: orada
-           sıralı okunuyor, sıçramak akışı bozar. -->
-      <nav v-if="!readingHatim && !immersive" class="shortcuts" aria-label="Hızlı erişim">
-        <button
-          v-for="sc in QURAN_SHORTCUTS"
-          :key="sc.label"
-          class="chip"
-          :title="sc.note ? `${sc.label} · ${sc.note}` : sc.label"
-          @click="goShortcut(sc)"
-        >{{ sc.label }}</button>
-      </nav>
+      <button v-if="readingHatim && !immersive" class="back" @click="closeReader">‹ Hatimlerime dön</button>
 
       <MushafView
         :page="page"
         :hatim-name="readingHatim?.niyet ?? ''"
         :focus-verse="focusVerse"
         :read="read"
+        :jump="jump"
         @update:page="page = $event"
         @toggle-read="toggle"
         @info="infoSurah = $event"
         @font="fontPick = true"
+        @pick="picker = true"
         :listening="player.barOpen.value"
         @listen="toggleBar"
         @ayah="onAyahTap"
         :immersive="immersive"
         @update:immersive="immersive = $event"
       >
+        <!-- Gitme kutusu araç şeridinin İÇİNDE: ayrı bir satırdayken
+             üst taraf altı satır ediyor ve mushaf ekranın yarısından
+             sonra başlıyordu. -->
+        <template v-if="!immersive" #jump>
+          <div class="jump">
+            <GoTo @go="goTo" />
+            <!-- Göz gezdirerek seçme sayfanın BAŞLIĞINA bağlı
+                 (MushafView `@pick`): bulunduğun yeri yazan bir düğmeyi
+                 ikinci kez buraya koymak aynı bilgiyi iki yerde
+                 göstermek olurdu. -->
+            <button class="select meal" aria-label="Meal seç" @click="mealPick = true">
+              <span class="meal-name">{{ mealName }}</span>
+              <span v-if="mealLang" class="meal-lang" :class="mealLang">
+                {{ mealLang === 'tr' ? 'TR' : 'EN' }}
+              </span>
+            </button>
+          </div>
+        </template>
+
+        <!-- Mushafta en çok dönülen yerler. Hatim okuyucusunda yok:
+             orada sıralı okunuyor, sıçramak akışı bozar. -->
+        <template v-if="!readingHatim" #shortcuts>
+          <nav class="shortcuts" aria-label="Hızlı erişim">
+            <button
+              v-for="sc in QURAN_SHORTCUTS"
+              :key="sc.label"
+              class="chip"
+              :title="sc.note ? `${sc.label} · ${sc.note}` : sc.label"
+              @click="goShortcut(sc)"
+            >{{ sc.label }}</button>
+          </nav>
+        </template>
+
         <template #bar>
         <ListenBar
           v-if="player.barOpen.value"
           :page="page"
           :start="focusVerse"
           @pick-reciter="reciterPick = true"
+          @expand="playerOpen = true"
         />
         </template>
       </MushafView>
@@ -342,9 +437,18 @@ function goShortcut(sc) {
 
     <MealSheet
       :open="mealPick"
-      :value="settings.quranMeal"
+      :value="settings.quranMeals"
+      :font="settings.quranMealFont"
       @close="mealPick = false"
-      @select="settings.quranMeal = $event"
+      @toggle="toggleMeal"
+      @clear="settings.quranMeals = []"
+      @font="settings.quranMealFont = $event"
+    />
+
+    <PlayerSheet
+      :open="playerOpen"
+      @close="playerOpen = false"
+      @pick-reciter="playerOpen = false; reciterPick = true"
     />
 
     <PickerSheet
@@ -399,20 +503,30 @@ function goShortcut(sc) {
   overflow-y: auto;
 }
 
+/* Hayalet başlık bu sayfada daha küçük: okuma sayfası zaten başlık,
+   sekme, konum, araç şeridi ve dinleme şeridi taşıyor; 4em'lik "kur'an"
+   mushafı ekranın yarısına itiyordu. Global `.page-title` değişmez —
+   öbür sayfalarda o ölçü kompozisyonun kendisi. */
+.head .page-title { font-size: 2.4em; margin: 0; }
+
 .head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
+  margin-bottom: 0.75rem;
 }
 
 .tabs { display: inline-flex; gap: 0.4rem; }
 
 .tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font: inherit;
-  font-size: 0.8rem;
-  padding: 0.4rem 0.9rem;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: transparent;
@@ -430,7 +544,7 @@ function goShortcut(sc) {
   font: inherit;
   font-size: 0.75rem;
   padding: 0.35rem 0.7rem;
-  margin-top: 1rem;
+  margin-bottom: 0.6rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: transparent;
@@ -440,12 +554,15 @@ function goShortcut(sc) {
 
 .back:hover { color: var(--text); border-color: var(--text); }
 
+/* Araç şeridinin içinde: solda genişler, yanındaki görünüm düğmeleri
+   sağa yapışır. */
 .jump {
+  flex: 1 1 19rem;
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 0.5rem;
-  margin: 1.25rem 0;
+  gap: 0.4rem;
+  min-width: 0;
 }
 
 .select {
@@ -488,8 +605,6 @@ function goShortcut(sc) {
 
 .meal-lang.tr { border-color: var(--accent-ui); color: var(--text); }
 
-.pick { flex: 0 0 auto; letter-spacing: 0.04em; }
-.pick:hover { border-color: var(--text); }
 
 /* Kısayollar yatay kaydırılır: masaüstünde sarmak daha iyi olurdu ama
    liste on bir öğe ve iki satıra bölününce gezinme çubuğu gibi duruyor;
@@ -497,10 +612,9 @@ function goShortcut(sc) {
 .shortcuts {
   display: flex;
   gap: 0.35rem;
-  margin: -0.5rem 0 1.25rem;
   overflow-x: auto;
   scrollbar-width: none;
-  padding-bottom: 0.25rem;
+  max-width: 100%;
 }
 
 .shortcuts::-webkit-scrollbar { display: none; }
