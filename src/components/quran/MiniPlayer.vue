@@ -67,7 +67,7 @@ function goBack() {
 
     <button class="mini-open" aria-label="Oynatıcıyı aç" title="Oynatıcı" @click="playerOpen = true">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
-        <path d="M4 10h2.5v9H4zm6.75-5h2.5v14h-2.5zM17.5 13H20v6h-2.5z" />
+        <path d="M12 8.4 5.7 14.7l1.6 1.6L12 11.6l4.7 4.7 1.6-1.6z" />
       </svg>
     </button>
 

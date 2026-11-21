@@ -122,14 +122,20 @@ const onSeek = (e) => seekTo(Number(e.target.value))
         </div>
       </div>
 
+      <!-- Denetimler ORTADA: solda duruyorlardı ve sayfanın sağ yarısı
+           boş kalıyordu. -->
       <div class="controls">
         <button class="ctl" :disabled="!follows || (curVerse || 1) <= 1" aria-label="Önceki ayet" @click="step(-1)">⏮</button>
         <button class="ctl ctl--main" :disabled="loading" :aria-label="playing ? 'Duraklat' : 'Devam et'" @click="toggle()">
           {{ playing ? '❙❙' : '▶' }}
         </button>
         <button class="ctl" :disabled="!follows" aria-label="Sonraki ayet" @click="step(1)">⏭</button>
-        <button class="ctl ctl--off" aria-label="Kıraati bırak" @click="stop(); emit('close')">×</button>
       </div>
+
+      <!-- "Bırak" bir ÇARPI DEĞİL yazıdır: köşede sayfayı kapatan bir
+           çarpı zaten var ve iki çarpı yan yana hangisinin sesi hangisinin
+           pencereyi kapattığını belirsiz bırakıyordu. -->
+      <button class="quit" @click="stop(); emit('close')">Kıraati bırak</button>
 
       <p v-if="!follows" class="note">Bu kârîde ayet takibi yok: ses çalar ama okunan ayet işaretlenmez.</p>
       <p v-else-if="error" class="note note--warn">{{ error }}</p>
@@ -239,7 +245,22 @@ const onSeek = (e) => seekTo(Number(e.target.value))
   font-variant-numeric: tabular-nums;
 }
 
-.controls { display: flex; align-items: center; gap: 0.6rem; }
+.controls { display: flex; align-items: center; justify-content: center; gap: 0.9rem; }
+
+.quit {
+  align-self: center;
+  font: inherit;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.6rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.quit:hover { color: var(--primary); }
 
 .ctl {
   flex: 0 0 auto;
@@ -256,7 +277,6 @@ const onSeek = (e) => seekTo(Number(e.target.value))
 
 .ctl:disabled { opacity: 0.3; cursor: default; }
 .ctl--main { width: 3rem; height: 3rem; border-color: var(--accent-ui); }
-.ctl--off { margin-left: auto; border: none; color: var(--text-muted); font-size: 1.2rem; }
 
 .note { margin: 0; font-size: 0.7rem; line-height: 1.5; color: var(--text-muted); }
 .note--warn { color: var(--primary); }

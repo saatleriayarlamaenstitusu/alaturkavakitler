@@ -19,6 +19,15 @@ import { ref, computed } from 'vue'
  */
 const props = defineProps({
   byDay: { type: Object, required: true },
+  /**
+   * Gün → o gün okunup SONRADAN geri alınan sayfa sayısı.
+   *
+   * Dolu bir kutu olarak çizilmez: hatmin sayacında o sayfa okunmamış
+   * sayılıyor. Kesikli bir çerçeveyle işaretlenir — "burada bir şey
+   * oldu ama sayılmadı". Gün tamamen silinseydi "dün üç sayfa
+   * okumuştum" diye bakan biri bomboş bir kutu görürdü.
+   */
+  undoneByDay: { type: Object, default: () => ({}) },
   weeks: { type: Number, default: 10 },
 })
 
@@ -43,13 +52,18 @@ const list = computed(() => {
       d.setDate(monday.getDate() - w * 7 + i)
       const key = iso(d)
       const count = props.byDay[key] ?? 0
+      const undone = props.undoneByDay[key] ?? 0
+      const date = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })
       days.push({
         key,
         count,
+        undone,
         level: count ? 0.25 + 0.75 * (count / max) : 0,
         today: key === iso(now),
         future: d > now,
-        label: `${d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })} — ${count} sayfa`,
+        label: undone
+          ? `${date} — ${count} sayfa (${undone} geri alındı)`
+          : `${date} — ${count} sayfa`,
         text: `${d.getDate()} ${MONTHS[d.getMonth()]}`,
       })
     }
@@ -80,11 +94,11 @@ const pick = (d) => { picked.value = picked.value === d.key ? null : d.key }
             v-for="d in w.days"
             :key="d.key"
             class="day"
-            :class="{ today: d.today, future: d.future, on: picked === d.key }"
+            :class="{ today: d.today, future: d.future, on: picked === d.key, undone: d.undone && !d.count }"
             :style="{ '--level': d.level }"
             :title="d.label"
             @click.stop="pick(d)"
-          >{{ d.count || '' }}</span>
+          >{{ d.count || (d.undone ? '·' : '') }}</span>
           <span v-if="w.tick" class="tick">{{ w.tick }}</span>
         </div>
       </div>
@@ -93,6 +107,7 @@ const pick = (d) => { picked.value = picked.value === d.key ? null : d.key }
     <p v-if="detail" class="detail">
       <span class="detail-day">{{ detail.text }}</span>
       <span class="detail-count">{{ detail.count ? `${detail.count} sayfa` : 'okunmadı' }}</span>
+      <span v-if="detail.undone" class="detail-undone">{{ detail.undone }} geri alındı</span>
     </p>
   </div>
 </template>
@@ -148,6 +163,21 @@ const pick = (d) => { picked.value = picked.value === d.key ? null : d.key }
 .day.today { box-shadow: inset 0 0 0 1.5px var(--text); }
 .day.on { box-shadow: inset 0 0 0 2px var(--text); }
 .day.future { opacity: 0.35; }
+
+/* Geri alınmış gün: dolgu YOK (o sayfalar hatme yazılmıyor), kesikli
+   çerçeve var. Dolu bir kutuyla aynı görünseydi oranla çelişirdi. */
+.day.undone {
+  background: transparent;
+  box-shadow: none;
+  border: 1px dashed color-mix(in srgb, var(--accent-ui) 55%, transparent);
+  color: var(--text-muted);
+}
+
+.detail-undone {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-ui);
+}
 
 .tick {
   position: absolute;

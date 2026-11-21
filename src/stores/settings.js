@@ -33,8 +33,11 @@ export const useSettingsStore = defineStore('settings', () => {
   // değer varsayılanların üstüne oturtulur: listeye yeni bir vakit ya da
   // yeni bir varsayılan eklendiğinde eski kayıt onu eksik bırakmasın.
   const notifyOffsets = ref(normalizeOffsets(load('notifyOffsets', null)))
-  const darkMode = ref(load('darkMode', 'auto'))
-  const colorStyle = ref(load('colorStyle', 'klasik'))
+  // Varsayılan görünüm: AÇIK mod + mesh paleti. Sistem tercihine
+  // uymak ("auto") açılışı cihaza bırakıyordu ve uygulamanın kendi
+  // yüzü iki farklı cihazda iki başka şey oluyordu.
+  const darkMode = ref(load('darkMode', 'light'))
+  const colorStyle = ref(load('colorStyle', 'mesh'))
   const homeClock = ref(load('homeClock', 'led')) // 'led' | 'normal'
   // Kuran gösterimi: okuma sayfası, hatim ve ileride kıraat kesitleri
   // aynı tercihi okur — ayet nasıl görünsün sorusu bir kez sorulur.

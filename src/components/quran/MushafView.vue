@@ -157,6 +157,29 @@ const onVerseTap = (surah, verse) =>
  *
  * Bilinmeyen bir değer mushafa düşer (kayıtta eski bir ad durabilir).
  */
+/**
+ * Görünümler ve işaretleri.
+ *
+ * İkonlar metni TARİF ediyor, bir nesneyi değil: mushaf = dolu
+ * satırlardan oluşan bir sayfa, esnek = akan paragraf, ayet ayet =
+ * blok + altında karşılığı. Üç ad yan yana ("Mushaf Esnek Ayet ayet")
+ * bir şerit metni gibi okunuyordu; şekil hangi dizim olduğunu addan
+ * önce söylüyor.
+ */
+const VIEW_ICONS = {
+  // Basılı SAYFA: çerçeve + içinde satırlar. Sekmedeki açık kitap
+  // burada tekrarlanmıyor — o "serbest okuma", bu "sayfa dizimi".
+  mushaf: 'M5 2.5h14v19H5zM7.2 6h9.6v1.6H7.2zm0 3.6h9.6v1.6H7.2zm0 3.6h9.6v1.6H7.2zm0 3.6h9.6v1.6H7.2z',
+  // Esneklik: aynı metin geniş ekranda da dar ekranda da. Ekran +
+  // telefon, yani "duyarlı" işaretinin bilinen hâli.
+  esnek: 'M2 5h11v9H2zM3.6 6.6h7.8v5.8H3.6zM5.3 15.3h4.5v1.5H5.3zM14.8 7.8h6.2v11.4h-6.2zM16.4 9.9h3v7.2h-3z',
+  // Ayet ayet: alt alta iki BLOK — her blok bir ayet ve karşılığı.
+  // Üç ince çubuk denendi ve bırakıldı: küçük boyda hem bir menü
+  // işaretine hem de yanındaki satırlı sayfaya benziyordu. İki kalın
+  // blok "burada parçalar var" diyor.
+  ayet: 'M3.5 3.8h17v7h-17zM3.5 13.2h17v7h-17z',
+}
+
 const VIEWS = ['mushaf', 'esnek', 'ayet']
 const view = computed(() =>
   (VIEWS.includes(settings.quranView) ? settings.quranView : 'mushaf'))
@@ -289,9 +312,11 @@ const go = (delta) => emit('update:page', clampPage(props.page + delta))
  * Üst taraf altı satır ediyordu (başlık, gitme kutusu, kısayollar,
  * sayfa gezinmesi, görünüm şeridi, dinleme şeridi) ve mushaf ekranın
  * yarısından sonra başlıyordu. Her gün değişen tek şey sayfa; hat,
- * yazı boyu, tecvit ve kısayollar bir kez kurulup bırakılıyor —
- * onlar ⋯ düğmesinin arkasında. Görünüm seçimi (mushaf/esnek/ayet)
- * dışarıda kaldı: en sık dokunulan o.
+ * yazı boyu ve tecvit bir kez kurulup bırakılıyor — onlar ⋯
+ * düğmesinin arkasında. Görünüm seçimi (mushaf/esnek/ayet) dışarıda
+ * kaldı: en sık dokunulan o. Hızlı erişim kısayolları buraya DEĞİL
+ * sure seçicisine taşındı: "Yasin'e git" bir görünüm ayarı değil, bir
+ * gitme işi.
  */
 const tools = ref(false)
 
@@ -377,23 +402,28 @@ function onUp(e) {
       <slot name="jump" />
 
       <div class="view-toggle" role="group" aria-label="Görünüm">
-        <button class="view-opt" :class="{ on: mushaf }" :aria-pressed="mushaf" @click="setView('mushaf')">Mushaf</button>
-        <button class="view-opt" :class="{ on: flowing }" :aria-pressed="flowing" @click="setView('esnek')">Esnek</button>
-        <button class="view-opt" :class="{ on: byVerse }" :aria-pressed="byVerse" @click="setView('ayet')">Ayet ayet</button>
+        <button class="view-opt" :class="{ on: mushaf }" :aria-pressed="mushaf" @click="setView('mushaf')">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path :d="VIEW_ICONS.mushaf" /></svg>
+          Mushaf
+        </button>
+        <button class="view-opt" :class="{ on: flowing }" :aria-pressed="flowing" @click="setView('esnek')">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path :d="VIEW_ICONS.esnek" /></svg>
+          Esnek
+        </button>
+        <button class="view-opt" :class="{ on: byVerse }" :aria-pressed="byVerse" @click="setView('ayet')">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path :d="VIEW_ICONS.ayet" /></svg>
+          Ayet ayet
+        </button>
       </div>
 
-      <button
-        class="full-btn"
-        :class="{ on: tools }"
-        :aria-pressed="tools"
-        title="Hat, yazı boyu ve kısayollar"
-        @click="tools = !tools"
-      >⋯</button>
-
       <!-- Dinleme: okumayı bırakmadan açılıp kapanır, bu yüzden
-           görünüm düğmeleriyle aynı şeritte. -->
+           görünüm düğmeleriyle aynı şeritte. Tek ikonla duruyordu ve
+           yanındaki ⋯ ile aynı boyda iki kare olarak hangisinin ne
+           yaptığı seçilmiyordu; ADI yazıyor ve şeridin ⋯'ten önceki
+           son işi oluyor — ⋯ her zaman en sonda, bir "gerisi" işareti
+           olarak. -->
       <button
-        class="full-btn"
+        class="full-btn full-btn--label"
         :class="{ on: listening }"
         title="Dinle"
         @click="emit('listen')"
@@ -404,17 +434,17 @@ function onUp(e) {
         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
           <path d="M12 2.5c-5 0-9 4-9 9v5.5A2.5 2.5 0 0 0 5.5 19H8a.5.5 0 0 0 .5-.5v-7A.5.5 0 0 0 8 11H5.2C5.9 7.4 8.6 5 12 5s6.1 2.4 6.8 6H16a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h2.5A2.5 2.5 0 0 0 21 17v-5.5c0-5-4-9-9-9z" />
         </svg>
+        Dinle
       </button>
 
-      <!-- Tam ekran: hatim okurken ekranda sayfadan başka bir şey
-           kalmasın. Mushaf modunda sayfa ekrana SIĞDIRILIR, kaydırma
-           olmaz — bir mushaf sayfası kaydırılarak okunmaz. -->
       <button
         class="full-btn"
-        :aria-pressed="immersive"
-        :title="immersive ? 'Tam ekrandan çık' : 'Tam ekran oku'"
-        @click="emit('update:immersive', !immersive)"
-      >{{ immersive ? '⤡' : '⤢' }}</button>
+        :class="{ on: tools }"
+        :aria-pressed="tools"
+        title="Hat ve yazı boyu"
+        @click="tools = !tools"
+      >⋯</button>
+
     </div>
 
     <div v-if="tools" class="toolbox">
@@ -431,22 +461,34 @@ function onUp(e) {
       </nav>
 
       <div v-else class="sizer" role="group" aria-label="Yazı boyu">
-        <button class="script" @click="emit('font')">{{ fontLabel }}</button>
+        <!-- Yazı tipi: harfin kendisi. Düğmede ailenin adı yazıyor
+             ("Lateef") ve ad tek başına neyin ayarı olduğunu
+             söylemiyordu. -->
+        <button class="script" @click="emit('font')">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+            <path d="M5.4 19 10.9 5h2.2L18.6 19h-2.2l-1.35-3.6H8.95L7.6 19H5.4zm4.25-5.4h4.7L12 7.4l-2.35 6.2z" />
+          </svg>
+          {{ fontLabel }}
+        </button>
+        <!-- Tecvit: ressam paleti. Kuralın kendisi bir RENK kodudur
+             (bkz. aşağıdaki sabit tecvit renkleri) ve palet tek renkli
+             bir damladan farklı olarak "birden çok renk" diyor. -->
         <button
           class="script"
           :class="{ on: settings.quranTajweed }"
           :aria-pressed="settings.quranTajweed"
           title="Renkli tecvit"
           @click="settings.quranTajweed = !settings.quranTajweed"
-        >Tecvit</button>
+        >
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" fill-rule="evenodd" aria-hidden="true">
+            <path d="M12 2.8c-5.3 0-9.5 3.8-9.5 8.7s4.2 8.7 9.5 8.7c.95 0 1.7-.75 1.7-1.7 0-.44-.17-.83-.44-1.13-.26-.29-.43-.67-.43-1.07 0-.95.76-1.7 1.7-1.7h2c2.95 0 5.3-2.36 5.3-5.3 0-4.2-4.2-6.5-9.8-6.5zM7.1 12.5a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9zm-.2-5a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9zm4.4-2.2a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9zm4.9 1.6a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9z" />
+          </svg>
+          Tecvit
+        </button>
         <button class="size-btn" :disabled="!sizeable(-1)" aria-label="Küçült" @click="resize(-1)">A−</button>
         <span class="size-val">{{ settings.quranFontSize }}%</span>
         <button class="size-btn" :disabled="!sizeable(1)" aria-label="Büyüt" @click="resize(1)">A+</button>
       </div>
-
-      <!-- Mushafta en çok dönülen yerler: aynı kutunun içinde, çünkü
-           ikisi de "kurulup bırakılan" değil "ara sıra açılan" şeyler. -->
-      <slot name="shortcuts" />
     </div>
 
     <!-- Dinleme şeridi: sayfanın ÜSTÜNDE, denetimlerin hemen altında.
@@ -676,8 +718,13 @@ function onUp(e) {
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
+}
+
+@media (min-width: 420px) {
+  .toolbar { gap: 0.5rem; }
+  .view-opt { padding: 0.25rem 0.7rem; font-size: 0.68rem; }
 }
 
 /* Katlanan kutu: hat / yazı boyu / tecvit ve kısayollar. Kendi zemini
@@ -712,10 +759,15 @@ function onUp(e) {
 /* Seçenekler artık AYRI düğme (üç tane oldu, biri "öbürü" değil):
    her biri doğrudan kendi görünümünü seçer. */
 .view-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
   font: inherit;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  padding: 0.25rem 0.7rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  /* Dar ekranda şerit tek satırda kalsın: "Dinle" etiketlendiğinde
+     ⋯ tek başına üçüncü satıra düşüyordu (ölçüldü, 393px). */
+  padding: 0.25rem 0.5rem;
   border: none;
   border-radius: 999px;
   background: transparent;
@@ -741,6 +793,9 @@ function onUp(e) {
 }
 
 .script {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font: inherit;
   font-size: 0.66rem;
   letter-spacing: 0.04em;
@@ -766,6 +821,7 @@ function onUp(e) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.35rem;
   width: 1.9rem;
   height: 1.7rem;
   font: inherit;
@@ -776,6 +832,14 @@ function onUp(e) {
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
+}
+
+/* Adı yazan düğme kare değildir: genişliği yazısı kadar. */
+.full-btn--label {
+  width: auto;
+  padding: 0 0.6rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
 }
 
 .full-btn[aria-pressed="true"],
@@ -1032,6 +1096,7 @@ function onUp(e) {
 }
 
 .page-btn:disabled { opacity: 0.3; cursor: default; }
+
 
 
 

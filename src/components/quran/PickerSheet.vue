@@ -21,8 +21,13 @@ import { ensureNameFont, suraNameGlyph } from '@/utils/qpc'
 const props = defineProps({
   open: { type: Boolean, default: false },
   page: { type: Number, required: true },
+  /**
+   * Hızlı erişim kısayolları (`data/quranShortcuts.js`). Boş dizi =
+   * gösterilmez (hatim okuyucusunda sıçramak akışı bozar).
+   */
+  shortcuts: { type: Array, default: () => [] },
 })
-const emit = defineEmits(['close', 'go'])
+const emit = defineEmits(['close', 'go', 'shortcut'])
 
 const TABS = [
   { id: 'sure', label: 'Sure' },
@@ -125,6 +130,20 @@ function pick(row) {
       </nav>
     </template>
 
+    <!-- Kısayollar sekmelerin HEMEN ALTINDA, listenin üstünde:
+         Yasin ya da Amme'ye gitmek 114 satırı taramaktan sık yapılan
+         bir iş ve ikisi de aynı sorunun cevabı. Daha önce görünüm
+         ayarlarının yanındaydı, orada alakasız duruyordu. -->
+    <div v-if="shortcuts.length" class="shortcuts">
+      <button
+        v-for="sc in shortcuts"
+        :key="sc.label"
+        class="chip"
+        :title="sc.note ? `${sc.label} · ${sc.note}` : sc.label"
+        @click="emit('shortcut', sc); emit('close')"
+      >{{ sc.label }}</button>
+    </div>
+
     <div ref="list" class="rows">
       <button
         v-for="r in rows"
@@ -150,6 +169,32 @@ function pick(row) {
 
 <style scoped>
 .panel-tabs { display: flex; gap: 0.3rem; }
+
+/* Kısayollar sarar: alt sayfa dar değil ve yatay kaydırılan bir şerit
+   burada kaybolurdu — listenin üstünde tek bakışta görünmeli. */
+.shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.2rem 0.8rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.3rem;
+}
+
+.chip {
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chip:hover { color: var(--text); border-color: var(--text); }
 
 .panel-tab {
   font: inherit;

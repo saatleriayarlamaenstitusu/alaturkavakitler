@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useSettingsStore } from '@/stores/settings'
 import { useVakitNotifications } from '@/composables/useVakitNotifications'
+import { useWakeLock } from '@/composables/useWakeLock'
 import TopNav from '@/components/nav/TopNav.vue'
 import BottomNav from '@/components/nav/BottomNav.vue'
 import MiniPlayer from '@/components/quran/MiniPlayer.vue'
@@ -31,6 +32,10 @@ useVakitNotifications()
 // kârî artık Kur'an sayfasının dışından da (mini oynatıcının açtığı
 // seçiciden) değiştirilebiliyor.
 watch(() => settings.quranReciter, (id) => player.setReciter(id), { immediate: true })
+
+// Takip açıkken ve kıraat sürerken ekran kararmasın: ayet kendiliğinden
+// kayıyor, ekrana bakılıyor ama dokunulmuyor.
+useWakeLock(computed(() => player.playing.value && settings.quranAutoScroll))
 
 let systemMediaQuery = null
 

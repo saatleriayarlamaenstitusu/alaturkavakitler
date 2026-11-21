@@ -42,7 +42,7 @@ const selectedReading = computed(() =>
 const readDays = computed(() => {
   const out = {}
   for (const h of hatim.list)
-    for (const [page, day] of Object.entries(h.progress)) out[day] = (out[day] ?? 0) + 1
+    for (const day of Object.values(h.progress)) out[day] = (out[day] ?? 0) + 1
   return out
 })
 
@@ -185,6 +185,10 @@ function onTouchEnd(e) {
       <div v-if="selectedReading.length" class="hm-read">
         <span v-for="r in selectedReading" :key="r.id" class="hm-read-row">
           <span class="hm-read-count">{{ r.pages }} sayfa</span>
+          <!-- Geri alınan sayfa o gün okunmuştur ama hatme yazılmıyor:
+               gün bomboş görünmesin diye yazılıyor, onaylı okumayla
+               karışmasın diye ayrı. -->
+          <span v-if="r.undone" class="hm-read-undone">+{{ r.undone }} geri alındı</span>
           <span class="hm-read-niyet">{{ r.niyet }}</span>
         </span>
       </div>
@@ -270,6 +274,12 @@ function onTouchEnd(e) {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text);
+}
+
+.hm-read-undone {
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-ui);
 }
 
 .hm-holy {

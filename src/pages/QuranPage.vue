@@ -141,10 +141,37 @@ const read = computed(() => hatim.isRead(readingHatim.value, page.value))
 watch(page, (now, before) => {
   if (tab.value !== 'hatim' || !readingHatim.value) return
   if (before == null || before === now) return
-  if (!hatim.isRead(readingHatim.value, before)) hatim.togglePage(before, reading.value)
+  // "Okunmadı" denmiş sayfanın BİR KERELİK muafiyeti var: o sayfadan
+  // ayrılmak kararı sessizce geri alıyordu (arka arkaya geri alınan
+  // sayfalardan yalnızca sonuncusu kalıyordu, çünkü her çevirme bir
+  // öncekini yeniden işaretliyordu). Muafiyet kalıcı DEĞİL: sayfaya
+  // tekrar gelip tekrar çıkmak onu yine okundu yapar — o zaman sayfa
+  // gerçekten yeniden okunmuştur.
+  if (skipMark.has(before)) { skipMark.delete(before); return }
+  if (hatim.isRead(readingHatim.value, before)) return
+  hatim.togglePage(before, reading.value)
 })
 
-const toggle = () => { if (readingHatim.value) hatim.togglePage(page.value, reading.value) }
+/**
+ * Bir kerelik işaretleme muafiyeti taşıyan sayfalar.
+ *
+ * Reaktif değil, çünkü ekranda hiçbir şey göstermiyor: yalnızca bir
+ * sonraki sayfa çevirmesinin ne yapacağını belirliyor ve o anda
+ * okunup tüketiliyor. Kalıcı da değil — sayfa yenilenince düşer,
+ * zaten "şu an verdiğim karar" demek.
+ */
+const skipMark = new Set()
+
+function toggle() {
+  if (!readingHatim.value) return
+  const wasRead = read.value
+  hatim.togglePage(page.value, reading.value)
+  // Okundu → okunmadı: bu sayfadan çıkarken yeniden işaretlenmesin.
+  // Ters yönde muafiyet kalkar, yoksa "okundu" deyip çıkınca bir
+  // sonraki çevirme onu boşuna atlardı.
+  if (wasRead) skipMark.add(page.value)
+  else skipMark.delete(page.value)
+}
 
 /** Hatim listesinden "oku" — o hatmin kaldığı yerden açar. */
 function openHatim(id, p) {
@@ -371,34 +398,39 @@ function goShortcut(sc) {
         <!-- Gitme kutusu araç şeridinin İÇİNDE: ayrı bir satırdayken
              üst taraf altı satır ediyor ve mushaf ekranın yarısından
              sonra başlıyordu. -->
-        <template v-if="!immersive" #jump>
-          <div class="jump">
-            <GoTo @go="goTo" />
+        <!-- Yuva tam ekranda da çizilir: içindeki arama ve meal gizlenir
+             ama TAM EKRAN düğmesi kalır, yoksa çıkış yolu olmazdı. -->
+        <template #jump>
+          <div class="jump" :class="{ 'jump--bare': immersive }">
+            <GoTo v-if="!immersive" @go="goTo" />
             <!-- Göz gezdirerek seçme sayfanın BAŞLIĞINA bağlı
                  (MushafView `@pick`): bulunduğun yeri yazan bir düğmeyi
                  ikinci kez buraya koymak aynı bilgiyi iki yerde
                  göstermek olurdu. -->
-            <button class="select meal" aria-label="Meal seç" @click="mealPick = true">
+            <button v-if="!immersive" class="select meal" aria-label="Meal seç" @click="mealPick = true">
+              <!-- Çeviri ikonu: düğmede yalnızca mütercim adı yazıyordu
+                   ve "Diyanet İşleri" tek başına neyin ayarı olduğunu
+                   söylemiyordu. -->
+              <svg class="meal-icon" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+                <path d="M3.5 4h7v2H8.4c.3 1.7 1 3.2 2 4.4-.6.6-1.3 1.1-2.1 1.5l.8 1.8c1-.5 2-1.2 2.8-2 .5.5 1 .9 1.6 1.3l.7-1.9c-.3-.2-.6-.5-.9-.7 1-1.3 1.8-2.8 2.1-4.4H17V4h-5.3V2.2h-2V4H3.5zm6.9 7c-.7-.9-1.2-2-1.5-3.2h3.2c-.3 1.2-.9 2.3-1.7 3.2zM16.8 11l-4.3 10.8h2.2l1-2.6h4.2l1 2.6H23L18.8 11h-2zm-.4 6.3 1.4-3.6 1.4 3.6h-2.8z" />
+              </svg>
               <span class="meal-name">{{ mealName }}</span>
               <span v-if="mealLang" class="meal-lang" :class="mealLang">
                 {{ mealLang === 'tr' ? 'TR' : 'EN' }}
               </span>
             </button>
-          </div>
-        </template>
 
-        <!-- Mushafta en çok dönülen yerler. Hatim okuyucusunda yok:
-             orada sıralı okunuyor, sıçramak akışı bozar. -->
-        <template v-if="!readingHatim" #shortcuts>
-          <nav class="shortcuts" aria-label="Hızlı erişim">
+            <!-- Tam ekran ARAMA SATIRINDA: görünüm düğmelerinin yanında
+                 ⋯ ve kulaklıkla üç kare yan yana düşüyor ve hangisinin
+                 ne yaptığı seçilmiyordu. Mushaf modunda sayfa ekrana
+                 SIĞDIRILIR, kaydırma olmaz. -->
             <button
-              v-for="sc in QURAN_SHORTCUTS"
-              :key="sc.label"
-              class="chip"
-              :title="sc.note ? `${sc.label} · ${sc.note}` : sc.label"
-              @click="goShortcut(sc)"
-            >{{ sc.label }}</button>
-          </nav>
+              class="select full"
+              :aria-pressed="immersive"
+              :title="immersive ? 'Tam ekrandan çık' : 'Tam ekran oku'"
+              @click="immersive = !immersive"
+            >{{ immersive ? '⤡' : '⤢' }}</button>
+          </div>
         </template>
 
         <template #bar>
@@ -451,11 +483,18 @@ function goShortcut(sc) {
       @pick-reciter="playerOpen = false; reciterPick = true"
     />
 
+    <!-- Hızlı erişim kısayolları seçicinin İÇİNDE: ⋯ kutusunda hat ve
+         yazı boyu ayarlarının yanında alakasız duruyorlardı. Oysa
+         "Yasin'e git" ile "42. sayfaya git" aynı iştir. Hatim
+         okuyucusunda gizli: orada sıralı okunuyor, sıçramak akışı
+         bozar. -->
     <PickerSheet
       :open="picker"
       :page="page"
+      :shortcuts="readingHatim ? [] : QURAN_SHORTCUTS"
       @close="picker = false"
       @go="goTo"
+      @shortcut="goShortcut"
     />
   </div>
 </template>
@@ -556,10 +595,13 @@ function goShortcut(sc) {
 
 /* Araç şeridinin içinde: solda genişler, yanındaki görünüm düğmeleri
    sağa yapışır. */
+/* Arama ve meal AYNI satırda: ikisi de "ne okunacak" sorusunun
+   ayarı ve ayrı satırlara düştüklerinde şerit iki kat yer kaplıyordu.
+   Sarmıyor (`nowrap`) — meal düğmesi daralır, arama kutusu esner. */
 .jump {
   flex: 1 1 19rem;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: stretch;
   gap: 0.4rem;
   min-width: 0;
@@ -577,12 +619,34 @@ function goShortcut(sc) {
 }
 
 .meal {
-  flex: 0 1 12rem;
+  flex: 0 1 11rem;
+  min-width: 5.5rem;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   text-align: start;
 }
+
+.meal-icon { flex: 0 0 auto; color: var(--text-muted); }
+
+.full {
+  flex: 0 0 auto;
+  width: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.full:hover { border-color: var(--text); color: var(--text); }
+.full[aria-pressed="true"] { border-color: var(--accent-ui); color: var(--text); }
+
+/* Tam ekranda satırda yalnızca bu düğme kalır. Normalde arama ve meal
+   solda olduğu için düğme satırın sağ ucuna düşüyor; aynı yerde
+   kalsın diye tam ekranda da şeridin SONUNA alınıp sağa yapıştırılır
+   (`order` + `margin-left: auto`). Yoksa görünüm düğmelerinin soluna
+   geçip her tam ekrana girişte yer değiştiriyordu. */
+.jump--bare { flex: 0 0 auto; order: 1; margin-left: auto; }
 
 .meal-name {
   flex: 1;
@@ -606,36 +670,6 @@ function goShortcut(sc) {
 .meal-lang.tr { border-color: var(--accent-ui); color: var(--text); }
 
 
-/* Kısayollar yatay kaydırılır: masaüstünde sarmak daha iyi olurdu ama
-   liste on bir öğe ve iki satıra bölününce gezinme çubuğu gibi duruyor;
-   tek satır kalması onu bir "şerit" olarak okutuyor. */
-.shortcuts {
-  display: flex;
-  gap: 0.35rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  max-width: 100%;
-}
 
-.shortcuts::-webkit-scrollbar { display: none; }
-
-.chip {
-  flex: 0 0 auto;
-  font: inherit;
-  font-size: 0.72rem;
-  padding: 0.3rem 0.65rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.chip:hover { color: var(--text); border-color: var(--text); }
-
-@media (min-width: 900px) {
-  .shortcuts { flex-wrap: wrap; overflow: visible; }
-}
 .select:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 1px; }
 </style>

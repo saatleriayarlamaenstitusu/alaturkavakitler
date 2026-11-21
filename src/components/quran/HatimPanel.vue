@@ -37,6 +37,8 @@ function create() {
 
 const toggle = (id) => { open.value = open.value === id ? null : id }
 
+const undoneCount = (h) => Object.keys(h.undone ?? {}).length
+
 const dateText = (iso) => {
   if (!iso) return ''
   const [y, m, d] = iso.split('-').map(Number)
@@ -55,9 +57,11 @@ const confirmId = ref(null)
  */
 const totals = computed(() => ({
   pages: hatim.totalPages(),
+  undone: hatim.totalUndone(),
   hatims: hatim.list.length,
   done: hatim.list.filter((h) => h.finishedAt).length,
   byDay: hatim.allByDay(),
+  undoneByDay: hatim.allUndoneByDay(),
 }))
 </script>
 
@@ -67,11 +71,14 @@ const totals = computed(() => ({
       <div class="totals-head">
         <span class="totals-num">{{ totals.pages }}</span>
         <span class="totals-unit">sayfa</span>
+        <!-- Geri alınan sayfalar toplamda AYRI yazar: hatmin oranına
+             girmiyorlar ama okunmadıkları da söylenemez. -->
+        <span v-if="totals.undone" class="totals-undone">+{{ totals.undone }} geri alındı</span>
         <span class="totals-sub">
           {{ totals.hatims }} hatim<template v-if="totals.done"> · {{ totals.done }} tamamlandı</template>
         </span>
       </div>
-      <HatimCalendar :by-day="totals.byDay" />
+      <HatimCalendar :by-day="totals.byDay" :undone-by-day="totals.undoneByDay" />
     </section>
 
     <section class="new">
@@ -104,7 +111,12 @@ const totals = computed(() => ({
               <span class="card-text">
                 <span class="card-niyet">{{ h.niyet }}</span>
                 <span class="card-sub">
-                  {{ hatim.readCount(h) }} / {{ PAGE_COUNT }} sayfa ·
+                  {{ hatim.readCount(h) }} / {{ PAGE_COUNT }} sayfa
+                  <!-- Geri alınanlar hatmin sayacına girmiyor ama kaç
+                       tane olduğu kartta da görünmeli: yalnızca üstteki
+                       genel toplamda yazdığında hangi hatme ait
+                       oldukları kayboluyordu. -->
+                  <template v-if="undoneCount(h)"> · +{{ undoneCount(h) }} geri alındı</template> ·
                   {{ h.finishedAt ? dateText(h.finishedAt) + '’de tamamlandı' : dateText(h.startedAt) + '’de başladı' }}
                 </span>
               </span>
@@ -122,7 +134,7 @@ const totals = computed(() => ({
           </div>
 
           <div v-if="open === h.id" class="card-body">
-            <HatimCalendar :by-day="hatim.byDay(h)" />
+            <HatimCalendar :by-day="hatim.byDay(h)" :undone-by-day="hatim.undoneByDay(h)" />
 
             <button class="resume" @click="emit('read', h.id, hatim.nextPage(h))">
               {{ hatim.readCount(h) ? 'Kaldığın yerden oku' : 'Okumaya başla' }}
@@ -164,6 +176,12 @@ const totals = computed(() => ({
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.totals-undone {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-ui);
 }
 
 .totals-sub {

@@ -141,13 +141,18 @@ const onFocus = () => { if (items.value.length) openList.value = true }
 
 <template>
   <div class="goto">
+    <!-- Büyüteç: kutu bir arama kutusu olduğunu yer tutucu metninden
+         söylüyordu ve o metin daraldıkça kırpılıyordu. -->
+    <svg class="goto-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M10.5 3a7.5 7.5 0 1 0 4.55 13.46l4.24 4.25 1.42-1.42-4.25-4.24A7.5 7.5 0 0 0 10.5 3zm0 2a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11z" />
+    </svg>
     <input
       ref="input"
       v-model="text"
       class="goto-input"
       type="text"
       inputmode="text"
-      placeholder="Ara: bakara 255 · 2:255 · s42 · c5"
+      placeholder="bakara 255 · 2:255 · s42 · c5"
       autocomplete="off"
       spellcheck="false"
       @input="onInput"
@@ -173,13 +178,28 @@ const onFocus = () => { if (items.value.length) openList.value = true }
 </template>
 
 <style scoped>
-.goto { position: relative; flex: 1; min-width: 12rem; }
+/* Dar ekranda arama kutusu KÜÇÜLÜR, komşuları değil: yer tutucu metni
+   kırpılsa da kutunun ne olduğu büyüteçten okunuyor, oysa yanındaki
+   meal düğmesinde kırpılan şey mütercimin adı. */
+.goto { position: relative; flex: 1 1 8rem; min-width: 7rem; }
+
+/* İkon kutunun İÇİNDE durur (ayrı bir eleman olarak yanında değil):
+   yanında olsaydı şeritte kendi yerini isterdi ve arama kutusu o kadar
+   daralırdı. */
+.goto-icon {
+  position: absolute;
+  left: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
 
 .goto-input {
   width: 100%;
   font: inherit;
   font-size: 0.85rem;
-  padding: 0.5rem 0.7rem;
+  padding: 0.5rem 0.7rem 0.5rem 1.9rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: transparent;

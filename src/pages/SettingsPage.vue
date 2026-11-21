@@ -5,6 +5,7 @@ import { COLOR_STYLES } from '@/data/colorStyles'
 import { NOTIFY_KEYS, NOTIFY_CHOICES, VAKIT_LABELS } from '@/data/vakitNotify'
 import { AUTHORS } from '@/data/kuranMeta'
 import { MEAL_FONTS } from '@/data/mealFonts'
+import { ensureFont } from '@/composables/useShareFonts'
 import { downloadBackup, readBackup, applyBackup } from '@/utils/backup'
 import { supportsNotifications, requestNotificationPermission } from '@/composables/useVakitNotifications'
 import { useSeo } from '@/composables/useSeo'
@@ -61,6 +62,11 @@ const notifyOptions = [
 // Kuran sayfasının yazı tipi. Liste bilinçli dar: mushaf nesih hattıyla
 // okunur, talik ve kufi başka işler içindir. Hepsi `shareFonts.js`te
 // tanımlı, yalnızca seçilen aile indirilir.
+// Seçicideki kareler kendi yazılarıyla yazıyor: üçü de ayarlar sayfası
+// açılırken iniyor (örnek göstermenin başka yolu yok). Kur'an sayfası
+// yalnızca SEÇİLENİ indirir.
+onMounted(() => MEAL_FONTS.forEach((f) => f.font && ensureFont(f.font)))
+
 /** Meal seçimi çoklu: sıra AUTHORS sırasında tutulur. */
 function toggleMeal(id) {
   const want = new Set(settings.quranMeals)
@@ -116,6 +122,7 @@ const firstPageOptions = [
   { value: '/saat',     label: 'Saat',         desc: 'Alaturka saat' },
   { value: '/vakitler', label: 'Vakitler',     desc: 'Namaz vakitleri' },
   { value: '/takvim',   label: 'Takvim',       desc: 'Hicri / Rumi takvim' },
+  { value: '/kuran',    label: 'Kur’an',       desc: 'Mushaf ve hatim' },
 ]
 </script>
 
@@ -267,7 +274,7 @@ const firstPageOptions = [
            öyle): karşılaştırmalı okuma için birkaçı yan yana açılıyor.
            Burada kareler, çünkü sayfa zaten kare seçicilerle kurulu. -->
       <span class="sub-label sub-label--spaced">Meal</span>
-      <div class="theme-selector">
+      <div class="theme-selector theme-selector--wrap">
         <button
           v-for="a in AUTHORS"
           :key="a.id"
@@ -280,15 +287,19 @@ const firstPageOptions = [
       </div>
 
       <span class="sub-label sub-label--spaced">Meal yazı tipi</span>
-      <div class="theme-selector">
+      <!-- Her kare KENDİ yazısıyla yazar: adı değil görüntüsü
+           seçtirir (Kur'an sayfasındaki seçicide de öyle). -->
+      <div class="theme-selector theme-selector--wrap">
         <button
           v-for="f in MEAL_FONTS"
           :key="f.id"
-          class="theme-btn"
+          class="theme-btn meal-font-btn"
           :class="{ active: settings.quranMealFont === f.id }"
+          :style="{ fontFamily: f.family }"
           @click="settings.quranMealFont = f.id"
         >
           <span>{{ f.label }}</span>
+          <span class="meal-font-note">{{ f.note }}</span>
         </button>
       </div>
     </section>
@@ -412,6 +423,25 @@ const firstPageOptions = [
 .theme-selector {
   display: inline-flex;
   gap: 0.4rem;
+}
+
+/* Uzun listeler (meal, meal yazı tipi) SARAR: `inline-flex` tek satırda
+   dokuz mütercimi yan yana diziyor ve kutu taşıyor, taşan kısım da
+   kaydırılamıyordu — sığmayan seçenek hiç yok gibi duruyordu. */
+.theme-selector--wrap { display: flex; flex-wrap: wrap; }
+
+.meal-font-btn {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+}
+
+.meal-font-note {
+  font-family: var(--font1);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.65;
 }
 
 .theme-btn {

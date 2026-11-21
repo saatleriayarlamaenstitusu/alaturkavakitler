@@ -13,6 +13,15 @@ import { PAGE_COUNT } from '@/utils/mushaf'
  *
  * Birden fazla hatim aynı anda sürebilir; biri "etkin"dir ve okuma
  * ekranındaki işaretleme ona yazar.
+ *
+ * **Geri alınan sayfa SİLİNMEZ, `undone`a taşınır.** İşaret kaldırılınca
+ * kayıt tamamen siliniyordu ve o günün çizelgedeki izi de yok oluyordu:
+ * "dün üç sayfa okumuştum" diye bakıyorsun, gün bomboş. Oysa iki ayrı
+ * soru var — *hatim ne kadar ilerledi* ve *o gün ne yaptım*. Birincisi
+ * yalnızca `progress`e bakar (geri alınan sayfa okunmamıştır, oran da
+ * sayaç da düşer); ikincisi `undone`u da görür ama ONAYLI bir okuma
+ * gibi değil, uyarı biçiminde. Sayfa yeniden işaretlenirse `undone`dan
+ * düşer — çift sayılmaz.
  */
 
 const KEY = 'hatimler'
@@ -39,6 +48,7 @@ function seed() {
     startedAt: iso,
     dailyTarget: null,
     progress: {},
+    undone: {},
     finishedAt: null,
   }
 }
@@ -52,7 +62,10 @@ function load() {
     }
     const raw = JSON.parse(stored || 'null')
     if (!raw || !Array.isArray(raw.list)) return { list: [], activeId: null }
-    return { list: raw.list, activeId: raw.activeId ?? raw.list[0]?.id ?? null }
+    // `undone` sonradan eklendi; eski kayıtlarda yok ve her okuyucunun
+    // tek tek kontrol etmesi gerekmesin diye burada kuruluyor.
+    const list = raw.list.map((h) => ({ ...h, undone: h.undone ?? {} }))
+    return { list, activeId: raw.activeId ?? list[0]?.id ?? null }
   } catch {
     return { list: [], activeId: null }
   }
@@ -93,6 +106,20 @@ export const useHatimStore = defineStore('hatim', () => {
     return out
   }
 
+  /**
+   * Gün → o gün okunup SONRADAN geri alınan sayfa sayısı.
+   *
+   * Çizelgede okunan günle aynı biçimde gösterilmez: oran ve sayaç
+   * bakımından o sayfa okunmamıştır, ama o gün bir şey yapıldığı
+   * doğrudur ve gün bomboş görünmemeli.
+   */
+  function undoneByDay(h) {
+    const out = {}
+    if (!h) return out
+    for (const day of Object.values(h.undone ?? {})) out[day] = (out[day] ?? 0) + 1
+    return out
+  }
+
   /** Kaldığın yer: okunmamış ilk sayfa. */
   function nextPage(h) {
     if (!h) return 1
@@ -102,6 +129,7 @@ export const useHatimStore = defineStore('hatim', () => {
 
   const isRead = (h, page) => Boolean(h?.progress[page])
 
+
   /** Bütün hatimlerin günlük toplamı — üstteki genel çizelge için. */
   function allByDay() {
     const out = {}
@@ -110,9 +138,26 @@ export const useHatimStore = defineStore('hatim', () => {
     return out
   }
 
-  /** Bütün hatimlerde okunan toplam sayfa. */
+  /** Bütün hatimlerde geri alınan sayfaların günlük toplamı. */
+  function allUndoneByDay() {
+    const out = {}
+    for (const h of list.value)
+      for (const day of Object.values(h.undone ?? {})) out[day] = (out[day] ?? 0) + 1
+    return out
+  }
+
+  /** Bütün hatimlerde okunan toplam sayfa (hatimlere YAZILAN). */
   const totalPages = () =>
     list.value.reduce((sum, h) => sum + Object.keys(h.progress).length, 0)
+
+  /**
+   * Geri alınmış toplam sayfa.
+   *
+   * Hatmin oranına girmez ama okunmadığı da söylenemez: üstteki genel
+   * toplamın yanında ayrı bir sayı olarak duruyor.
+   */
+  const totalUndone = () =>
+    list.value.reduce((sum, h) => sum + Object.keys(h.undone ?? {}).length, 0)
 
   /**
    * Bir günde hangi hatimden kaç sayfa okunduğu.
@@ -126,8 +171,10 @@ export const useHatimStore = defineStore('hatim', () => {
     const out = []
     for (const h of list.value) {
       let pages = 0
+      let undone = 0
       for (const d of Object.values(h.progress)) if (d === day) pages++
-      if (pages) out.push({ id: h.id, niyet: h.niyet, pages })
+      for (const d of Object.values(h.undone ?? {})) if (d === day) undone++
+      if (pages || undone) out.push({ id: h.id, niyet: h.niyet, pages, undone })
     }
     return out
   }
@@ -139,6 +186,7 @@ export const useHatimStore = defineStore('hatim', () => {
       startedAt: today(),
       dailyTarget: dailyTarget ? Number(dailyTarget) : null,
       progress: {},
+      undone: {},
       finishedAt: null,
     }
     list.value = [h, ...list.value]
@@ -151,11 +199,18 @@ export const useHatimStore = defineStore('hatim', () => {
     const h = list.value.find((x) => x.id === id)
     if (!h) return false
     const key = String(page)
+    h.undone ??= {}
     if (h.progress[key]) {
+      // Okunduğu GÜN korunur: çizelgede o günün izi kalmalı, yalnızca
+      // hatmin sayacından düşmeli.
+      h.undone[key] = h.progress[key]
       delete h.progress[key]
       h.finishedAt = null
     } else {
       h.progress[key] = today()
+      // Geri alınmış bir sayfa yeniden işaretlendi: iki yerde birden
+      // durursa hem okunmuş hem geri alınmış sayılırdı.
+      delete h.undone[key]
       if (Object.keys(h.progress).length === PAGE_COUNT) h.finishedAt = today()
     }
     // Pinia derin izliyor ama dizinin kendisine dokunmak, kaydı
@@ -169,7 +224,12 @@ export const useHatimStore = defineStore('hatim', () => {
     const h = list.value.find((x) => x.id === id)
     if (!h) return
     const day = today()
-    for (let p = 1; p <= page; p++) if (!h.progress[p]) h.progress[p] = day
+    h.undone ??= {}
+    for (let p = 1; p <= page; p++) {
+      if (h.progress[p]) continue
+      h.progress[p] = day
+      delete h.undone[p]
+    }
     if (Object.keys(h.progress).length === PAGE_COUNT) h.finishedAt = day
     list.value = [...list.value]
   }
@@ -183,7 +243,8 @@ export const useHatimStore = defineStore('hatim', () => {
 
   return {
     list, activeId, active,
-    readCount, ratio, byDay, nextPage, isRead, readOn, allByDay, totalPages,
+    readCount, ratio, byDay, undoneByDay, nextPage, isRead, readOn,
+    allByDay, allUndoneByDay, totalPages, totalUndone,
     start, togglePage, markUpTo, remove, setActive,
   }
 })

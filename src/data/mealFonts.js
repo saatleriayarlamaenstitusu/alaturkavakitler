@@ -10,7 +10,10 @@
  * değil bir göreve çevirir:
  *
  *  - `sans`  — uygulamanın kendi yazısı (ek indirme YOK, varsayılan)
- *  - `serif` — Baskervville: Baskerville'in açık kaynaklı dirilişi
+ *  - `serif` — Newsreader: ekranda uzun metin için çizilmiş geçiş
+ *    dönemi (transitional) serifi. Önce Baskervville denendi ve
+ *    bırakıldı: tek ağırlıklı, ince konturlu bir SERGİ yazısı —
+ *    başlıkta güzel, meal uzunluğunda metinde soluk ve yorucu.
  *  - `mono`  — Courier Prime
  *
  * `font` alanı `data/shareFonts.js`'teki kimliktir; `ensureFont(id)` ile
@@ -18,7 +21,7 @@
  */
 export const MEAL_FONTS = [
   { id: 'sans', label: 'Sans', note: 'uygulamanın yazısı', font: '', family: 'var(--font1)' },
-  { id: 'serif', label: 'Serif', note: 'Baskervville', font: 'baskervville', family: "'Baskervville', Georgia, serif" },
+  { id: 'serif', label: 'Serif', note: 'Newsreader', font: 'newsreader', family: "'Newsreader', Georgia, serif" },
   { id: 'mono', label: 'Mono', note: 'Courier Prime', font: 'courier-prime', family: "'Courier Prime', ui-monospace, monospace" },
 ]
 

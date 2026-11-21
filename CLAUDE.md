@@ -148,8 +148,8 @@ vakitSource       // 'diyanet' | 'turkiye_takvimi'
 firstPage         // route path
 themePerVakit     // boolean — vakite göre renk değişimi
 notificationsEnabled // boolean
-darkMode          // 'auto' | 'dark' | 'light'
-colorStyle        // 'klasik' | 'pastel' | 'canli' | 'mesh' | 'mono' — renk stili (src/data/colorStyles.js)
+darkMode          // 'auto' | 'dark' | 'light' — varsayılan 'light'
+colorStyle        // 'klasik' | 'pastel' | 'canli' | 'mesh' | 'mono' — renk stili (src/data/colorStyles.js); varsayılan 'mesh'
 homeClock         // 'led' | 'normal' — ana sayfa saat görünümü (LedClock / AlaturkaClock)
 ```
 
@@ -698,6 +698,10 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
 - Aranan ayet bulunduğu sayfada vurgulanır. Vurgu SAYFAYA bağlı tutulur
   (`focus.page === page`), böylece sayfa başka bir yolla değişince
   kendiliğinden düşer — ayrı bir temizleme izleyicisi yok.
+- **Hızlı erişim kısayolları SEÇİCİNİN içindedir** (`PickerSheet`in
+  `shortcuts` prop'u), sekmelerin hemen altında. Görünüm ayarlarının
+  (⋯) yanındayken alakasız duruyorlardı: "Yasin'e git" bir hat ya da
+  yazı boyu ayarı değil, "42. sayfaya git" ile aynı iştir.
 - Serbest okumada **hızlı erişim şeridi** (`data/quranShortcuts.js`):
   Yasin, Tebâreke, Amme, Vâkıa, Rahmân, Kehf, Ayetel Kürsi, Âmenerrasûlü,
   30. cüz, kısa sureler, Fâtiha. Yaygın adıyla anılanlar resmî adlarıyla
@@ -859,7 +863,9 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   meal seçiliyken yazar; tekse zaten düğmede duruyor.
 - **Meal yazı tipi seçilebilir** (`src/data/mealFonts.js`,
   `settings.quranMealFont`): sans (uygulamanın yazısı, ek indirme yok),
-  serif (Baskervville) ve mono (Courier Prime). Arapça metnin hattı
+  serif (Newsreader) ve mono (Courier Prime). Serif için önce
+  Baskervville denendi ve bırakıldı: tek ağırlıklı, ince konturlu bir
+  SERGİ yazısı — başlıkta güzel, meal uzunluğunda metinde soluk. Arapça metnin hattı
   seçilebiliyordu ama uzun uzun okunan şey karşılığıdır. Aile
   `--meal-font` değişkeniyle iniyor; `ensureFont` ile yalnızca
   seçilen indirilir. Seçici MEAL alt sayfasının başında — karar aynı
@@ -888,6 +894,17 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   sure adı bir satır yukarıda zaten duruyordu — aynı bilgi iki yerde,
   biri tıklanabilir biri değil. Şimdi büyük sure adı + "cüz · sayfa"
   satırı bir düğmedir ve `PickerSheet`i açar (`MushafView` `@pick`).
+- **Tam ekran düğmesi SAYFA satırındadır**, araç şeridinde değil:
+  okunan sayfaya ait bir kip ve şeritte ⋯ ile kulaklığın arasında
+  üçüncü bir kare olarak hangisinin ne yaptığı seçilmiyordu. Oklarla
+  aynı satırda ama kenarlıksız — bir sayfa düğmesi değil, kip düğmesi.
+- **Görünüm düğmelerinde ikon var**: üç ad yan yana ("Mushaf Esnek Ayet
+  ayet") bir şerit metni gibi okunuyordu. İkonlar bir nesneyi değil
+  DİZİMİ tarif ediyor: eşit satırlar (mushaf), farklı uzunlukta akan
+  satırlar (esnek), kalın satır + altında ince iki satır (ayet ayet).
+  Arama kutusunda büyüteç, meal düğmesinde çeviri ikonu var —
+  ikisi de ne olduklarını yer tutucu metinle söylüyordu ve o metin
+  daraldıkça kırpılıyordu.
 - **Üst taraf katlanır**: hat, yazı boyu, tecvit ve hızlı erişim
   kısayolları ⋯ düğmesinin arkasındadır (`tools`). Bir kez kurulup
   bırakılan ayarlar her sayfada yer kaplıyordu — üst taraf altı satır
@@ -939,6 +956,18 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   sayfanın uzunluğuna göre yer değiştiriyordu — her sayfada başka bir
   yere basmak gerekiyordu. Dipte yalnızca tek bir "sonraki sayfa" var,
   uzun sayfada başa dönmemek için.
+- **Geri alınan sayfa SİLİNMEZ, `undone`a taşınır** (`stores/hatim.js`).
+  İşaret kaldırılınca kayıt tamamen siliniyordu ve o günün çizelgedeki
+  izi de yok oluyordu: "dün üç sayfa okumuştum" diye bakan biri bomboş
+  bir gün görüyordu. İki ayrı soru var — *hatim ne kadar ilerledi* ve
+  *o gün ne yaptım*. Birincisi (`readCount`, `ratio`, `isRead`,
+  `nextPage`) yalnızca `progress`e bakar, yani geri alınan sayfa
+  okunmamıştır ve oran düşer. İkincisi `undone`u da görür ama ONAYLI
+  bir okuma gibi değil: hatim çizelgesinde kesikli çerçeveli bir kutu
+  (dolgu yok, `.day.undone`), takvim sayfasında ve genel toplamda
+  "+N geri alındı" diye ayrı bir sayı. Sayfa yeniden işaretlenirse
+  `undone`dan düşer — çift sayılmaz. Okunduğu GÜN korunur, bugünün
+  tarihiyle değiştirilmez.
 - **Hatim bir sayaç değil kayıt**: `stores/hatim.js` "hangi sayfayı hangi gün
   okudum" tutar (`progress: { sayfa: 'YYYY-MM-DD' }`). Günlük takvim şeridi,
   kaldığın yer ve oran hep bu tek kayıttan türer; yanlış işareti geri almak
@@ -1081,7 +1110,11 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   satır); bunlar oraya sığmıyor ve sığdırılsa şerit mushafın üstünde
   bir denetim paneline dönüyordu. Hem şeritten hem MİNİ oynatıcıdan
   açılır — Kur'an sayfasının dışında dinlerken yapılabilecek tek şey
-  duraklatmaktı.
+  duraklatmaktı. Açma düğmesinin ikonu YUKARI OK ("bu şerit açılıyor");
+  önce bir çubuk grafikti ve neyi açtığı okunmuyordu. Ekranda İKİ çarpı
+  olmaz: köşedeki çarpı sayfayı kapatır, kıraati bırakmak yazıyla
+  ("Kıraati bırak") — iki çarpı yan yana hangisinin sesi hangisinin
+  pencereyi kapattığını belirsiz bırakıyordu.
 - **Kârî bağlama App.vue'da**: kârî seçici artık Kur'an sayfasının
   dışından da (mini oynatıcıdan) açılabiliyor, `setReciter` izleyicisi
   sayfada kalsaydı orada yapılan seçim oynatıcıya hiç ulaşmazdı.
@@ -1102,6 +1135,13 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
     kaydırılır; ölçüldü: ayet değişiminde kutunun merkezinden sapma 0px.
   - Kaydırma `nextTick` sonrası yapılır: sayfa kıraatle çevrildiğinde
     vurgu yeni sayfa çizilmeden yazılıyor ve eleman henüz yok.
+  - **Takip açıkken ekran kararmaz** (`composables/useWakeLock.js`,
+    Screen Wake Lock): mukabelede ekrana bakılıyor ama dokunulmuyor,
+    telefon bir iki dakikada ekranı karartıyordu. Kilit yalnızca ses
+    ÇALARKEN istenir; kullanıcı ekranı kendi kilitlerse geri alınmaz
+    ("cebimde ekran yanıyor" olmasın), sekme öne gelince
+    `visibilitychange` ile yeniden istenir. Desteklemeyen tarayıcıda
+    sessizce atlanır.
 - **Dinle düğmesi nota değil KULAKLIKTIR**: nota müziği çağrıştırıyor,
   buradaki iş kıraat dinlemek.
 - **Sistem oynatıcısına künye yazılır** (Media Session): bildirim

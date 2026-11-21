@@ -101,10 +101,12 @@ function onPlay() {
 
     <!-- Oynatıcı ekranı: sürgü, ayet ayet ilerleme ve okunan ayetin
          meali şeride sığmıyor; sığdırılsa şerit mushafın üstünde bir
-         denetim paneline dönüyordu. -->
+         denetim paneline dönüyordu. İkon YUKARI OK — "bu şerit
+         açılıyor" demenin bilinen yolu; önce bir çubuk grafik
+         (seviye göstergesi) vardı ve neyi açtığı okunmuyordu. -->
     <button class="open" aria-label="Oynatıcıyı aç" title="Oynatıcı" @click="emit('expand')">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
-        <path d="M4 10h2.5v9H4zm6.75-5h2.5v14h-2.5zM17.5 13H20v6h-2.5z" />
+        <path d="M12 8.4 5.7 14.7l1.6 1.6L12 11.6l4.7 4.7 1.6-1.6z" />
       </svg>
     </button>
 
