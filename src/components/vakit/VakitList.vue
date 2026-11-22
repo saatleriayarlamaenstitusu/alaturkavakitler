@@ -2,6 +2,7 @@
 import { computed, ref, watch, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useKazaStore, KAZA_KEYS } from '@/stores/kaza'
+import GestureHint from '@/components/ui/GestureHint.vue'
 
 const appStore = useAppStore()
 const kaza = useKazaStore()
@@ -34,9 +35,16 @@ function onOutside(e) {
   if (!blockRef.value?.contains(e.target)) editing.value = false
 }
 
+// Kaza bandı basılı tutmakla açılıyor ve bunu söyleyen hiçbir iz yok:
+// ilk gelen kullanıcıya hareketin kendisi gösteriliyor. Bir kez açtıysa
+// öğrenmiştir, ipucu kapanır.
+const kazaHint = ref(null)
+
 watch(editing, (open) => {
-  if (open) setTimeout(() => document.addEventListener('pointerdown', onOutside), 0)
-  else document.removeEventListener('pointerdown', onOutside)
+  if (open) {
+    kazaHint.value?.dismiss()
+    setTimeout(() => document.addEventListener('pointerdown', onOutside), 0)
+  } else document.removeEventListener('pointerdown', onOutside)
 })
 
 onUnmounted(() => {
@@ -84,6 +92,14 @@ function formatTime(date) {
       </div>
     </div>
 
+    <GestureHint
+      ref="kazaHint"
+      id="kaza-hold"
+      gesture="hold"
+      class="vakit-hint"
+      text="Bir vakte basılı tutun, kaza sayacı açılsın."
+    />
+
     <!-- Sütunlar listeyle aynı flex yapısında, bu yüzden kendiliğinden hizalı. -->
     <div v-if="editing" class="kaza-band">
       <div class="kaza-head">
@@ -124,6 +140,8 @@ function formatTime(date) {
 .vakit-block {
   width: 100%;
 }
+
+.vakit-hint { margin-top: 0.6rem; }
 
 .vakit-list {
   width: 100%;

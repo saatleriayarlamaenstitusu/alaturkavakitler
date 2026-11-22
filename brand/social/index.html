@@ -106,11 +106,33 @@ body.bare { background: transparent; }
   line-height: 1.32;
   letter-spacing: -0.012em;
   color: rgba(255, 255, 255, 0.78);
-  max-width: 20ch;
+  /* Genişlik metnin uzunluğundan geliyor (`--deck-w`). Sabit 20ch'de
+     uzun bir alıntı altı satıra iniyor, telefonun hizasına kadar
+     uzanıyor ve kolon kaymış gibi duruyordu; sağa doğru açılınca aynı
+     metin dört satıra düşüyor ve telefona hiç yaklaşmıyor. */
+  max-width: var(--deck-w, 20ch);
   padding-top: 0.72em;
 }
 
+/* Künye: alıntının kaynağı. Alıntıyla aynı puntoda yazıldığında
+   cümlenin devamı gibi okunuyordu — küçük ve soluk. */
+.kunye {
+  font-size: calc(var(--deck) * 0.68);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.42);
+  max-width: var(--deck-w, 20ch);
+  padding-top: 0.75em;
+}
+
+/* Sahne yazıdan bir pay bırakır: telefon açıklamanın son satırına
+   yapışınca iki blok tek bir yığın gibi okunuyor, kartın nefesi
+   kalmıyor. Pay kenar boşluğu olarak veriliyor, dolgu olarak değil —
+   `fitDuo` sahnenin kutusunu ölçüyor ve dolgu o kutunun içinde
+   sayılıp telefonları gereğinden büyük hesaplatıyordu. */
 .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.card:not(.land) .stage { margin-top: calc(var(--pad) * 0.7); }
 
 /* Yakın çekim kadrajı — kartın kenarına taşmak yerine kendi çerçevesi olsun. */
 .crop {
@@ -141,6 +163,23 @@ body.bare { background: transparent; }
 }
 .phone iframe { display: block; border: 0; width: 100%; height: 100%; }
 
+/* Durağan ekran görüntüsü: telefonun içine iframe yerine bir resim
+   girer. `cover` — çekilen kare telefon çerçevesiyle birebir aynı
+   orana sahip olmayabilir (iPhone 16 393×852, çerçeve 402×844) ve
+   `contain` bırakılsa kenarlarda siyah şeritler kalırdı. */
+.phone img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+
+/* İki telefon yan yana: ikisi de aynı ölçekte, aralarında bir pay ve
+   ikincisi biraz aşağıda. Tam hizalı dursalar tek bir geniş ekran
+   gibi okunuyor; kayma onları iki ayrı cihaz yapıyor. */
+.duo { display: flex; align-items: flex-start; }
+/* Ölçek `transform` ile DEĞİL, gerçek ölçüyle veriliyor: dönüşüm
+   düzeni etkilemiyor, kutular tam boyda yer kaplamaya devam ediyor ve
+   aradaki boşlukla alt kenar negatif kenar boşluklarıyla kovalanmak
+   zorunda kalıyordu (ikinci telefon künye satırının üstüne biniyordu).
+   Ölçü doğrudan verilince yerleşim kendiliğinden doğru. */
+.duo .phone { transform: none; }
+
 .foot {
   display: flex;
   align-items: center;
@@ -161,7 +200,8 @@ body.bare { background: transparent; }
 .card.land { flex-direction: row; gap: 72px; align-items: stretch; }
 .card.land .col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .card.land .head { margin-bottom: auto; }
-.card.land .deck { max-width: 26ch; }
+.card.land .deck,
+.card.land .kunye { max-width: min(var(--deck-w, 26ch), 30ch); }
 .card.land .stage { flex: none; width: 44%; }
 
 /* Hangi bölümde olduğumuzu gösteren şerit — 80 saniyelik filmde gerekiyor. */
@@ -246,6 +286,118 @@ function tap(node) {
    at(t)   — her karede çalışır; `once` ile zamanlanmış dokunuşlar yapılır
 */
 
+/* Hatim kaydı: sahnenin gösterdiği şey "ilerleme"dir, boş bir liste
+   değil. Sayfalar gün gün dağıtılır (günde 5–9 sayfa, araya boş günler)
+   çünkü çizelgenin anlamı da bu: bazı günler okudunuz, bazı günler
+   okumadınız. Rakamlar uydurma ama YAPI gerçek — uygulama bu kaydı
+   kendi kodu ile okuyup halkayı, oranı ve şeridi kendisi çiziyor. */
+function hatimSeed() {
+  const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const mk = (id, niyet, start, days, perDay, from) => {
+    const progress = {}
+    let page = from
+    for (let i = days; i >= 0; i--) {
+      const d = new Date(2026, 10, 7)
+      d.setDate(d.getDate() - i)
+      // Her gün okunmaz; haftada bir gün boş kalsın.
+      if (i % 7 === 3) continue
+      const n = perDay[(days - i) % perDay.length]
+      for (let k = 0; k < n; k++) progress[page++] = iso(d)
+    }
+    return { id, niyet, startedAt: start, dailyTarget: null, progress, undone: {}, finishedAt: null }
+  }
+  const list = [
+    mk('h-umm', 'Ümmet için', '2026-09-20', 48, [7, 5, 9, 6, 8], 1),
+    mk('h-dede', 'Dedem için', '2026-10-28', 10, [4, 6, 3], 1),
+  ]
+  return JSON.stringify({ list, activeId: 'h-umm' })
+}
+
+/* Görsel oluşturucu kartının düzeni.
+ *
+ * Editör düzenini `localStorage`da tutuyor (`shareEditor`), bu yüzden
+ * kart uygulamayı hazır bir kompozisyonla açabiliyor: kullanıcının
+ * karşısına çıkan varsayılan tuval değil, gerçekten yapılmış bir iş.
+ *
+ * Ayet metni ELLE YAZILMAZ, vekilden çekilir (`/api/kuran`): Arapça
+ * harekeli metni kopyalayıp yapıştırmak sessizce bozulabilir ve
+ * mütercimin cümlesini elle yazmak onu tahrif etmektir. Vekil
+ * ulaşılamazsa kart ayetsiz basılır — yanlış bir ayetten iyidir.
+ */
+const AYET_MEALS = { 109: 'Marmaduke Pickthall', 14: 'Elmalılı Hamdi Yazır' }
+
+function gorselSeed() {
+  let d = null
+  try {
+    const x = new XMLHttpRequest()
+    x.open('GET', '/api/kuran/range/94/1/2?authors=109,14', false)
+    x.send()
+    if (x.status === 200) d = JSON.parse(x.responseText)
+  } catch { /* vekil yok */ }
+  if (!d || !Array.isArray(d.ar) || !d.ar.length) {
+    console.warn('ayet alınamadı; görsel kartı boş tuvalle basılacak')
+    return null
+  }
+
+  const ids = [109, 14]
+  const tr = (id, i) => d.translations?.[id]?.[i] ?? ''
+  // Numaralandırma ve ayırıcı, uygulamanın ayet seçicisindekiyle
+  // birebir aynı (`AyetPicker.vue`): Arapça'da doğu rakamlı durak
+  // işareti, Latin'de parantezli sayı, 'satir' kipinde satır sonu.
+  // Kart uygulamanın çıktısını taklit etmemeli, aynısını üretmeli.
+  const eastern = (n) => String(n).replace(/[0-9]/g, (c) => '٠١٢٣٤٥٦٧٨٩'[+c])
+  const markAr = (t, i) => `${t} ﴿${eastern(i + 1)}﴾`
+  const markLatin = (t, i) => `(${i + 1}) ${t}`
+  const verses = d.ar.map((ar, i) => ({
+    n: 1 + i,
+    ar: markAr(ar, i),
+    tx: d.tx?.[i] ?? '',
+    meals: ids.map((id) => ({ id, name: AYET_MEALS[id], text: tr(id, i) })),
+  }))
+  const meals = ids.map((id) => ({
+    id,
+    name: AYET_MEALS[id],
+    text: d.ar.map((_, i) => markLatin(tr(id, i), i)).join('\n'),
+  }))
+
+  return {
+    ratioId: 'story',
+    background: {
+      kind: 'photo',
+      photo: 'https://cdn.alaturkavakitler.com/gorsel/bg/33797168.jpg',
+      dim: 0.42, blur: 0, zoom: 1, x: 0, y: 0, pw: 0, ph: 0,
+      fill: { style: 'vakit', color1: 'auto', color2: '#000000', angle: 160, softness: 78 },
+    },
+    grid: { on: false },
+    grain: { on: false },
+    brand: true,
+    customColors: [],
+    snap: true,
+    layers: [{
+      id: 'l1', type: 'ayet', x: 540, y: 820,
+      scale: 1, rotation: 0, opacity: 1, z: 1,
+      props: {
+        ayet: { surah: 94, verse: 1, to: 2, authors: ids, numbers: true, layout: 'satir' },
+        ar: d.ar.map(markAr).join('\n'),
+        tx: '',
+        meals,
+        verses,
+        ref: 'İnşirah 94:1-2',
+        showAr: true, showTx: false, showRef: true,
+        mealNames: true, mealNamePos: 'alt',
+        width: 880, size: 54, latinScale: 0.34, gap: 18,
+        align: 'center', latinAlign: 'center',
+        mealNameScale: 0.6, refScale: 0.6,
+        // Nesih hattı ve küçük kapitel bir serif: ikisi de okunan
+        // metnin karakterine ait, varsayılanlar değil.
+        font: 'scheherazade', weight: 400, italic: false, letterSpacing: 0,
+        latinFont: 'spectral-sc',
+        color: '#ffffff', txColor: '#ffffff', mealColor: '#ffffff', refColor: '#ffffff',
+      },
+    }],
+  }
+}
+
 const FEATURES = [
   {
     id: 'saat', no: '01',
@@ -267,7 +419,35 @@ const FEATURES = [
     focus: '.vakit-range-view',
   },
   {
-    id: 'takvim', no: '03',
+    id: 'hatirlatma', no: '03',
+    title: ['Vakti', '<em>kaçırmazsınız</em>'],
+    deck: 'Her vakit için kaç dakika önce uyarılacağınızı siz seçersiniz.',
+    accent: '#2fbf71', grad: '#176b40',
+    route: '/ayarlar', at: ms('2026-11-07T18:30:00'), speed: 1,
+    focus: '.notify-list',
+    /* Bildirimler açık bir cihaz: izin akışı tarayıcıda sorulamaz,
+       ayarın kendisi zaten `localStorage`da yaşıyor. */
+    seed: {
+      settings_notificationsEnabled: 'true',
+      settings_notifyOffsets: JSON.stringify({ imsak: 30, gunes: -1, ogle: 10, ikindi: 10, aksam: 5, yatsi: 15 }),
+    },
+    frame: (t, w, d, once) => {
+      /* Gerçek `select`ler: değer yazılıp `change` gönderiliyor, Vue
+         ayarı kendi yolundan kaydediyor. */
+      const set = (i, v) => {
+        const el = $$(d, '.notify-select')[i]
+        if (!el) return
+        el.value = String(v)
+        el.dispatchEvent(new w.Event('change', { bubbles: true }))
+      }
+      once('a', 1600, () => set(0, 45))
+      once('b', 3200, () => set(4, 15))
+      once('c', 4800, () => set(1, 30))
+      once('d', 6400, () => set(5, 30))
+    },
+  },
+  {
+    id: 'takvim', no: '04',
     title: ['Hicri', '<em>takvim</em>'],
     deck: 'Hicri ve miladi yan yana. Ay başlangıçları Diyanet ile aynı gün.',
     accent: '#6b7ae8', grad: '#2e3b83',
@@ -283,7 +463,7 @@ const FEATURES = [
     },
   },
   {
-    id: 'kaza', no: '04',
+    id: 'kaza', no: '05',
     title: ['Kaza namazı', '<em>sayacı</em>'],
     deck: 'Geride kalanı bilmek, tamamlamanın ilk adımı.',
     accent: '#e0003c', grad: '#8e0025',
@@ -312,25 +492,153 @@ const FEATURES = [
     },
   },
   {
-    id: 'gorsel', no: '05',
-    title: ['Görsel', '<em>oluşturucu</em>'],
-    deck: 'Vakti, tarihi, bir ibareyi kendi tasarımınıza dönüştürün.',
-    accent: '#ffbd33', grad: '#8a6414',
-    route: '/gorsel-olustur', at: ms('2026-11-07T18:30:00'), speed: 1,
+    id: 'kuran', no: '06',
+    title: ['Nerede kaldığınızı', '<em>unutmazsınız</em>'],
+    deck: 'Sayfayı çevirdiğinizde okundu sayılır. Kaldığınız yeri bir daha aramazsınız.',
+    accent: '#c8a24a', grad: '#6f5520',
+    route: '/kuran?b=hatim', at: ms('2026-11-07T20:40:00'), speed: 1,
+    focus: '.hatim',
+    seed: {
+      hatimler: hatimSeed(),
+      // Açık mesh: hatim halkaları ve günlük şerit açık zeminde daha
+      // okunur, mushaf da basılı sayfaya benziyor.
+      settings_darkMode: '"light"',
+      settings_colorStyle: '"mesh"',
+      settings_quranView: '"mushaf"',
+    },
     frame: (t, w, d, once) => {
-      /* Editörün kendi "Ekle" şeridine basılır; katmanlar tuvale gerçekten
-         eklenir, değerleri o anki vakit ve tarihten dolar. */
-      ;[['Vakit', 1300], ['Arapça Metin', 2900], ['Logo', 4400]].forEach(([ad, when]) =>
-        once('ekle-' + ad, when, () => tap(chip(d, ad))))
-      /* Paneli katlayıp tuvali tamamen göster — eklenenler panelin
-         arkasında kalıyordu. */
-      once('katla', 5800, () => tap($(d, '.panel .grab')))
-      /* Sonra bir katmana dokunup seçim tutamaklarını göster. */
-      once('sec', 7800, () => tap($$(d, '.layer')[0]))
+      /* Önce liste: iki hatim, her biri kendi halkası ve günlük
+         şeridiyle. Açık olan kapanır, öbürü açılır. */
+      once('ikinci', 2400, () => tap($$(d, '.card-open')[1]))
+      /* Sonra o hatme girilir ve kaldığı sayfa açılır — kartın
+         söylediği şeyin karşılığı bu düğme. */
+      once('devam', 4400, () => tap($(d, '.resume')))
+      /* Mushafta sayfa çevrilir: hatim okuyucusunda sayfa çevirmek
+         onu okundu saymaktır, tepedeki rozet de o anda değişiyor. */
+      once('cevir1', 6600, () => tap($(d, '[aria-label="Sonraki sayfa"]')))
+      once('cevir2', 8500, () => tap($(d, '[aria-label="Sonraki sayfa"]')))
     },
   },
   {
-    id: 'kible', no: '06',
+    id: 'dinle', no: '07',
+    title: ['Dinlerken', '<em>ayeti görürsünüz</em>'],
+    deck: 'Okunan ayet mushafta işaretli durur, sayfayı siz çevirmezsiniz.',
+    accent: '#9b6bd8', grad: '#4b2f72',
+    route: '/kuran?a=18:6', at: ms('2026-11-07T21:10:00'), speed: 1,
+    /* `focus` YOK: sayfa tepeden görünmeli, yoksa kıraat şeridi
+       kadrajın dışında kalıyor ve kart "dinleme"yi hiç göstermiyor
+       (ölçüldü — mushaf ortalanınca araç şeridi de şerit de gitti). */
+    /* Meal kapalı: mushaf görünümünde meal istenmezse ayet metni için
+       hiç istek yapılmıyor. Kartı basan sunucu `dist/`i yayınlıyor,
+       `/api/kuran` vekili orada yok ve ekranda bir hata satırı
+       kalıyordu. */
+    seed: { settings_quranMeals: '[]' },
+    frame: (t, w, d, once) => {
+      /* Kıraat şeridi okumanın üstüne oturur; oynatıcı ekranı da
+         oradan açılır. */
+      once('ac', 1700, () => tap($(d, '.full-btn--label')))
+      /* Kârî seçici: oynatıcı ekranı yerine burası gösteriliyor, çünkü
+         ses bu ortamda çalmıyor ve sürgü boş bir kutu olarak kalıyor.
+         Kârî listesi ise gerçek içeriktir — adı, okuyuşu ve temposu. */
+      once('kari', 4600, () => tap($(d, '.listen .who')))
+      once('kapat', 8000, () => tap($(d, '.panel-x')))
+    },
+  },
+  {
+    id: 'kurangenel', no: '08',
+    title: ['Sade bir', '<em>Kur’an okuma deneyimi</em>'],
+    deck: 'Mushaf düzeninde, akan metinde ya da ayet ayet okuyun.',
+    accent: '#3fa98a', grad: '#1c5546',
+    /* DURAN KARE iki telefon: solda tam ekran mushaf, sağda ayet ayet.
+       "Aynı Kur'an'ı iki ayrı şekilde okuyabilirsiniz" cümlesi tek bir
+       ekranla anlatılamıyor ve tam ekran okuma kipi kabuğun dışına
+       çıktığı için kart düzeneğinde kurulması ayrı bir iş olurdu. */
+    still: ['kuran_mushaf_tam_ekran.png', 'kuran_ayet-ayet.png'],
+    /* VİDEO canlı: duran karede yan yana duran iki görünüm, videoda
+       arka arkaya geliyor — ayet ayetten mushafa, sonra tam ekrana. */
+    route: '/kuran?s=532', at: ms('2026-11-07T19:20:00'), speed: 1,
+    seed: {
+      // Açık mesh: iki mealin serif yazısı ve mushafın hattı açık
+      // zeminde basılı sayfaya en çok benzeyen hâli.
+      settings_darkMode: '"light"',
+      settings_colorStyle: '"mesh"',
+      settings_quranView: '"ayet"',
+      // Elmalılı (sadeleştirilmiş) + Pickthall: biri Türkçe biri
+      // İngilizce, çoklu meal bir bakışta anlaşılsın.
+      settings_quranMeals: JSON.stringify([15, 109]),
+    },
+    frame: (t, w, d, once) => {
+      once('dinle', 1700, () => tap($(d, '.full-btn--label')))
+      /* Şeritten açılan ekran KÂRÎ seçicidir, oynatıcı değil: ses bu
+         ortamda çalmıyor ve oynatıcının sürgüsü `0:00 / −0:00` boş bir
+         kutu olarak kalıyor (ölçüldü). Kârî listesi gerçek içerik —
+         ad, okuyuş, tempo ve ayet takibi var mı. */
+      once('kari', 3600, () => tap($(d, '.listen .who')))
+      once('kapat', 6000, () => tap($(d, '.panel-x')))
+      once('mushaf', 7200, () => tap($$(d, '.view-opt')[0]))
+      once('tamekran', 8400, () => tap($(d, '.select.full')))
+    },
+  },
+  {
+    id: 'gorsel', no: '09',
+    title: ['Görsel', '<em>Oluşturucu</em>'],
+    deck: 'Vakti, tarihi, bir ibareyi kendi tasarımınıza dönüştürün.',
+    accent: '#ffbd33', grad: '#8a6414',
+    route: '/gorsel-olustur', at: ms('2026-11-07T18:30:00'), speed: 1,
+    /* Duran kare elle çekilmiş; video aşağıdaki canlı sahne. */
+    still: 'görsel oluştur.png',
+    /* Tuval hazır bir kompozisyonla açılır (bkz. `gorselSeed`):
+       varsayılan düzen "yapılmış bir iş" gibi durmuyordu, katmanlar
+       kendi doğdukları yerde yüzüyordu. */
+    seed: { shareEditor: JSON.stringify(gorselSeed() ?? {}) },
+    frame: (t, w, d, once) => {
+      /* Önce katman seçilir — panel o katmanın ayarlarını açar. */
+      once('sec', 1400, () => tap($$(d, '.layer')[0]))
+
+      /* Sonra katman GERÇEKTEN sürüklenir: hizalama kılavuzları da
+         çıksın, panel kendiliğinden katlansın. Fare değil pointer
+         olayları; editör ikisini de aynı yoldan işliyor. */
+      const drag = (ms0, ms1, dx, dy) => {
+        const el = $$(d, '.layer')[0]
+        if (!el) return
+        const r = el.getBoundingClientRect()
+        const x0 = r.left + r.width / 2
+        const y0 = r.top + r.height / 2
+        const o = { bubbles: true, cancelable: true, composed: true, pointerId: 7, isPrimary: true, button: 0 }
+        once('d0', ms0, () => el.dispatchEvent(new w.PointerEvent('pointerdown', { ...o, clientX: x0, clientY: y0 })))
+        for (let i = 1; i <= 12; i++) {
+          const p = i / 12
+          once(`dm${i}`, ms0 + (ms1 - ms0) * p, () => {
+            const e = 1 - Math.pow(1 - p, 3)
+            w.dispatchEvent(new w.PointerEvent('pointermove',
+              { ...o, clientX: x0 + dx * e, clientY: y0 + dy * e }))
+          })
+        }
+        once('d1', ms1 + 60, () => w.dispatchEvent(new w.PointerEvent('pointerup',
+          { ...o, clientX: x0 + dx, clientY: y0 + dy })))
+      }
+      drag(2200, 4000, 0, -70)
+
+      /* Sürükleme sırasında panel kendiliğinden katlanıyor
+         (`state.dragging`); bırakınca açılması gerekiyor ama bu
+         kartta açılmadığı ölçüldü — tutamağa dokunulup açılıyor. */
+      once('panel', 4500, () => {
+        if ($(d, '.panel.collapsed')) tap($(d, '.panel .grab'))
+      })
+
+      /* Son olarak ayar paneli yavaşça kaydırılır: tipografi, boyut ve
+         renk bölümlerinin varlığı ancak kayarken görünüyor. */
+      if (t > 4800) {
+        const box = $(d, '.fields')
+        if (box) {
+          const p = Math.min(1, (t - 4800) / 4600)
+          box.scrollTop = (box.scrollHeight - box.clientHeight) * p * 0.85
+        }
+      }
+    },
+  },
+  {
+    id: 'kible', no: '10',
     title: ['Kıble', '<em>pusulası</em>'],
     deck: 'Nerede olursanız olun, yönünüz belli.',
     accent: '#00b7ff', grad: '#0a6d9e',
@@ -358,7 +666,7 @@ const FEATURES = [
     },
   },
   {
-    id: 'palet', no: '07',
+    id: 'palet', no: '11',
     title: ['Beş renk', '<em>stili</em>'],
     deck: 'Açık ya da koyu, hangisi size iyi geliyorsa.',
     /* Zemin nötr: renk kartın değil, telefonun konusu. */
@@ -389,7 +697,7 @@ const CHAPTERS = {
     accent: '#0491fb', grad: '#0a5fa8',
   },
   outro: {
-    id: 'outro', no: '08', kind: 'outro', phoneless: true,
+    id: 'outro', no: '12', kind: 'outro', phoneless: true,
     eyebrow: 'Son',
     accent: '#0491fb', grad: '#0a5fa8',
     lines: ['Ücretsiz ve reklamsız.', 'Ana ekrana ekleyin, çevrimdışı da çalışır.'],
@@ -398,14 +706,77 @@ const CHAPTERS = {
 
 /* ═══════════════ kurulum ═══════════════ */
 
-const f = CHAPTERS[FEATURE] || FEATURES.find(x => x.id === FEATURE) || FEATURES[0]
+/* Yazılar `metinler.txt`ten gelir; yukarıdaki tanımlar yalnızca SAHNEYİ
+   taşır (rota, dokunuşlar, renk) ve dosya okunamazsa yedek metin olur.
+   Ayrılmasının sebebi: bir virgülü düzeltmek için sahne tanımının içine
+   girmek gerekmemeli, metni yazan kişi kodu yazan kişi olmayabilir.
+
+   İstek SENKRON — bu dosya klasik bir betik, tepe seviyede `await` yok
+   ve kart kurulumu metinler hazırken çalışmak zorunda. Sunucu yerelde,
+   dosya birkaç kilobayt. */
+const METIN = (() => {
+  try {
+    const x = new XMLHttpRequest()
+    x.open('GET', '/_metin.json', false)
+    x.send()
+    return x.status === 200 ? JSON.parse(x.responseText) : {}
+  } catch { return {} }
+})()
+
+/** Bir bölümün yazılarını dosyadan alır; dosyada yoksa tanımdaki kalır. */
+function withText(def, key) {
+  const m = METIN[key]
+  if (!m) return def
+  const out = { ...def }
+  // İkinci satır vurgu renginde: dosyada işaret yok, burada sarılıyor.
+  if (m.baslik1 || m.baslik2) {
+    out.title = [m.baslik1 ?? '', m.baslik2 ? `<em>${m.baslik2}</em>` : '']
+  }
+  if (m.aciklama) out.deck = m.aciklama
+  if (m.kunye) out.kunye = m.kunye
+  if (m.ustbaslik) out.eyebrow = m.ustbaslik
+  const lines = ['satir1', 'satir2', 'satir3'].map(k => m[k]).filter(Boolean)
+  if (lines.length) out.lines = lines
+  return out
+}
+
+/* `?still=1` — DURAN kareyi basan geçiş.
+   Bir kartın duran karesi ile videosu aynı kaynaktan gelmek zorunda
+   değil: görsel oluşturucuda en iyi duran kare elle çekilmiş bir
+   kompozisyon (tuval kullanıcının kendi işi), hareket ise ancak
+   uygulamanın kendisi sürülerek anlatılıyor. `shots` her iki çıktıda
+   da durağandır; `still` yalnızca PNG'de. */
+const STILL = Q.get('still') === '1'
+
+const f = withText(
+  CHAPTERS[FEATURE] || FEATURES.find(x => x.id === FEATURE) || FEATURES[0],
+  `site/${FEATURE}`)
 const sz = SIZES[SIZE] || SIZES.story
 const r = document.documentElement.style
 r.setProperty('--w', sz.w + 'px')
 r.setProperty('--h', sz.h + 'px')
 r.setProperty('--pad', sz.pad + 'px')
-r.setProperty('--title', sz.title + 'px')
-r.setProperty('--deck', sz.deck + 'px')
+/* Ölçü metne uyar, metin ölçüye değil.
+   İlk turda açıklamalara 110 karakterlik bir sınır koymuştum ve
+   metinler o sınıra sıkıştırıldıkları için cılız kalmıştı. Sınır
+   kalktı; uzun bir başlık ya da açıklama geldiğinde punto kademe
+   kademe küçülüyor. Kademeli, çünkü sürekli bir oran küçük farklarda
+   kartları birbirinden ayırıyor ve dizi dağınık görünüyor. */
+const plain = (x) => String(x ?? '').replace(/<[^>]*>/g, '')
+const longest = Math.max(...(f.title ?? ['']).map(x => plain(x).length))
+const titleK = longest <= 14 ? 1 : longest <= 20 ? 0.84 : longest <= 27 ? 0.68 : 0.56
+const deckLen = plain(f.deck).length
+const deckK = deckLen <= 90 ? 1 : deckLen <= 140 ? 0.9 : deckLen <= 190 ? 0.82 : 0.74
+r.setProperty('--title', Math.round(sz.title * titleK) + 'px')
+r.setProperty('--deck', Math.round(sz.deck * deckK) + 'px')
+/* Kolon genişliği hem metnin uzunluğuna hem DÜZENE bağlı.
+   Story'de telefon yazının ALTINDA durur, kolon rahatça genişler ve
+   genişledikçe satır sayısı düşer — dar bir kolonda aynı metin beş
+   satıra iniyor, blok aşağı uzuyor ve telefonu aşağı itiyordu.
+   Gönderide (4:5) telefon yazının SAĞINDA; orada aynı genişlik
+   telefona dayanır, bu yüzden bir tık dar tutulur. */
+const DECK_W = SIZE === 'post' ? [26, 33, 38] : [26, 34, 40]
+r.setProperty('--deck-w', (deckLen <= 90 ? DECK_W[0] : deckLen <= 140 ? DECK_W[1] : DECK_W[2]) + 'ch')
 r.setProperty('--eyebrow', sz.eyebrow + 'px')
 r.setProperty('--accent', f.accent)
 r.setProperty('--grad', f.grad)
@@ -423,7 +794,9 @@ if (LAND) card.classList.add('land')
 const eyebrowRight = f.eyebrow || `${f.no} / ${String(FEATURES.length).padStart(2, '0')}`
 const eyebrow = frag(`<div class="eyebrow"><span>Alaturka Vakitler</span><span class="no">${eyebrowRight}</span></div>`)
 const head = f.title
-  ? frag(`<div class="head"><div class="title">${f.title[0]}<br>${f.title[1]}</div>${f.deck ? `<div class="deck">${f.deck}</div>` : ''}</div>`)
+  ? frag(`<div class="head"><div class="title">${f.title[0]}<br>${f.title[1]}</div>`
+      + `${f.deck ? `<div class="deck">${f.deck}</div>` : ''}`
+      + `${f.kunye ? `<div class="kunye">${f.kunye}</div>` : ''}</div>`)
   : null
 const foot = frag(`<div class="foot">${LOGO}<span>alaturkavakitler.com</span></div>`)
 
@@ -433,6 +806,9 @@ const steps = LAND && !f.phoneless
   : null
 
 let stage = null, phone = null, iframe = null
+
+// Bu geçişte telefonun içinde canlı uygulama mı, resim mi var?
+const stills = f.shots ?? (STILL && f.still ? [].concat(f.still) : null)
 
 if (f.kind === 'outro') {
   card.classList.remove('land')
@@ -444,7 +820,13 @@ if (f.kind === 'outro') {
   /* Hem özellik hem giriş bölümü aynı iki kolonlu düzeni kullanır: solda
      metin, sağda ya telefon ya özellik dizini. */
   const left = LAND ? frag('<div class="col"></div>') : card
-  left.appendChild(eyebrow)
+  /* Üst şerit YALNIZCA yatay filmde var.
+     Dikey kartlar tek tek paylaşılıyor: orada "ALATURKA VAKİTLER"
+     altta logoyla zaten yazıyor ve "04 / 11" bir dizinin kaçıncı
+     karesi olduğunu söylüyor — tek başına paylaşılan bir görselde
+     böyle bir dizi yok. Filmde ise bölüm numarası izleyicinin nerede
+     olduğunu söylüyor, orada kalıyor. */
+  if (LAND) left.appendChild(eyebrow)
   left.appendChild(head)
   if (steps) left.appendChild(steps)
 
@@ -453,16 +835,33 @@ if (f.kind === 'outro') {
       .map((n, i) => `<div><b>${String(i + 1).padStart(2, '0')}</b><span>${n}</span></div>`).join('')}</div>`)
   } else {
     stage = frag('<div class="stage"></div>')
-    phone = frag(`<div class="phone" style="width:${PHONE.w}px;height:${PHONE.h}px"></div>`)
-    iframe = document.createElement('iframe')
-    iframe.src = f.route
-    phone.appendChild(iframe)
-    if (f.detail) {
-      const crop = frag('<div class="crop"></div>')
-      crop.appendChild(phone)
-      stage.appendChild(crop)
+    if (stills) {
+      /* Durağan kart: uygulamayı canlı sürmek yerine elle çekilmiş
+         kareler. Bazı hâlleri kart düzeneğinde kurmak zor (tam ekran
+         okuma kipi kabuğun dışına çıkıyor, görsel oluşturucunun
+         tuvali kullanıcının kendi kompozisyonu) ve iki telefonlu bir
+         kompozisyon zaten tek bir iframe ile anlatılamıyor. */
+      const duo = frag('<div class="duo"></div>')
+      for (const src of stills) {
+        const ph = frag(`<div class="phone" style="width:${PHONE.w}px;height:${PHONE.h}px"></div>`)
+        const img = document.createElement('img')
+        img.src = `/_shot/${encodeURIComponent(src)}`
+        ph.appendChild(img)
+        duo.appendChild(ph)
+      }
+      stage.appendChild(duo)
     } else {
-      stage.appendChild(phone)
+      phone = frag(`<div class="phone" style="width:${PHONE.w}px;height:${PHONE.h}px"></div>`)
+      iframe = document.createElement('iframe')
+      iframe.src = f.route
+      phone.appendChild(iframe)
+      if (f.detail) {
+        const crop = frag('<div class="crop"></div>')
+        crop.appendChild(phone)
+        stage.appendChild(crop)
+      } else {
+        stage.appendChild(phone)
+      }
     }
   }
 
@@ -480,6 +879,25 @@ if (f.kind === 'outro') {
    Kart öğeleri CSS keyframe'i yerine kare başına elle konumlandırılır:
    render belirlenebilir kalsın ve telefonun kendi `transform`'u (ölçek +
    yakın çekim ötelemesi) ezilmesin diye. */
+/* Başlık tek satıra SIĞIYORSA tek satır olur.
+   İki satır bir tasarım tercihi değil, uzun başlıklar için bir çare:
+   "Alaturka Saat" zorla ikiye bölününce kartın sağ yarısı bomboş
+   kalıyor ve başlık olduğundan küçük duruyordu. Karar ÖLÇÜLEREK
+   veriliyor; karakter saymak yazı tipindeki genişlik farklarını
+   ıskalıyor (aynı uzunlukta iki başlık 80 piksele yakın fark
+   edebiliyor). Yatay filmde yapılmaz: orada metin dar bir kolonda
+   duruyor ve tek satıra çekmek onu kolonun dışına taşırır. */
+if (head && !LAND) {
+  const el = head.querySelector('.title')
+  const two = el.innerHTML
+  el.innerHTML = two.replace('<br>', ' ')
+  el.style.whiteSpace = 'nowrap'
+  if (el.scrollWidth > sz.w - sz.pad * 2) {
+    el.innerHTML = two
+    el.style.whiteSpace = ''
+  }
+}
+
 const veil = frag('<div class="veil"></div>')
 card.appendChild(veil)
 
@@ -541,6 +959,46 @@ function applyDetail() {
   phone.style.transform = `scale(${S}) translate(${PHONE.w / 2 - cx}px, ${PHONE.h / 2 - cy}px)`
 }
 
+/* İki telefonu kalan alana oturtur.
+   Ölçek CSS'ten tahmin edilmiyor, sahne kutusu ÖLÇÜLÜYOR: kalan
+   yükseklik başlığın kaç satır olduğuna göre karttan karta değişiyor
+   ve sabit bir oran bazı kartlarda telefonları alttan kesiyordu. */
+function fitDuo() {
+  const duo = document.querySelector('.duo')
+  if (!duo) return
+  const box = stage.getBoundingClientRect()
+  const phones = [...duo.children]
+  const n = phones.length
+
+  /* Çerçeve ORANINI ekran görüntüsü belirler, telefon sabiti değil.
+     Kutu `PHONE.w × PHONE.h` (402×844, 0.476) bırakılmıştı ve iPhone 16
+     karesi 1179×2556 (0.461): `cover` aradaki farkı alttan kırpıyor ve
+     uygulamanın alt gezinmesi yarım kalıyordu (ölçüldü). Kare
+     kırpılmamalı — çerçeve kareye uyar, kare çerçeveye değil. */
+  const ratios = phones.map((ph) => {
+    const img = ph.querySelector('img')
+    return img?.naturalWidth ? img.naturalHeight / img.naturalWidth : PHONE.h / PHONE.w
+  })
+  const tall = Math.max(...ratios)
+
+  // Pay ve kayma genişliğin oranıdır; ikisi de W cinsinden yazılıp
+  // sınırlar W için çözülüyor.
+  const GAP = 0.10          // telefonlar arası pay
+  const DROP = n > 1 ? 0.07 : 0   // ikincisi biraz aşağıda
+  const w = Math.min(
+    box.width / (n + GAP * (n - 1)),
+    box.height / (tall * (1 + DROP)),
+    PHONE.w * 1.15)
+
+  duo.style.gap = w * GAP + 'px'
+  phones.forEach((ph, i) => {
+    ph.style.width = w + 'px'
+    ph.style.height = w * ratios[i] + 'px'
+    ph.style.borderRadius = PHONE.r * (w / PHONE.w) + 'px'
+    ph.style.marginTop = (i === 1 ? w * tall * DROP : 0) + 'px'
+  })
+}
+
 const fired = new Set()
 const once = (key, when, fn) => {
   if (fired.has(key) || when > window.__t) return
@@ -552,12 +1010,20 @@ window.CARD = {
   feature: f.id,
   at: f.at,
   speed: f.speed || 1,
-  seed: f.seed || {},
+  /* Hareket ipuçları her kartta kapalı: uygulama yeni gelen kullanıcıya
+     "bir vakte basılı tutun" diye bir şerit gösteriyor ve o şerit
+     tanıtım karesinde arayüzün parçası gibi duruyor, oysa bir kerelik
+     bir öğreticidir. Kaza kartında bile gerekmiyor — orada hareketin
+     kendisi zaten yapılıyor. */
+  seed: { 'hint_kaza-hold': 'done', 'hint_ayah-double': 'done', ...(f.seed || {}) },
   zoom: sz.k,
 
   /* Uygulama ayağa kalktı mı? Giriş/çıkış bölümlerinde uygulama yok. */
   ready() {
     if (f.phoneless) return true
+    // Durağan kartta beklenen şey uygulamanın açılması değil,
+    // resimlerin çözülmesi.
+    if (stills) return [...document.querySelectorAll('.duo img')].every(i => i.complete && i.naturalWidth)
     const d = iframe.contentDocument
     return !!(d && d.readyState === 'complete' && d.querySelector('#app')?.children.length)
   },
@@ -568,6 +1034,7 @@ window.CARD = {
   prepare() {
     focusOn()
     applyDetail()
+    fitDuo()
     return true
   },
 

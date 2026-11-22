@@ -9,13 +9,31 @@ const route = useRoute()
 const item = computed(() => getItem(route.params.page, route.params.id))
 const paragraphs = computed(() => (item.value?.body || '').split('\n\n').filter(Boolean))
 
-// Paragrafı güvenli şekilde HTML'e çevir: kaçış + **kalın** → <strong>
+/**
+ * Paragrafı güvenli şekilde HTML'e çevir.
+ *
+ * Desteklenen tek işaretleme: `**kalın**` ve `[metin](adres)`. Tam bir
+ * Markdown çözümleyicisi yok — içerik repoda, elle yazılıyor ve
+ * ihtiyaç bu ikisinden ibaret.
+ *
+ * Metin ÖNCE kaçırılıyor, sonra bu iki kalıp HTML'e çevriliyor; sıra
+ * tersine dönerse yazının içindeki bir `<` etiket gibi işlenir.
+ *
+ * Adres yalnızca `http(s)` olabilir: kalıbın içine `javascript:` yazıp
+ * tıklanabilir hâle getirmenin önü kapalı. Uygulama içi bağlantı
+ * desteklenmiyor — düz bir `<a href="/...">` sayfayı baştan
+ * yükletirdi, oraya yönlendirici lazım.
+ */
 function renderParagraph(text) {
   const escaped = text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-  return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(
+      /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener">$1</a>')
 }
 
 // Yeniliklerde yazar yerine tarih gösterilir.
@@ -152,6 +170,14 @@ useSeo({
   color: var(--text);
   margin-bottom: 1.1rem;
 }
+
+.detail-body :deep(a) {
+  color: var(--accent-ui);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-ui) 45%, transparent);
+}
+
+.detail-body :deep(a:hover) { border-bottom-color: var(--accent-ui); }
 
 .detail-body :deep(strong) {
   font-weight: 700;

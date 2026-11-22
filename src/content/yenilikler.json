@@ -1,5 +1,23 @@
 [
   {
+    "id": "yeni-sekme-eklentisi",
+    "title": "Chrome yeni sekme eklentisi",
+    "date": "2026-11-22",
+    "body": "Her yeni sekmede alaturka saati, sonraki vakte kalan süreyi, hicri takvimi ve günün ayetini görüyorsunuz. Hava durumu da orada.\n\nEkranı siz kuruyorsunuz: widget'ları tutup sütunlar arasında taşıyor, istemediğinizi kapatıyorsunuz. Arka plana hazır görsellerden birini ya da kendi fotoğrafınızı koyuyor, karartmasını ve bulanıklığını kendiniz ayarlıyorsunuz.\n\nSık girdiğiniz siteleri kendi gruplarınızda topluyorsunuz — başlığını, ikonunu ve bağlantılarını siz seçiyorsunuz. Aklınızda kalanı yazacağınız kısa bir not kutusu da var.\n\nVakitler ve hicri takvim siteyle aynı yerden geliyor: aynı gün, aynı dakika. Hesap açmanız gerekmiyor, ayarlarınız yalnızca kendi tarayıcınızda duruyor.\n\n[Chrome Web Store'dan kurun](https://chromewebstore.google.com/detail/hknlkhdhepllicappjmgcliepnlljdcf/) — Edge, Brave, Vivaldi, Arc, Opera ve Yandex'te de çalışıyor."
+  },
+  {
+    "id": "hareket-ipuclari",
+    "title": "Ayete iki kez dokunun",
+    "date": "2026-11-22",
+    "body": "Bir ayete iki kez dokunduğunuzda kıraat oradan başlıyor. Bir vakte basılı tuttuğunuzda kaza sayacı açılıyor. İkisi de baştan beri vardı ama ekranda bunu söyleyen hiçbir şey yoktu; ilk kez girenlere artık hareketin kendisi gösteriliyor.\n\nGörsel oluşturucuda yatay bir fotoğrafı yana kaydırıp istediğiniz yeri kadraja alabiliyorsunuz."
+  },
+  {
+    "id": "coklu-meal-ve-oynatici",
+    "title": "İki meali yan yana okuma",
+    "date": "2026-11-21",
+    "body": "Kur'an sayfasında birden fazla meali aynı anda açabiliyorsunuz: ayetin altında iki mütercimin karşılığı alt alta duruyor, karşılaştırmak için sayfa değiştirmeniz gerekmiyor. Mealin yazı tipini de seçiyorsunuz — uygulamanın kendi yazısı, bir serif ya da daktilo harfi.\n\nKıraat şeridinden açılan ekranda okunan ayetin metnini ve mealini görüyor, sürgüyle istediğiniz yere gidiyorsunuz.\n\nTakip açıkken ekran da kararmıyor; mukabelede ekrana bakılıyor ama dokunulmuyor.\n\nSayfanın üstü sadeleşti: hat, yazı boyu ve tecvit ayarları ⋯ düğmesinin arkasına girdi, mushafa daha çok yer kaldı. Sure adının kendisi artık bir düğme — dokununca sure, sayfa ve cüz seçicisi açılıyor."
+  },
+  {
     "id": "ayet-ayet-ve-surekli-kiraat",
     "title": "Ayet ayet okuma, kesilmeyen kıraat",
     "date": "2026-11-20",

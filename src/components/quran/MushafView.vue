@@ -9,6 +9,7 @@ import { MUSHAF_SCRIPTS, scriptById, pageTajweed } from '@/utils/qpc'
 import { quranFontById } from '@/data/quranFonts'
 import MushafSheet from '@/components/quran/MushafSheet.vue'
 import { createDoubleTap } from '@/utils/doubleTap'
+import GestureHint from '@/components/ui/GestureHint.vue'
 import { centerInScroller } from '@/utils/scrollCenter'
 import { playing as reciting } from '@/stores/recitation'
 import SurahHeader from '@/components/quran/SurahHeader.vue'
@@ -141,8 +142,15 @@ watch(() => props.jump, () => centerFocus())
 onMounted(() => { if (props.focusVerse) centerFocus() })
 
 const tap = createDoubleTap()
+// İki kez dokunmak kıraati o ayetten başlatıyor ve bunu söyleyen hiçbir
+// iz yok. İlk gelen kullanıcıya hareket gösteriliyor; bir kez yaptıysa
+// öğrenmiştir, ipucu kapanır.
+const ayahHint = ref(null)
 const onVerseTap = (surah, verse) =>
-  tap(`${surah}:${verse}`, () => emit('ayah', { surah, verse }))
+  tap(`${surah}:${verse}`, () => {
+    ayahHint.value?.dismiss()
+    emit('ayah', { surah, verse })
+  })
 
 /**
  * Üç görünüm var ve üçü de aynı sayfa biriminde çalışır:
@@ -496,6 +504,14 @@ function onUp(e) {
          uzunluğuna göre yer değiştiriyordu — her sayfada başka bir
          yere bakmak gerekiyordu. -->
     <slot name="bar" />
+
+    <GestureHint
+      ref="ayahHint"
+      id="ayah-double"
+      gesture="double"
+      class="tap-hint"
+      text="Bir ayete iki kez dokunun, kıraat oradan başlasın."
+    />
 
     <!-- Kaydırma iki görünümde de aynı: sayfa birimi değişmiyor. -->
     <div
@@ -871,6 +887,8 @@ function onUp(e) {
    blok kendi ayracını taşır. */
 .flow.busy { opacity: 0.45; transition: opacity 0.12s; }
 
+.tap-hint { margin: 0.5rem 0 0.25rem; }
+
 .flow--meal-only .surah-block + .surah-block {
   margin-top: 1rem;
   padding-top: 1rem;
@@ -893,11 +911,18 @@ function onUp(e) {
 
 /* Aranan ayet: renk değil ZEMİN. Metnin rengini değiştirmek hat
    okunurluğunu bozuyor, arkasına ince bir vurgu koymak bozmuyor. */
-.ar-verse.focus,
-.meal-row.focus {
+.ar-verse.focus {
   background: color-mix(in srgb, var(--accent-ui) 18%, transparent);
   border-radius: 4px;
+  /* Satır içi bir vurgu: kutusu yazıya yapışık olduğu için nefes payı
+     yayılan bir gölgeden geliyor, dolgudan değil (dolgu satır
+     yüksekliğini bozuyor). */
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-ui) 18%, transparent);
+}
+
+.meal-row.focus {
+  background: color-mix(in srgb, var(--accent-ui) 18%, transparent);
+  border-radius: 6px;
 }
 
 .meal-row.focus .meal-no { color: var(--text); }
@@ -934,15 +959,22 @@ function onUp(e) {
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
 }
 
+/* Dolgu HER satırda var, yalnızca vurgulananda değil: vurgu bir zemin
+   ve zeminsiz satırla aynı yerden başlamalı, yoksa okunan ayet
+   öbürlerinden kayıyor. Yatayda negatif kenar boşluğuyla geri alınır —
+   metin yine kolonun hizasında durur, zemin ise iki yandan taşar.
+   Satır arası boşluk da buradan gelir (`gap` yok): dolgu + gap
+   üst üste binince vurgulu satır yüzmeye başlıyordu. */
 .meal-row {
   display: grid;
   grid-template-columns: 2.4rem 1fr;
   gap: 0.5rem;
   font-size: 0.88rem;
   line-height: 1.6;
+  padding: 0.45rem 0.7rem;
+  margin-inline: -0.7rem;
 }
 
 /* Meal yazı tipi ayardan gelir (`--meal-font`): Arapça metnin hattı

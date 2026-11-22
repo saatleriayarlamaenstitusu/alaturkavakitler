@@ -387,7 +387,7 @@ function pickPhoto(e) {
       <div class="sheet-body fields">
         <!-- Ön tanımlar: tek dokunuşla tutarlı bir görünüm. Yalnızca biçim
              değişir, girdiğin içerik olduğu gibi kalır. -->
-        <section v-if="selectedDef.presets?.length" class="group presets">
+        <section v-if="selectedDef.presets?.length" class="group preset-group">
           <div class="group-label static">
             <SectionIcon name="preset" />
             <span>Ön tanım</span>
@@ -813,15 +813,32 @@ function pickPhoto(e) {
 
 .ghost.dev { color: var(--accent-ui); }
 
+/* Ön tanımlar yatayda kayar.
+   İki ayrı hata birbirine karışmıştı. Birincisi: bölüm `.presets`
+   sınıfını taşıyordu ve o sınıf aşağıdaki geliştirici bloğuna ait bir
+   IZGARA (`minmax(4.6rem, 1fr)`); bölüm de ızgaraya girince başlık bir
+   hücre, şerit öbür hücre oluyor ve şerit dört beş karakterlik bir
+   kolona sıkışıp her ön tanım alt alta diziliyordu. Sınıf ayrıldı.
+   İkincisi: `overflow-x: auto` dikey taşmayı da kesiyor — CSS'te bir
+   eksen kırpılırken öbürü "visible" kalamıyor — ve düğmelerin alt
+   kenarlığı siliniyordu. Dikeyde dolgu bırakıldı.
+
+   Farede şeridin sonunu görmenin yolu olsun diye ince bir kaydırma
+   çubuğu var; parmakla kaydırmada zaten görünmüyor. */
 .preset-strip {
   display: flex;
+  flex-wrap: nowrap;
   gap: 0.4rem;
   overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 0.1rem;
+  overscroll-behavior-x: contain;
+  padding: 3px 0 7px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
-.preset-strip::-webkit-scrollbar { display: none; }
+.preset-strip::-webkit-scrollbar { height: 4px; }
+.preset-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.preset-strip::-webkit-scrollbar-track { background: transparent; }
 
 .preset-chip {
   flex-shrink: 0;
@@ -1105,13 +1122,5 @@ function pickPhoto(e) {
   /* Parmakla kaydırılan şeritlerin kaydırma çubuğu mobilde gizli; farede
      kaydırmanın başka yolu olmadığı için masaüstünde ince bir çubuk
      gösterilir. */
-  /* Ön tanımlar da sarar. Yatay kaydırma dokunmatikte doğal, farede
-     değil: tekerlek dikey kaydırır, şeridin sonundaki ön tanımların
-     varlığı bile fark edilmiyordu. */
-  .preset-strip {
-    flex-wrap: wrap;
-    overflow-x: visible;
-    gap: 0.4rem 0.4rem;
-  }
 }
 </style>

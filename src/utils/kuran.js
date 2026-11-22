@@ -138,6 +138,16 @@ export async function fetchRange(surah, from, to, authors) {
     throw new KuranError(e.code ?? `http_${res.status}`, e.message ?? 'Ayetler alınamadı', e.retryAfter)
   }
 
+  // 200 dönen ama beklenen gövdeyi taşımayan yanıt: vekil yoksa (statik
+  // bir sunucuda, tanıtım kartlarını basarken olduğu gibi) `/api/...`
+  // isteği index.html'e düşüyor, `res.json()` patlıyor ve gövde boş bir
+  // nesneye iniyor. Korumasız bırakılınca çağıran `body.ar.map` diyip
+  // TypeError atıyor ve ham JavaScript hatası ekranda görünüyordu
+  // ("Cannot read properties of undefined (reading 'map')").
+  if (!Array.isArray(body.ar)) {
+    throw new KuranError('bozuk_yanit', 'Ayetler alınamadı')
+  }
+
   return {
     surah: body.surah,
     from: body.from,

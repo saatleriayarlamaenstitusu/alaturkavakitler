@@ -23,10 +23,10 @@
 //   node render.mjs --help
 import { spawn, spawnSync } from 'node:child_process'
 import { mkdir, writeFile, rm, readdir, readFile } from 'node:fs/promises'
-import { createReadStream, existsSync, statSync } from 'node:fs'
+import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { setTimeout as sleep } from 'node:timers/promises'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, extname, join, normalize } from 'node:path'
 import { tmpdir } from 'node:os'
 
@@ -36,13 +36,20 @@ const DIST = join(ROOT, 'dist')
 
 // Poster PNG'nin alındığı an — kompozisyonun en dolu olduğu kare.
 const FEATURES = [
-  { id: 'saat',   no: '01', poster: 6200 },
-  { id: 'sayac',  no: '02', poster: 7600 },
-  { id: 'takvim', no: '03', poster: 7000 },
-  { id: 'kaza',   no: '04', poster: 5200 },
-  { id: 'gorsel', no: '05', poster: 7000 },
-  { id: 'kible',  no: '06', poster: 8000 },
-  { id: 'palet',  no: '07', poster: 5600 },
+  { id: 'saat',       no: '01', poster: 6200 },
+  { id: 'sayac',      no: '02', poster: 7600 },
+  { id: 'hatirlatma', no: '03', poster: 7200 },
+  { id: 'takvim',     no: '04', poster: 7000 },
+  { id: 'kaza',       no: '05', poster: 5200 },
+  { id: 'kuran',      no: '06', poster: 4200 },
+  { id: 'dinle',      no: '07', poster: 3400 },
+  { id: 'kurangenel', no: '08', poster: 6400, still: true },
+  // `still`: duran kare ayrı bir geçişte, elle çekilmiş ekran
+  // görüntüsüyle basılır; video yine canlı sahnedir. Hangi dosyanın
+  // kullanılacağı `index.html`deki özellik tanımında yazıyor.
+  { id: 'gorsel',     no: '09', poster: 7000, still: true },
+  { id: 'kible',      no: '10', poster: 8000 },
+  { id: 'palet',      no: '11', poster: 5600 },
 ]
 const SIZES = { story: [1080, 1920], post: [1080, 1350], yt: [1920, 1080] }
 
@@ -52,7 +59,7 @@ const SIZES = { story: [1080, 1920], post: [1080, 1350], yt: [1920, 1080] }
 const YT_CHAPTERS = [
   { id: 'intro', no: '00', dur: 6, poster: 4200 },
   ...FEATURES.map(f => ({ ...f, dur: 10 })),
-  { id: 'outro', no: '08', dur: 6, poster: 3000 },
+  { id: 'outro', no: '12', dur: 6, poster: 3000 },
 ]
 const YT_OUT = 'alaturka-vakitler-tanitim'
 
@@ -115,6 +122,85 @@ const MIME = {
   '.jpg': 'image/jpeg', '.webp': 'image/webp', '.woff2': 'font/woff2', '.ico': 'image/x-icon',
 }
 const PORT = 8731
+
+/* Ayet vekili — `vite.config.js`teki `devKuranProxy`nin kardeşi.
+   Anahtar `.env`den okunur; VITE_ öneki taşımıyor, yani pakete hiç
+   girmiyor ve buraya elle okunması gerekiyor. */
+const ENV = Object.fromEntries(
+  (existsSync(join(ROOT, '.env')) ? readFileSync(join(ROOT, '.env'), 'utf8') : '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#') && l.includes('='))
+    .map((l) => [l.slice(0, l.indexOf('=')).trim(), l.slice(l.indexOf('=') + 1).trim().replace(/^["']|["']$/g, '')]))
+
+if (!globalThis.caches) {
+  const store = new Map()
+  globalThis.caches = {
+    default: {
+      // KOPYASI döner: saklanan `Response` bir kez okununca gövdesi
+      // tükeniyor ve ikinci istek "Body has already been read" diye
+      // patlıyordu (kart ekranında ham TypeError olarak görünüyordu).
+      match: async (r) => store.get(typeof r === 'string' ? r : r.url)?.clone(),
+      put: async (r, res) => { store.set(typeof r === 'string' ? r : r.url, res.clone()) },
+    },
+  }
+}
+
+let kuranFn = null
+async function kuranProxy(req, res, url) {
+  try {
+    kuranFn ??= (await import(
+      pathToFileURL(join(ROOT, 'functions', 'api', 'kuran', '[[path]].js')).href)).onRequestGet
+    const path = url.pathname.replace(/^\/api\/kuran\/?/, '').split('/').filter(Boolean)
+    const out = await kuranFn({
+      request: new Request(`http://localhost${url.pathname}${url.search}`),
+      env: { ACIKKURAN_KEY: ENV.ACIKKURAN_KEY },
+      params: { path },
+      waitUntil: (pr) => { Promise.resolve(pr).catch(() => {}) },
+    })
+    // Gövde başlıklardan ÖNCE okunur: `out.text()` sonradan patlarsa
+    // catch dalı ikinci bir `writeHead` deniyor ve Node
+    // ERR_HTTP_HEADERS_SENT atıyor (ölçüldü).
+    const body = await out.text()
+    res.writeHead(out.status, { 'Content-Type': out.headers.get('content-type') ?? 'application/json' })
+    res.end(body)
+  } catch (e) {
+    if (res.headersSent) return res.end()
+    res.writeHead(500, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ error: { code: 'kart_vekili', message: String(e) } }))
+  }
+}
+
+/**
+ * Kart metinleri `metinler.txt`ten gelir, koddan değil.
+ *
+ * Başlıkları `index.html`in içinde tutmak her düzeltmede kodu
+ * açtırıyordu; metin yazan kişiyle kodu yazan kişi aynı olmayabilir ve
+ * bir virgül için sahne tanımının içine girmek gerekmemeli. Dosya
+ * basit: köşeli parantez içinde kimlik, altında `anahtar = değer`.
+ * Tanınmayan satırlar (başlıksız notlar, yorumlar) sessizce atlanır —
+ * dosya aynı zamanda insanın okuduğu bir belge.
+ */
+function readMetin(file) {
+  const out = {}
+  let key = null
+  for (const raw of readFileSync(file, 'utf8').split('\n')) {
+    const line = raw.trim()
+    if (!line || line.startsWith('#')) continue
+    const head = line.match(/^\[([^\]]+)\]$/)
+    // Yalnızca "bölüm/kimlik" biçimindeki başlıklar bir kayıt açar;
+    // dosyada serbest notlar da köşeli parantezle yazılmış olabiliyor.
+    if (head) { key = head[1].includes('/') ? head[1] : null; if (key) out[key] = {}; continue }
+    const eq = line.indexOf('=')
+    if (eq === -1 || !key) continue
+    out[key][line.slice(0, eq).trim()] = line.slice(eq + 1).trim()
+  }
+  return out
+}
+
+const METIN_FILE = join(HERE, 'metinler.txt')
+const METIN = existsSync(METIN_FILE) ? readMetin(METIN_FILE) : {}
+if (!Object.keys(METIN).length) console.warn('! metinler.txt okunamadı; index.html\'deki yazılar kullanılacak')
 const server = createServer((req, res) => {
   const url = new URL(req.url, 'http://x')
   let p = decodeURIComponent(url.pathname)
@@ -123,8 +209,31 @@ const server = createServer((req, res) => {
     createReadStream(file).pipe(res)
   }
   if (p === '/_card.html') return send(join(HERE, 'index.html'))
+  // Kart, yazılarını buradan çeker (dosyayı tarayıcıdan okuyamaz).
+  // Durağan ekran görüntüleri: bazı kartlarda uygulamayı canlı
+  // sürmek yerine elle çekilmiş bir kare kullanılıyor (iki telefonlu
+  // kompozisyon, ya da uygulamanın kart düzeneğinde kurulması zor bir
+  // hâli). Dosyalar `screenshots/` altında; adlarında boşluk ve
+  // Türkçe harf olabildiği için yol çözülerek okunuyor.
+  if (p.startsWith('/_shot/')) {
+    const f = join(HERE, 'screenshots', p.slice('/_shot/'.length))
+    if (f.startsWith(join(HERE, 'screenshots')) && existsSync(f)) return send(f)
+    res.writeHead(404, { 'Content-Type': 'text/plain' })
+    return res.end('yok')
+  }
+  if (p === '/_metin.json') {
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' })
+    return res.end(JSON.stringify(METIN))
+  }
   // Servis çalışanı hiç yayımlanmaz: kayıtlı bir SW gezinme isteklerine
   // app shell'i döndürüp /_card.html'i de uygulamayla değiştiriyordu.
+  // Ayet vekili: kart sunucusu yalnızca `dist/` yayınlıyor ve
+  // `/api/kuran` orada yok — istek SPA geri düşüşüyle index.html'e
+  // iniyor, uygulama da ekranda "Ayetler alınamadı" gösteriyordu
+  // (esnek ve ayet ayet görünümleri ile meal tamamen boş kalıyor).
+  // Cloudflare fonksiyonunun KENDİSİ çağrılıyor, mantık ikinci kez
+  // yazılmıyor — `vite.config.js`teki geliştirme vekilinin aynısı.
+  if (p.startsWith('/api/kuran')) return kuranProxy(req, res, url)
   if (p === '/sw.js' || p === '/registerSW.js' || /^\/workbox-[\w-]+\.js$/.test(p)) {
     res.writeHead(404, { 'Content-Type': 'text/plain' })
     return res.end('yok')
@@ -196,6 +305,14 @@ const VAKITLER = await readFile(join(HERE, 'data', 'vakitler-34.json'), 'utf8')
 /* Her belgeye, kendi betikleri çalışmadan önce enjekte edilir. */
 const clockScript = (at, seed) => `(() => {
   try {
+    // ÖNCE TEMİZLE. Bütün kartlar tek bir tarayıcı profilini paylaşıyor
+    // ve bazı sahneler ayar değiştiriyor: palet kartı beş renk stiline
+    // sırayla basıyor ve sonuncusunda bırakıyor, o da kendisinden
+    // SONRA basılan her kartın paletini belirliyordu (ölçüldü — vakte
+    // kalan süre kartı mono paletle basılıyor, vakit değiştiği hâlde
+    // renk hiç değişmiyordu). Tohum üstüne yazmak yetmez: yazılmayan
+    // anahtar olduğu gibi kalır.
+    localStorage.clear()
     const S = ${JSON.stringify(seed)}
     for (const k in S) localStorage.setItem(k, S[k])
   } catch {}
@@ -271,6 +388,9 @@ for (const size of wantSizes) {
         vakitler: VAKITLER,
         settings_darkMode: '"dark"',
         settings_themePerVakit: 'true',
+        // Palet varsayılana bırakılmaz, SÖYLENİR: kartların rengi
+        // uygulamanın varsayılanı değişince sessizce değişmesin.
+        settings_colorStyle: '"mesh"',
         ...cfg.seed,
       }
       installed = (await send('Page.addScriptToEvaluateOnNewDocument', { source: clockScript(cfg.at, seed) })).result.identifier
@@ -300,6 +420,37 @@ for (const size of wantSizes) {
       const step = 1000 / fps
       const at = (t) => evaluate(`CARD.step(${t})`)
 
+      /* Kartı baştan yükler ve hazır olmasını bekler — duran kare ile
+         videoyu ayrı geçişlerde basmak gerektiğinde kullanılıyor. */
+      const reload = async (u) => {
+        await send('Page.navigate', { url: u })
+        for (let i = 0; i < 80; i++) {
+          await sleep(150)
+          if (await evaluate('!!(window.CARD && CARD.ready())').catch(() => false)) break
+        }
+        await evaluate('(async () => { await document.fonts.ready; CARD.prepare() })()')
+        await sleep(400)
+      }
+
+      /* ── Duran kare ayrı basılır ──
+         Bir kartın duran karesiyle videosu aynı kaynaktan gelmek
+         zorunda değil. Görsel oluşturucuda en iyi duran kare elle
+         çekilmiş bir kompozisyon (tuval kullanıcının kendi işi, kart
+         düzeneğinin kurduğu değil); hareket ise ancak uygulamanın
+         kendisi sürülerek anlatılıyor. İki çıktı, iki yükleme. */
+      if (f.still && !YT && only !== 'mp4') {
+        await reload(`${url}&still=1`)
+        await at(1500)   // açılış hareketi yerine otursun
+        await writeFile(join(outDir, `${base}.png`), await shot())
+        made++
+        console.log(`${base}  (png · durağan)`)
+        if (only === 'png') {
+          await send('Page.removeScriptToEvaluateOnNewDocument', { identifier: installed })
+          continue
+        }
+        await reload(url)
+      }
+
       // ── Poster PNG ──
       // Sahne zamana bağlı: poster anına kadar kareler sırayla işlenmeli,
       // doğrudan atlamak zamanlanmış dokunuşları atlar (bant hiç açılmaz).
@@ -318,7 +469,7 @@ for (const size of wantSizes) {
       await mkdir(framesDir, { recursive: true })
       process.stdout.write(`${base}  ${frameCount} kare `)
       // Yatay filmin tek PNG'si kapak görseli: giriş bölümünden alınır.
-      let posterTaken = only === 'mp4' || (YT && only !== 'png' && f.id !== 'intro')
+      let posterTaken = only === 'mp4' || (f.still && !YT) || (YT && only !== 'png' && f.id !== 'intro')
       for (let i = 0; i < frameCount; i++) {
         const t = i * step
         await at(t)

@@ -177,6 +177,7 @@ function onBgUp(e) {
               :src="state.background.photo"
               draggable="false"
               alt=""
+              @load="editor.setPhotoSize($event.target.naturalWidth, $event.target.naturalHeight)"
             />
             <div
               v-if="state.background.dim > 0"

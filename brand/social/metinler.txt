@@ -1,0 +1,168 @@
+# ───────────────────────────────────────────────────────────────────
+# TANITIM GÖRSELLERİNİN METİNLERİ
+#
+# Bu dosya üç deponun tanıtım görsellerindeki BÜTÜN yazıları toplar.
+# İstediğin gibi düzelt, sonra "metinleri güncelledim" de — görselleri
+# ve videoları bu dosyaya göre yeniden basayım.
+#
+# Biçim:
+#   [bölüm/kimlik]      değiştirme, üretici bunu arıyor
+#   ustbaslik =         küçük, büyük harfle dizilen etiket (varsa)
+#   baslik1   =         başlığın birinci satırı (beyaz)
+#   baslik2   =         başlığın ikinci satırı (vurgu renginde)
+#   aciklama  =         bir ya da iki cümle
+#   kunye     =         alıntının kaynağı; küçük ve soluk dizilir
+#   satir     =         videodaki tek cümlelik altyazı
+#
+# Üslup kuralları `METIN.md` dosyasındadır. Özeti: başlık bir çağrı
+# olsun (emir kipi ya da kişisel bir soru), açıklama kullanıcının
+# gününün içinde bir ana otursun, dinî kelimeleri kullan, önce niyet
+# sonra mekanizma, aforizma ve abartı sıfat yok.
+#
+# Uzunluk sınırı YOK: kartlar başlık ve açıklamanın uzunluğuna göre
+# puntoyu ve kolon genişliğini kendileri ayarlıyor. Yine de başlık
+# iki satırı, açıklama ~220 karakteri geçmesin — ötesi kapakta
+# okunmuyor.
+# ───────────────────────────────────────────────────────────────────
+
+
+# ═══ 1. SİTE — özellik kartları ═══════════════════════════════════
+# Her biri: 1080×1920 story PNG + 1080×1350 gönderi PNG + 10 sn MP4.
+# Ayrıca hepsi birden YouTube filminin bölümleri oluyor.
+
+[site/saat]
+baslik1  = Alaturka
+baslik2  = Saat
+aciklama = "Unutulan eski saatler içinde eksikliği en ziyade hasretle tahattur edilen saat akşamın on ikisidir."
+kunye    = Ahmet Haşim · Müslüman Saati
+
+[site/sayac]
+baslik1  = Vakte
+baslik2  = Kalan Süre
+aciklama = Namaz vakitleri sade ve reklamsız şekilde cebinizde.
+
+[site/hatirlatma]
+baslik1  = Namazı
+baslik2  = Kaçırmayın!
+aciklama = Bu vakti kıldın mı? Günün telaşesi içinde sonraki vakit girmeden haberdar olun. 
+
+[site/takvim]
+baslik1  = Hicri Ayın
+baslik2  = Ruhunu Keşfet
+aciklama = Mübarek günler, kandiller, bayramlar... Hicri takvim ile bağınız kopmasın. Her ayın manevi ruhuna önceden hazırlanın.
+
+[site/kaza]
+baslik1  = Kaza Namazı
+baslik2  = Sayacı
+aciklama = Her vakit sayacına baktığında ne kadar kaza namazı borcunun kaldığını gör. 
+
+[site/kuran]
+baslik1  = Bugün 
+baslik2  = Kaç Sayfa Okudun?
+aciklama = Deden, sevdiklerin veya bütün ümmet için… Niyetini belirle, her gün hangi hatimden ne kadar okuduğunu gör.
+
+[site/dinle]
+baslik1  = İlahi Kelama
+baslik2  = Kulak Verin
+aciklama = Dilediğiniz sureyi açın, tilaveti dinleyin ve ayet ayet takip edin. İlahi kelamı anlamaya vakit ayırın.
+
+[site/gorsel]
+baslik1  = Görsel
+baslik2  = Oluşturucu
+aciklama = Ayet, günün önemi, veya gönlünüzden geçen bir mesaj... Görsel oluşturucuyla kolay bir şekilde anlamlı sosyal medya görselleri hazırlayın.
+
+[site/kible]
+baslik1  = Kıble
+baslik2  = Pusulası
+aciklama = Yolculukta veya günlük hayatınızda, vakitlere bakarken kıble yönünü kolayca bulun.
+
+[site/kurangenel]
+baslik1  = Sade Bir 
+baslik2  = Kur'an-ı Kerim Okuma Deneyimi
+aciklama = Kur'an-ı Kerim'i dilediğiniz gibi okuyun. Mushaf düzeninde veya ayet ayet ilerleyin veya dinleyin. Farklı meallerle ilahi kelamın anlamını keşfedin.
+
+
+# ═══ 2. SİTE — filmin açılışı ve kapanışı ═════════════════════════
+# Yalnızca YouTube filminde görünür.
+
+[site/intro]
+ustbaslik = Alaturka Vakitler
+baslik1   = bilmezdim neden bazı saatler
+baslik2   = alaturka vakitlere ayarlı
+aciklama  = Alaturka Saat, Namaz vakitleri, Hicri Takvim, Kur'an-ı Kerim cebinizde
+
+[aras sahneler yukardaki ayrı ayrı yaptığımız görselelrin başlıklarını kullan]
+
+[site/outro]
+ustbaslik = Son
+satir1    = Sade, Ücretsiz ve Reklamsız.
+
+
+
+# ═══ 3. LİNUX MASAÜSTÜ UYGULAMASI ═════════════════════════════════
+# İki kare (1080×1350 ve 1080×1920) + 13 sn'lik klip.
+
+[masaustu/kart1]
+ustbaslik = Linux Masaüstü Uygulaması
+baslik1   = Masaüstünüzde de
+baslik2   = aynı saat
+aciklama  = Tarayıcı açmadan vakte bakarsınız. Uygulama GTK4 ile yazıldı, sisteminizin temasına uyar.
+
+[masaustu/kart2]
+ustbaslik = Linux
+baslik1   = Alaturka Vakitler
+baslik2   = Masaüstü Uygulaması
+aciklama  = Alaturka saat, hicri takvim, namaz vakitleri ve hatırlatıcısı artık Linux masaüstünüzde. 
+
+# Videonun sahneleri — her satır bir ekran görüntüsünün altında durur.
+[masaustu/film]
+sahnelere gerek yok gibi birkaç ekran görüntüsü koy
+alt    = Alaturka Vakitler · Linux masaüstü uygulaması
+
+
+# ═══ 4. CHROME YENİ SEKME EKLENTİSİ ═══════════════════════════════
+# ig-* kareleri sosyal medya için (1080×1350); promo-* ve kolaj
+# doğrudan Chrome Web Store sayfasında görünüyor.
+
+[eklenti/ig-1]
+baslik1  = Google Chrome
+baslik2  = Yeni Sekme Eklentisi
+aciklama = Alaturka Vakitler
+
+[eklenti/ig-2]
+baslik1  = İstediğiniz Gibi
+baslik2  = Kişiselleştirin
+aciklama = Widget'ları sürükleyin, arka planı değiştirin, kendi fotoğrafınızı ve kısayollarınızı yeni sekme ekranınıza taşıyın. Kısa notlar yazın. Hava ve sistem durumunu takip edin.
+
+[eklenti/ig-3]
+baslik1  = Namaz Vakitlerini
+baslik2  = Kaçırmayın
+aciklama = Vakitler, hatırlatıcı hicri takvim ve dini günler, günün ayeti yeni sekmenizde.
+
+[eklenti/ig-4]
+baslik1  = Sade, reklamsız
+baslik2  = Ve Gizlilik dostu
+
+
+# Widget tahtası (1080×1350) — ekran görüntüsü değil, her widget tek
+# tek kesilip diziliyor. `uyum` ve `tarayicilar` alttaki küçük şeride
+# yazar; rozet metni sabittir (mağazanın adı).
+[eklenti/widgetler]
+baslik1     = Alaturka Yeni Sekme
+aciklama    = Namaz vakitleri · hicri takvim · hava · günün ayeti · sistem · not · kendi kısayol gruplarınız
+uyum        = Chromium tabanlı tarayıcılarda çalışır
+tarayicilar = Chrome · Edge · Brave · Vivaldi · Arc · Opera · Yandex · Chromium
+
+[eklenti/promo-kucuk]
+baslik1  = Alaturka Vakitler
+aciklama = Yeni Sekme
+
+[eklenti/promo-genis]
+baslik1  = Yeni sekmeniz
+baslik2  = güne açılsın
+aciklama = Alaturka saat · namaz vakitleri · hicri takvim · günün ayeti · hava durumu
+
+[eklenti/kolaj]
+baslik1  = Ekranınızda ne varsa
+baslik2  = siz koydunuz
+aciklama = Vakitler · takvim · hava · sistem · ayet · not · kendi kısayol gruplarınız

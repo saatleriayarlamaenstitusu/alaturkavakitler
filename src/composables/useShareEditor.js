@@ -14,6 +14,9 @@ const nextId = () => `l${++idSeq}`
 const defaultFill = () => ({ style: 'vakit', color1: 'auto', color2: '#000000', angle: 160, softness: 78 })
 const defaultBackground = () => ({
   kind: 'palette', photo: null, dim: 0, blur: 0, zoom: 1, x: 0, y: 0,
+  // Fotoğrafın doğal ölçüsü; `<img>` yüklenince dolar ve kaydırma
+  // sınırını belirler (bkz. `clampPan`). 0 = henüz bilinmiyor.
+  pw: 0, ph: 0,
   fill: defaultFill(),
 })
 const defaultGrain = () => ({ on: false, opacity: 0.35, size: 400, blend: 'overlay' })
@@ -299,7 +302,27 @@ export function createShareEditor(snapshot) {
   function setBackground(patch) {
     record(`bg:${Object.keys(patch).join(',')}`)
     Object.assign(state.background, patch)
-    if ('photo' in patch) refreshPhotoPalette()
+    if ('photo' in patch) {
+      // Yeni fotoğrafın doğal ölçüsü henüz bilinmiyor; eskisininki
+      // kalırsa kaydırma sınırı yanlış resme göre hesaplanır.
+      state.background.pw = 0
+      state.background.ph = 0
+      refreshPhotoPalette()
+    }
+  }
+
+  /**
+   * Fotoğrafın doğal ölçüsü — `<img>` yüklenince bildirilir.
+   *
+   * Kaydırma sınırı buradan çıkıyor ve bilinmeden doğru hesaplanamıyor:
+   * görsel `cover` yerleştiği için oranı tuvalinkinden farklıysa
+   * 1x'te BİLE taşan bir kısım vardır.
+   */
+  function setPhotoSize(pw, ph) {
+    if (!pw || !ph) return
+    state.background.pw = pw
+    state.background.ph = ph
+    clampPan(state.background.x, state.background.y)
   }
 
   async function refreshPhotoPalette() {
@@ -332,16 +355,34 @@ export function createShareEditor(snapshot) {
     Object.assign(state.grain, patch)
   }
 
-  // Fotoğraf cover yerleştiği için 1x'te kaydırılacak alan yoktur;
-  // kaydırma sınırı yakınlaştırma oranıyla büyür.
-  function panPhoto(x, y) {
-    record('photo')
+  /**
+   * Kaydırma sınırı: fotoğrafın TUVALDEN taşan kısmı kadar.
+   *
+   * Önce yalnızca yakınlaştırmaya bakıyordu (`width * (zoom - 1) / 2`)
+   * ve bu, fotoğrafın oranı tuvalinkiyle aynıymış gibi davranmaktı.
+   * `cover` yerleşiminde değil: yatay bir fotoğraf dikey tuvalde boyu
+   * doldurur ve enden taşar, yani 1x'te de kaydırılacak yer vardır.
+   * Eski sınır o taşan kısmı sıfıra kilitliyordu — kullanıcı fotoğrafın
+   * ortasından başka bir yerini seçemiyordu (ölçüldü).
+   *
+   * Doğal ölçü henüz bilinmiyorsa (resim yüklenmeden) tuvalin oranı
+   * varsayılır; `setPhotoSize` gelince sınır yeniden uygulanır.
+   */
+  function clampPan(x, y) {
     const { width, height } = ratio.value
     const bg = state.background
-    const maxX = (width * (bg.zoom - 1)) / 2
-    const maxY = (height * (bg.zoom - 1)) / 2
+    const pw = bg.pw || width
+    const ph = bg.ph || height
+    const cover = Math.max(width / pw, height / ph)
+    const maxX = Math.max(0, (pw * cover * bg.zoom - width) / 2)
+    const maxY = Math.max(0, (ph * cover * bg.zoom - height) / 2)
     bg.x = Math.min(Math.max(x, -maxX), maxX)
     bg.y = Math.min(Math.max(y, -maxY), maxY)
+  }
+
+  function panPhoto(x, y) {
+    record('photo')
+    clampPan(x, y)
   }
 
   function zoomPhoto(zoom) {
@@ -385,7 +426,7 @@ export function createShareEditor(snapshot) {
     state, ratio, selected,
     addLayer, removeLayer, duplicateLayer, select,
     updateLayer, updateProps, resetProps, bringToFront, sendToBack,
-    setRatio, setBackground, setFill, setGrid, setGrain, panPhoto, zoomPhoto, resetPhoto,
+    setRatio, setBackground, setPhotoSize, setFill, setGrid, setGrain, panPhoto, zoomPhoto, resetPhoto,
     refreshPhotoPalette, addCustomColor, removeCustomColor, toggleSnap,
     ensureComposition, resetAll,
     canUndo, undo,

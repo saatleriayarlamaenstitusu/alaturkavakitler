@@ -4,11 +4,11 @@ Uygulamanın özelliklerini tanıtan kareler ve videolar. İki çıktı ailesi v
 
 - **Dikey kartlar** — Instagram story (1080×1920) ve 4:5 gönderi
   (1080×1350); her özellik için bir PNG ve ~10 sn MP4.
-- **Yatay film** — YouTube için tek parça 1920×1080 tanıtım (~86 sn):
-  giriş + yedi özellik + çıkış, bölümler siyaha düşerek birleşir.
+- **Yatay film** — YouTube için tek parça 1920×1080 tanıtım (~112 sn):
+  giriş + on özellik + çıkış, bölümler siyaha düşerek birleşir.
 
 ```
-node render.mjs                         # 7 özellik × 2 dikey boyut → PNG + MP4
+node render.mjs                         # 10 özellik × 2 dikey boyut → PNG + MP4
 node render.mjs --youtube                # tek parça 16:9 film + kapak PNG'si
 node render.mjs --feature kaza          # yalnız bir özellik
 node render.mjs --only png --no-build   # hızlı önizleme
@@ -81,7 +81,9 @@ Aynı kart, aynı sahneler; yalnızca düzen değişir (`SIZES.yt`, `land: true`
 metin solda bir kolonda, telefon sağda. Dikeydeki gibi üst üste dizilseydi
 telefon 1080px yüksekliğe sığmak için küçülüp okunmaz hâle gelirdi.
 
-- Bölüm sırası ve süreleri `render.mjs`'teki `YT_CHAPTERS`'ta. Özellik
+- Bölüm sırası ve süreleri `render.mjs`'teki `YT_CHAPTERS`'ta (liste
+  `FEATURES`'tan türüyor: `index.html`'e bir özellik eklemek filme de
+  ekler, ama `render.mjs`'teki poster anı elle yazılır). Özellik
   bölümleri **10 saniye**: sahnelerin dokunuş zamanlamaları (`index.html`)
   o bütçeye göre yazıldı, kısaltılırsa son dokunuşlar hiç gerçekleşmez.
 - Giriş ve çıkış bölümlerinde uygulama yok (`phoneless`); giriş özelliklerin
@@ -94,6 +96,17 @@ telefon 1080px yüksekliğe sığmak için küçülüp okunmaz hâle gelirdi.
   kodlamak kaliteyi bir kez daha düşürürdü.
 - Film sessizdir. Müzik eklenecekse birleştirilmiş MP4'e sonradan bindirmek
   yeterli (`ffmpeg -i film.mp4 -i muzik.m4a -c:v copy -shortest`).
+
+## Sesin çalmadığı sahneler
+
+Kıraat sahnesinde (`dinle`) ses ÇALMAZ ve çalamaz: sanal saat
+`Date`/`setTimeout`'u sürüyor, `<audio>` ise gerçek zamanda ilerliyor —
+ikisi kare kare render sırasında birbirinden kopuyor. Bu yüzden o sahne
+sesin tetiklediği şeyleri değil, **adresten gelen** vurguyu gösterir
+(`/kuran?a=18:10`): vurgu düzeneği gerçektir, onu süren şey ses yerine
+rotadır. Oynatıcı ekranı da bu yüzden açılmıyor — sürgüsü `0:00 / −0:00`
+kalıyor ve bozuk görünüyor; yerine kârî seçici açılır, orada gerçek
+içerik var (kârî, okuyuş, tempo, ayet takibi var mı).
 
 ## Ölçülen tuzaklar
 

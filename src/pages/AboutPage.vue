@@ -47,6 +47,25 @@ useSeo({
           </div>
         </div>
 
+        <!-- Eklenti ayrı bir ürün ve sitede hiçbir izi yoktu: buraya
+             gelen kişi "tarayıcımda da olsun" diyebilmeli. Rozet
+             mağazanın logosunu taşımaz (marka), yalnızca adını. -->
+        <div class="credits-item">
+          <b>Yeni Sekme Eklentisi</b>
+          <a
+            class="store-btn"
+            href="https://chromewebstore.google.com/detail/hknlkhdhepllicappjmgcliepnlljdcf/"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+              <path d="M10.5 2a2.5 2.5 0 0 0-2.5 2.5V6H5.5A1.5 1.5 0 0 0 4 7.5V10h1.75a2.75 2.75 0 1 1 0 5.5H4V18a2 2 0 0 0 2 2h2.5v-1.75a2.75 2.75 0 1 1 5.5 0V20H18a2 2 0 0 0 2-2v-2.5h-1.75a2.75 2.75 0 1 1 0-5.5H20V7.5A1.5 1.5 0 0 0 18.5 6H16V4.5A2.5 2.5 0 0 0 13.5 2h-3z" />
+            </svg>
+            Chrome Web Store’dan kur
+          </a>
+          <span class="store-note">Chromium tabanlı tarayıcılarda çalışır</span>
+        </div>
+
         <div class="credits-item">
           <b>Veri Kaynakları</b>
           <ul class="sources">
@@ -124,6 +143,33 @@ useSeo({
 </template>
 
 <style scoped>
+/* Mağaza düğmesi: satır içi bir bağlantı değil, dolgulu bir hedef.
+   Hakkında sayfasının geri kalanı metin; burada bir eylem var ve
+   metinden ayrışması gerekiyor. */
+.store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid var(--accent-ui);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--accent-ui);
+  text-decoration: none;
+  transition: background-color 0.14s, color 0.14s;
+}
+
+.store-btn:hover { background: var(--accent-ui); color: var(--bg); }
+
+.store-note {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
 .about-legal {
   display: flex;
   flex-wrap: wrap;
