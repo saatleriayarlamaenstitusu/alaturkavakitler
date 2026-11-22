@@ -97,7 +97,7 @@ function formatTime(date) {
       id="kaza-hold"
       gesture="hold"
       class="vakit-hint"
-      text="Bir vakte basılı tutun, kaza sayacı açılsın."
+      text="Bir vakte basılı tutarak, kaza namazı sayacını açabilirsiniz."
     />
 
     <!-- Sütunlar listeyle aynı flex yapısında, bu yüzden kendiliğinden hizalı. -->

@@ -510,7 +510,7 @@ function onUp(e) {
       id="ayah-double"
       gesture="double"
       class="tap-hint"
-      text="Bir ayete iki kez dokunun, kıraat oradan başlasın."
+      text="Bir ayete iki kez dokunarak, kıraati dinlemeye başlayabilirsiniz"
     />
 
     <!-- Kaydırma iki görünümde de aynı: sayfa birimi değişmiyor. -->
