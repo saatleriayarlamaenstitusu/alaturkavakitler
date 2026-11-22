@@ -132,10 +132,10 @@ const onSeek = (e) => seekTo(Number(e.target.value))
         <button class="ctl" :disabled="!follows" aria-label="Sonraki ayet" @click="step(1)">⏭</button>
       </div>
 
-      <!-- "Bırak" bir ÇARPI DEĞİL yazıdır: köşede sayfayı kapatan bir
+      <!-- Durdurma bir ÇARPI DEĞİL yazıdır: köşede sayfayı kapatan bir
            çarpı zaten var ve iki çarpı yan yana hangisinin sesi hangisinin
            pencereyi kapattığını belirsiz bırakıyordu. -->
-      <button class="quit" @click="stop(); emit('close')">Kıraati bırak</button>
+      <button class="quit" @click="stop(); emit('close')">Kıraati durdur</button>
 
       <p v-if="!follows" class="note">Bu kârîde ayet takibi yok: ses çalar ama okunan ayet işaretlenmez.</p>
       <p v-else-if="error" class="note note--warn">{{ error }}</p>

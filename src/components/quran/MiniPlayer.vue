@@ -71,7 +71,7 @@ function goBack() {
       </svg>
     </button>
 
-    <button class="mini-x" aria-label="Kıraati bırak" @click="stop()">×</button>
+    <button class="mini-x" aria-label="Kıraati durdur" @click="stop()">×</button>
 
     <PlayerSheet
       :open="playerOpen"

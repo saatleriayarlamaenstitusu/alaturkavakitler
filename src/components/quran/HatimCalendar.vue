@@ -113,15 +113,18 @@ const pick = (d) => { picked.value = picked.value === d.key ? null : d.key }
 </template>
 
 <style scoped>
-/* Şerit ekran kenarlarına taşar: kaydırılacak bir şey olduğu kenardan
-   kesilmesiyle anlaşılır. */
+/* Şerit kartın/çerçevenin içinde kalır: negatif kenar boşluğu (-1.25rem)
+   kartın sınırlarını delip günleri dışarı taşırıyordu (ölçüldü: 460px kart,
+   474px şerit, her iki yanda 7px taşma). Çerçeve içinde tutulup kenarlara
+   yumuşak bir gradyan maskesi verildi; böylece hem kart sınırı delinmiyor
+   hem de yatay kaydırma hissi korunuyor. */
 .strip {
-  margin: 0 -1.25rem;
-  padding: 0 1.25rem;
   overflow-x: auto;
   scrollbar-width: none;
   /* Bugün sağda; kaydırma başlangıcı da orada olsun. */
   direction: rtl;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 1.25rem, black calc(100% - 1.25rem), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, black 1.25rem, black calc(100% - 1.25rem), transparent 100%);
 }
 
 .strip::-webkit-scrollbar { display: none; }
@@ -131,7 +134,7 @@ const pick = (d) => { picked.value = picked.value === d.key ? null : d.key }
   display: flex;
   gap: 0.5rem;
   min-width: min-content;
-  padding: 0.75rem 0 1.1rem;
+  padding: 0.75rem 0.5rem 1.1rem;
 }
 
 /* Hafta: yedi gün bir arada, araları haftalar arasından dar. */

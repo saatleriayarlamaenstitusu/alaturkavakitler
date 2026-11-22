@@ -187,19 +187,22 @@ const closeReader = () => { reading.value = null }
 watch(tab, () => { reading.value = null })
 
 /**
- * Meal düğmesinin yazısı.
+ * Seçili mealler.
  *
  * Seçim çoklu olduğu için tek bir ad yetmiyor: biri seçiliyse adı,
- * fazlası seçiliyse kaç tane. Hiç yoksa "Meal kapalı".
+ * fazlası seçiliyse kaç tane. Hiç yoksa meal kapalı.
  */
 const mealPicked = computed(() => settings.quranMeals.map((id) => AUTHORS.find((a) => a.id === id)).filter(Boolean))
-const mealName = computed(() => {
+/**
+ * Meal düğmesinin ipucu metni. Düğmede artık yazı yok; hangi mealin
+ * açık olduğu burada ve alt sayfadaki listede duruyor.
+ */
+const mealTitle = computed(() => {
   const list = mealPicked.value
-  if (!list.length) return 'Meal kapalı'
-  if (list.length === 1) return list[0].name
-  return `${list.length} meal`
+  if (!list.length) return 'Meal seç (kapalı)'
+  if (list.length === 1) return `Meal: ${list[0].name}`
+  return `Meal: ${list.length} meal seçili`
 })
-const mealLang = computed(() => (mealPicked.value.length === 1 ? mealPicked.value[0].lang : null))
 
 /** Satıra dokunmak meali açar/kapatır; sıra AUTHORS sırasında kalır. */
 function toggleMeal(id) {
@@ -407,29 +410,51 @@ function goShortcut(sc) {
                  (MushafView `@pick`): bulunduğun yeri yazan bir düğmeyi
                  ikinci kez buraya koymak aynı bilgiyi iki yerde
                  göstermek olurdu. -->
-            <button v-if="!immersive" class="select meal" aria-label="Meal seç" @click="mealPick = true">
-              <!-- Çeviri ikonu: düğmede yalnızca mütercim adı yazıyordu
-                   ve "Diyanet İşleri" tek başına neyin ayarı olduğunu
-                   söylemiyordu. -->
-              <svg class="meal-icon" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
-                <path d="M3.5 4h7v2H8.4c.3 1.7 1 3.2 2 4.4-.6.6-1.3 1.1-2.1 1.5l.8 1.8c1-.5 2-1.2 2.8-2 .5.5 1 .9 1.6 1.3l.7-1.9c-.3-.2-.6-.5-.9-.7 1-1.3 1.8-2.8 2.1-4.4H17V4h-5.3V2.2h-2V4H3.5zm6.9 7c-.7-.9-1.2-2-1.5-3.2h3.2c-.3 1.2-.9 2.3-1.7 3.2zM16.8 11l-4.3 10.8h2.2l1-2.6h4.2l1 2.6H23L18.8 11h-2zm-.4 6.3 1.4-3.6 1.4 3.6h-2.8z" />
+            <!-- Meal düğmesi YALNIZCA ikon: ad ve TR/EN rozeti şeritten
+                 kalktı (şerit mobilde zaten dar) — hangi mealin açık
+                 olduğu düğmenin `title`/`aria-label` metninde ve alt
+                 sayfadaki listede duruyor. Seçili meal varsa düğme
+                 vurgulanır, yoksa sönük kalır. -->
+            <button
+              v-if="!immersive"
+              class="select icon-btn"
+              :aria-pressed="mealPicked.length > 0"
+              :title="mealTitle"
+              :aria-label="mealTitle"
+              @click="mealPick = true"
+            >
+              <!-- Çeviri ikonu artık KÜRE: "文/A" yazı ikonu 16px'te
+                   dar ve karışık kalıyordu. Küre (Material "language")
+                   hem daha ağır (ölçülen ink 47.3 -> 106.0 css-px²,
+                   medyan çizgi aynı: 1.67px) hem tek parça bir silüet.
+                   Boy 16px; 17px'de halka kalınlıkları birbirine
+                   giriyor. -->
+              <svg class="meal-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm6.9 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.9 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.84 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 0 1 5.1 16zm2.95-8H5.1a7.99 7.99 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.05 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z" />
               </svg>
-              <span class="meal-name">{{ mealName }}</span>
-              <span v-if="mealLang" class="meal-lang" :class="mealLang">
-                {{ mealLang === 'tr' ? 'TR' : 'EN' }}
-              </span>
             </button>
 
             <!-- Tam ekran ARAMA SATIRINDA: görünüm düğmelerinin yanında
                  ⋯ ve kulaklıkla üç kare yan yana düşüyor ve hangisinin
                  ne yaptığı seçilmiyordu. Mushaf modunda sayfa ekrana
-                 SIĞDIRILIR, kaydırma olmaz. -->
+                 SIĞDIRILIR, kaydırma olmaz.
+                 İkon artık yazı glifi değil (⤢/⤡ fonta göre ~1px
+                 çizgiydi): sabit 1.6px konturlu çift köşe ok. -->
             <button
-              class="select full"
+              class="select icon-btn"
               :aria-pressed="immersive"
               :title="immersive ? 'Tam ekrandan çık' : 'Tam ekran oku'"
+              :aria-label="immersive ? 'Tam ekrandan çık' : 'Tam ekran oku'"
               @click="immersive = !immersive"
-            >{{ immersive ? '⤡' : '⤢' }}</button>
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 3L3 21" />
+                <path d="M21 3h-5" />
+                <path d="M21 3v5" />
+                <path d="M3 21h5" />
+                <path d="M3 21v-5" />
+              </svg>
+            </button>
           </div>
         </template>
 
@@ -618,18 +643,9 @@ function goShortcut(sc) {
   cursor: pointer;
 }
 
-.meal {
-  flex: 0 1 11rem;
-  min-width: 5.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  text-align: start;
-}
-
-.meal-icon { flex: 0 0 auto; color: var(--text-muted); }
-
-.full {
+/* Yalnızca ikonlu düğmeler (meal ve tam ekran): ikisi de kare ve
+   şeridin sağ ucunda yan yana duruyor. */
+.icon-btn {
   flex: 0 0 auto;
   width: 2rem;
   display: inline-flex;
@@ -638,8 +654,10 @@ function goShortcut(sc) {
   color: var(--text-muted);
 }
 
-.full:hover { border-color: var(--text); color: var(--text); }
-.full[aria-pressed="true"] { border-color: var(--accent-ui); color: var(--text); }
+.icon-btn:hover { border-color: var(--text); color: var(--text); }
+.icon-btn[aria-pressed="true"] { border-color: var(--accent-ui); color: var(--text); }
+
+.meal-icon { flex: 0 0 auto; }
 
 /* Tam ekranda satırda yalnızca bu düğme kalır. Normalde arama ve meal
    solda olduğu için düğme satırın sağ ucuna düşüyor; aynı yerde
@@ -648,26 +666,6 @@ function goShortcut(sc) {
    geçip her tam ekrana girişte yer değiştiriyordu. */
 .jump--bare { flex: 0 0 auto; order: 1; margin-left: auto; }
 
-.meal-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.meal-lang {
-  flex: 0 0 auto;
-  font-size: 0.55rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  padding: 0.1rem 0.3rem;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-}
-
-.meal-lang.tr { border-color: var(--accent-ui); color: var(--text); }
 
 
 

@@ -10,8 +10,8 @@ import { pageOfVerse, pageOfSurah, pageOfJuz, clampPage, PAGE_COUNT, juzOfPage }
  * ayete gitmenin yolu yoktu: önce sureyi seç, sonra sayfayı tahmin et.
  * Burada tek bir alan var ve ne yazıldığını kendisi anlıyor:
  *
- *   bakara 255   2:255   2/255     → ayet
- *   bakara       yasin               → surenin başı
+ *   bakara 255   2:255   2/255   2 255     → ayet
+ *   bakara       yasin                     → surenin başı
  *   42           s42     sayfa 42    → sayfa
  *   c5           cüz 5               → cüz
  *
@@ -42,8 +42,8 @@ function suggest(raw) {
   const out = []
   const push = (o) => { if (out.length < 8 && !out.some((x) => x.page === o.page && x.label === o.label)) out.push(o) }
 
-  // 2:255 · 2.255 · 2/255
-  const pair = q.match(/^(\d{1,3})\s*[:.\/-]\s*(\d{1,3})$/)
+  // 2:255 · 2.255 · 2/255 · 2 255 · 2-255
+  const pair = q.match(/^(\d{1,3})(?:\s*[:.\/-]\s*|\s+)(\d{1,3})$/)
   if (pair) {
     const s = SURAHS.find((x) => x.id === Number(pair[1]))
     const v = Number(pair[2])
@@ -61,9 +61,9 @@ function suggest(raw) {
   }
 
   // "bakara 255" · "yasin" · "ihl"
-  // Ön ek yakalandıysa ad araması yapılmaz; yoksa "s42" bütün S'li
-  // surelerin 42. ayetini listeliyor ve asıl istenen kayboluyor.
-  const named = pref ? null : q.match(/^(.+?)\s*(\d{1,3})?$/)
+  // Ön ek veya iki sayı yakalandıysa ad araması yapılmaz; yoksa "s42"
+  // bütün S'li surelerin 42. ayetini listeliyor ve asıl istenen kayboluyor.
+  const named = (pref || pair) ? null : q.match(/^(.+?)\s*(\d{1,3})?$/)
   if (named) {
     const key = fold(named[1])
     const num = named[2] ? Number(named[2]) : null
