@@ -5,6 +5,7 @@ import { holyDaysOn } from '@alaturkavakitler/core'
 import { useHatimStore } from '@/stores/hatim'
 import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
+import HijriMonthInfoSheet from './HijriMonthInfoSheet.vue'
 
 // Görüntülenen aya ait taban tarih (navigasyonla değişir)
 const viewDate = ref(new Date())
@@ -18,6 +19,7 @@ const isCurrentMonth = computed(
 // Üstte gösterilen seçili gün — varsayılan bugün, bir güne tıklayınca değişir
 const selected = ref({
   day: today.date,
+  month: today.month,
   monthName: today.monthName,
   year: today.year,
   greg: DateTime.now(),
@@ -62,6 +64,7 @@ function selectDay(cell) {
   const greg = DateTime.fromJSDate(info.value.firstGregorian).plus({ days: cell.day - 1 })
   selected.value = {
     day: cell.day,
+    month: info.value.month,
     monthName: info.value.monthName,
     year: info.value.year,
     greg,
@@ -74,10 +77,17 @@ function resetToday() {
   viewDate.value = new Date()
   selected.value = {
     day: today.date,
+    month: today.month,
     monthName: today.monthName,
     year: today.year,
     greg: DateTime.now(),
   }
+}
+
+// Ay tanıtım penceresi / sheet
+const infoMonth = ref(null)
+function openMonthInfo(m) {
+  infoMonth.value = m
 }
 
 function onCellClick(cell, event) {
@@ -169,7 +179,22 @@ function onTouchEnd(e) {
         <img class="hm-moon" :src="moonSrc" :alt="`${selected.day}. gün ay fazı`" />
       </div>
       <div class="hm-titlerow">
-        <div class="hm-title">{{ selected.monthName }} <span class="hm-year">{{ selected.year }}</span></div>
+        <div class="hm-title">
+          <span>{{ selected.monthName }} <span class="hm-year">{{ selected.year }}</span></span>
+          <button
+            type="button"
+            class="hm-info-btn"
+            :title="`${selected.monthName} ayı hakkında bilgi`"
+            :aria-label="`${selected.monthName} ayı hakkında bilgi`"
+            @click.stop="openMonthInfo(selected.month || selected.monthName)"
+          >
+            <svg viewBox="0 0 24 24" class="info-icon" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <line x1="12" y1="10" x2="12" y2="16" />
+              <circle cx="12" cy="7.25" r="0.75" fill="currentColor" stroke="none" />
+            </svg>
+          </button>
+        </div>
         <div class="hm-weekday">{{ selectedWeekday }}</div>
       </div>
       <div class="hm-greg-line">{{ selectedGregLine }}</div>
@@ -200,7 +225,22 @@ function onTouchEnd(e) {
       <div class="hm-nav" @click.stop>
         <button class="hm-arrow" aria-label="Önceki ay" @click="prevMonth">‹</button>
         <span class="hm-navlabel">
-          <span class="hm-navmonth">{{ info.monthName }} {{ info.year }}</span>
+          <span class="hm-navmonth">
+            <span>{{ info.monthName }} {{ info.year }}</span>
+            <button
+              type="button"
+              class="hm-info-btn is-nav"
+              :title="`${info.monthName} ayı hakkında bilgi`"
+              :aria-label="`${info.monthName} ayı hakkında bilgi`"
+              @click.stop="openMonthInfo(info.month)"
+            >
+              <svg viewBox="0 0 24 24" class="info-icon" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="10" x2="12" y2="16" />
+                <circle cx="12" cy="7.25" r="0.75" fill="currentColor" stroke="none" />
+              </svg>
+            </button>
+          </span>
           <span class="hm-navgreg">{{ gregSpan }}</span>
         </span>
         <button class="hm-arrow" aria-label="Sonraki ay" @click="nextMonth">›</button>
@@ -234,6 +274,13 @@ function onTouchEnd(e) {
         </span>
       </div>
     </div>
+
+    <!-- Ay tanıtım / bilgi penceresi -->
+    <HijriMonthInfoSheet
+      :open="infoMonth !== null"
+      :month="infoMonth"
+      @close="infoMonth = null"
+    />
   </div>
 </template>
 
@@ -421,6 +468,46 @@ function onTouchEnd(e) {
   letter-spacing: -0.01em;
   color: var(--text);
   margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hm-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.14s ease;
+  flex: 0 0 auto;
+}
+
+.hm-info-btn:hover {
+  color: var(--text);
+  border-color: var(--text);
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.hm-info-btn .info-icon {
+  width: 0.82rem;
+  height: 0.82rem;
+}
+
+.hm-info-btn.is-nav {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.hm-info-btn.is-nav .info-icon {
+  width: 0.7rem;
+  height: 0.7rem;
 }
 
 .hm-year {
@@ -566,6 +653,10 @@ function onTouchEnd(e) {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
 }
 
 .hm-navgreg {
