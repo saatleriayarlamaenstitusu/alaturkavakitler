@@ -63,7 +63,7 @@ useSeo({
             </svg>
             Chrome Web Store’dan kur
           </a>
-          <span class="store-note">Chromium tabanlı tarayıcılarda çalışır</span>
+          <span class="store-note"> <strong>Chromium tabanlı tarayıcılarda çalışır.</strong> (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi, Chromium, Yandex Browser...)</span>
         </div>
 
         <div class="credits-item">
