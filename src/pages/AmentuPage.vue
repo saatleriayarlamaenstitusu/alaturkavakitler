@@ -268,7 +268,7 @@ function formatTime(t) {
 .amentu-page {
   padding: 1em;
   padding-top: 4em;
-  color: white;
+  color: var(--text);
   font-family: var(--font2);
 }
 
@@ -319,14 +319,14 @@ h2 {
   max-width: 480px;
   margin: 1.5em auto;
   padding: 0.65em 0.75em;
-  background: rgb(255 255 255 / 0.04);
-  border: 1px solid rgb(255 255 255 / 0.06);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  border: 1px solid var(--border);
   border-radius: 0.5em;
   transition: background 0.2s;
 }
 
 .audio-player.playing {
-  background: rgb(255 255 255 / 0.07);
+  background: color-mix(in srgb, var(--text) 7%, transparent);
 }
 
 .play-btn {
@@ -334,9 +334,9 @@ h2 {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid rgb(255 255 255 / 0.15);
+  border: 1px solid var(--border);
   background: transparent;
-  color: #fff;
+  color: var(--text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -345,8 +345,8 @@ h2 {
 }
 
 .play-btn:hover {
-  background: rgb(255 255 255 / 0.1);
-  border-color: rgb(255 255 255 / 0.3);
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  border-color: var(--text);
 }
 
 .player-body {
@@ -373,18 +373,19 @@ h2 {
 .track-title {
   font-size: 0.85em;
   font-weight: 600;
-  color: #fff;
+  color: var(--text);
 }
 
 .artist {
   font-size: 0.7em;
-  opacity: 0.45;
+  opacity: 0.55;
+  color: var(--text-muted);
 }
 
 .progress-track {
   position: relative;
   height: 3px;
-  background: rgb(255 255 255 / 0.1);
+  background: color-mix(in srgb, var(--text) 12%, transparent);
   border-radius: 2px;
   cursor: pointer;
   transition: height 0.15s;

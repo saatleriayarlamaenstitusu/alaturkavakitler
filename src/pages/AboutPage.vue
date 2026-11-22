@@ -14,8 +14,20 @@ useSeo({
 <template>
   <div class="about-page">
     <section class="about-intro">
-      <RouterLink to="/amentu" class="logo-link">
-        <img src="/Icons/makili.svg" alt="Alaturka Vakitler" id="makili" />
+      <RouterLink to="/amentu" class="logo-link" aria-label="Alaturka Vakitler — Amentü">
+        <svg
+          id="makili"
+          viewBox="0 0 42.031242 27.0625"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <g transform="translate(93.00976,-550.77147)">
+            <path
+              fill-rule="evenodd"
+              d="m -93.009766,550.77148 h 3.113282 v 10.59571 h -3.113282 v -7.60352 h 2.996094 v -2.87305 h -2.996094 z m 5.988282,0 h 0.11914 V 561.25 h 5.986328 v 0.11719 h -6.105468 z m 2.99414,0 h 3.111328 v 7.60352 h -3.111328 v -4.61133 h 2.994141 v -2.87305 h -2.994141 z m 5.986328,0 h 0.119141 v 2.99219 h 2.992187 v 0.1211 h -2.992187 V 561.25 h 2.875 v -4.49219 h 0.117187 v 4.60938 h -3.111328 z m 2.994141,0 h 3.113281 v 0.11914 h -3.113281 z m 5.986328,0 h 0.121094 v 10.59571 h -3.113281 v -7.60352 h 0.11914 V 561.25 h 2.873047 z m 2.994141,0 h 3.113281 v 4.60938 h -0.119141 v -4.49024 h -2.875 v 13.47071 h -0.11914 z m 5.986328,0 h 0.121094 v 2.99219 h 2.873046 v -2.99219 h 0.119141 v 3.11329 h -2.992187 v 2.87304 h 2.992187 v 4.60938 h -0.119141 v -4.49024 h -2.873046 v 4.49024 h -0.121094 z m 5.988281,0 h 3.113281 v 10.59571 h -3.113281 v -7.60352 h 2.992188 v -2.87305 h -2.992188 z m -38.798828,3.11329 V 561.25 h 2.876953 v -7.36523 z m 8.980469,0 v 4.36914 h 2.876953 v -4.36914 z m 29.9375,0 V 561.25 h 2.873047 v -7.36523 z m -9.09961,4.36914 h 0.119141 v 16.46679 h 5.986328 v 0.11719 h -6.105469 z m -29.9375,5.99023 h 3.113282 v 10.47656 h 2.875 v -10.47656 h 0.11914 v 10.59375 h -3.111328 v -10.47656 h -2.996094 z m 8.982422,0 h 3.111328 v 10.59375 h -3.111328 v -7.60156 h 2.994141 v -2.875 h -2.994141 z m 5.986328,0 h 0.119141 v 2.99219 h 2.875 v -2.99219 h 0.117187 v 3.11133 h -2.992187 v 2.875 h 2.992187 v 4.60742 h -0.117187 v -4.49023 h -2.875 v 4.49023 h -0.119141 z m 5.988282,0 h 0.11914 v 0.11719 h -0.11914 z m 2.992187,0 h 0.121094 v 2.99219 h 2.992187 v 0.11914 h -2.992187 v 7.36523 h 2.873047 v -4.49023 h 0.11914 v 4.60742 h -3.113281 z m 8.980469,0 h 3.113281 v 4.60742 h -2.992187 v 2.875 h 2.992187 v 0.11914 h -3.113281 z m 5.988281,0 h 3.113281 v 0.11719 h -2.99414 v 10.47656 h -0.119141 z m -5.867187,0.11719 v 4.37305 h 2.873046 v -4.37305 z m -33.050782,2.875 h 0.119141 v 10.47851 h 41.791016 v -10.47851 h 0.121093 v 10.59765 h -42.03125 z m 20.957032,0 h 0.11914 v 7.60156 h -0.11914 z m -11.857422,0.11914 v 7.36523 h 2.876953 v -7.36523 z"
+            />
+          </g>
+        </svg>
       </RouterLink>
 
       <RouterLink to="/amentu" class="beyit-link">
@@ -47,23 +59,50 @@ useSeo({
           </div>
         </div>
 
-        <!-- Eklenti ayrı bir ürün ve sitede hiçbir izi yoktu: buraya
-             gelen kişi "tarayıcımda da olsun" diyebilmeli. Rozet
-             mağazanın logosunu taşımaz (marka), yalnızca adını. -->
+        <!-- Sitenin dışında iki bağımsız uygulama var: Chrome eklentisi
+             ve Linux masaüstü uygulaması. Ziyaretçinin bunlara tek
+             bölümden ulaşabilmesi için "Diğer Uygulamalar" altında toplandı. -->
         <div class="credits-item">
-          <b>Yeni Sekme Eklentisi</b>
-          <a
-            class="store-btn"
-            href="https://chromewebstore.google.com/detail/hknlkhdhepllicappjmgcliepnlljdcf/"
-            target="_blank"
-            rel="noopener"
-          >
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
-              <path d="M10.5 2a2.5 2.5 0 0 0-2.5 2.5V6H5.5A1.5 1.5 0 0 0 4 7.5V10h1.75a2.75 2.75 0 1 1 0 5.5H4V18a2 2 0 0 0 2 2h2.5v-1.75a2.75 2.75 0 1 1 5.5 0V20H18a2 2 0 0 0 2-2v-2.5h-1.75a2.75 2.75 0 1 1 0-5.5H20V7.5A1.5 1.5 0 0 0 18.5 6H16V4.5A2.5 2.5 0 0 0 13.5 2h-3z" />
-            </svg>
-            Chrome Web Store’dan kur
-          </a>
-          <span class="store-note"> <strong>Chromium tabanlı tarayıcılarda çalışır.</strong> (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi, Chromium, Yandex Browser...)</span>
+          <b>Diğer Uygulamalar</b>
+          <div class="other-apps">
+            <div class="app-entry">
+              <span class="app-title">Yeni Sekme Eklentisi</span>
+              <p class="app-desc">
+                Namaz vakitleri, hicri takvim ve günün ayeti tarayıcınızın her yeni sekmesinde elinizin altında.
+              </p>
+              <a
+                class="store-btn"
+                href="https://chromewebstore.google.com/detail/hknlkhdhepllicappjmgcliepnlljdcf/"
+                target="_blank"
+                rel="noopener"
+              >
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                  <path d="M10.5 2a2.5 2.5 0 0 0-2.5 2.5V6H5.5A1.5 1.5 0 0 0 4 7.5V10h1.75a2.75 2.75 0 1 1 0 5.5H4V18a2 2 0 0 0 2 2h2.5v-1.75a2.75 2.75 0 1 1 5.5 0V20H18a2 2 0 0 0 2-2v-2.5h-1.75a2.75 2.75 0 1 1 0-5.5H20V7.5A1.5 1.5 0 0 0 18.5 6H16V4.5A2.5 2.5 0 0 0 13.5 2h-3z" />
+                </svg>
+                Chrome Web Store’dan kur
+              </a>
+              <span class="store-note"><strong>Chromium tabanlı tarayıcılarda çalışır.</strong> (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi, Chromium, Yandex Browser...)</span>
+            </div>
+
+            <div class="app-entry">
+              <span class="app-title">Linux Masaüstü Uygulaması</span>
+              <p class="app-desc">
+                Tarayıcı açmadan alaturka saat ve namaz vakitleri masaüstünüzde. GTK4 ile yazıldı, sisteminizin temasına uyar (.deb ve Flatpak).
+              </p>
+              <a
+                class="store-btn"
+                href="https://github.com/saatleriayarlamaenstitusu/alaturka-desktop"
+                target="_blank"
+                rel="noopener"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub’da incele ve kur
+              </a>
+              <span class="store-note"><strong>Linux (GNOME / GTK4) için yerel uygulama.</strong></span>
+            </div>
+          </div>
         </div>
 
         <div class="credits-item">
@@ -146,6 +185,34 @@ useSeo({
 /* Mağaza düğmesi: satır içi bir bağlantı değil, dolgulu bir hedef.
    Hakkında sayfasının geri kalanı metin; burada bir eylem var ve
    metinden ayrışması gerekiyor. */
+.other-apps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  margin-top: 0.8rem;
+  width: 100%;
+}
+
+.app-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.app-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.app-desc {
+  margin: 0.35rem 0 0.15rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  max-width: 48ch;
+}
+
 .store-btn {
   display: inline-flex;
   align-items: center;
