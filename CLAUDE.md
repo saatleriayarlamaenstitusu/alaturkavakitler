@@ -1,5 +1,12 @@
 # Alaturka Vakitler — v2
 
+> **Çalışma kuralları `AGENTS.md`dedir** — commit, derleme, yasaklar,
+> bir işin ne zaman bittiği ve her iş sonunda doldurulacak günlük.
+> Bu dosya kuralları değil **mimariyi ve ölçülmüş kararları** tutar:
+> bir şeyin neden böyle olduğu, nelerin denenip bırakıldığı. Kural
+> değişecekse `AGENTS.md`ye yazılır, buraya değil.
+
+
 ## Proje Özeti
 Türkiye'ye özel alaturka saat, namaz vakitleri, hicri/rumi takvim PWA uygulaması.
 Alaturka saat: son akşam (güneş batımı) ezanından geçen süre.
@@ -689,12 +696,26 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   deseni meale göre değişiyor: kimi "(2-4)" yazıyor, kimi
   "(1-2-3-4)" diye tek tek sayıyor — ikisi de yalnızca rakam,
   tire ve boşluktan oluştuğu için tek desenle yakalanıyor.
-- **Gitme kutusu tek alandır** (`GoTo.vue`): sure adı, `2:255`, `bakara 255`,
+- **Gitme kutusu tek alandır** (`GoTo.vue`): sure adı, `2:255`, `3 15`, `bakara 255`,
   `s42`, `c5` — ne yazıldığını kendisi anlar ve seçenekleri listeler. Önce
   dört ayrı açılır liste vardı (sure/cüz/sayfa/meal) ve bir AYETE gitmenin
   yolu yoktu. Ön ekli yazım (`s42`) ad aramasından ÖNCE bakılır, yoksa
   "s42" bütün S'li surelerin 42. ayetini listeliyor; ad araması da iki
   harften başlar.
+- **Araç şeridinde iki düğme de YALNIZCA ikon** (meal + tam ekran): ikisi de
+  `select icon-btn` — 2rem kare, şeridin sağ ucunda yan yana. Meal düğmesinde
+  mütercim adı ve TR/EN rozeti ARTIK YOK; hangi mealin açık olduğu düğmenin
+  `title`/`aria-label` metninde (`mealTitle`) ve alttaki listede duruyor.
+  Seçili meal varsa düğme vurgulanıyor (`aria-pressed`).
+  İkonlar yazı glifi değil, SVG: tam ekran `⤢`/`⤡` idi, fonta göre ~1px
+  çizgiydi (ölçüldü: ink 17.9 css-px²), yerine sabit 1.6px konturlu çift
+  köşe ok (ink 53.3 css-px², 3×). Meal ikonu çeviri yazısı (文/A) DEĞİL,
+  KÜRE: Material "language" (16px) — ink 47.3 → 106.0 css-px², medyan
+  çizgi değişmedi (1.67px) ama silüet tek parça oldu; 17px'de halka
+  kalınlıkları birbirine giriyor.
+  Gir/çık için AYRI ikon yok: dört aday render edildi (içe oklar, köşe
+  kancaları, materyal ikonu) — 16px'te ya aynı ya bulanık; durumu çerçeve
+  anlatıyor (vurgu + `aria-pressed`), ikon hep aynı.
 - Aranan ayet bulunduğu sayfada vurgulanır. Vurgu SAYFAYA bağlı tutulur
   (`focus.page === page`), böylece sayfa başka bir yolla değişince
   kendiliğinden düşer — ayrı bir temizleme izleyicisi yok.
@@ -985,9 +1006,12 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   (`direction: rtl` kapta, içerik `ltr`); dolgu o dönemdeki en yüksek güne
   göre ölçeklenir, yoksa günde iki sayfa okuyanda şerit hep sönük kalır.
   Kutucuklar HAFTA HAFTA gruplanır (pazartesi–pazar, aralarında boşluk) ve
-  sayfa sayısı kutunun İÇİNDE yazar. Önce ince çubuklardı, sayı yalnızca
-  fare ipucundaydı — dokunmatikte öyle bir ipucu yok, "hangi gün kaç sayfa"
-  hiç görünmüyordu. Bir güne dokunmak altındaki satırda onu okutur.
+  sayfa sayısı kutunun İÇİNDE yazar. Şerit kart çerçevesi içinde tutulur
+  (negatif margin'le taşırılmaz) ve kenarlara yumuşak `mask-image`
+  gradyanı verilir; böylece kutu sınırları delinmeden kaydırma hissi sağlanır.
+  Önce ince çubuklardı, sayı yalnızca fare ipucundaydı — dokunmatikte öyle
+  bir ipucu yok, "hangi gün kaç sayfa" hiç görünmüyordu. Bir güne
+  dokunmak altındaki satırda onu okutur.
 - **Hatim sekmesinin tepesinde bütün hatimlerin TOPLAMI** duruyor (sayfa
   sayısı + ortak şerit). Tek tek hatimler aşağıda kendi şeritlerini
   taşıyor; üstteki "bugün hiç okudum mu" sorusunun cevabı, hangi hatme
@@ -1112,8 +1136,8 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   açılır — Kur'an sayfasının dışında dinlerken yapılabilecek tek şey
   duraklatmaktı. Açma düğmesinin ikonu YUKARI OK ("bu şerit açılıyor");
   önce bir çubuk grafikti ve neyi açtığı okunmuyordu. Ekranda İKİ çarpı
-  olmaz: köşedeki çarpı sayfayı kapatır, kıraati bırakmak yazıyla
-  ("Kıraati bırak") — iki çarpı yan yana hangisinin sesi hangisinin
+  olmaz: köşedeki çarpı sayfayı kapatır, kıraati durdurmak yazıyla
+  ("Kıraati durdur") — iki çarpı yan yana hangisinin sesi hangisinin
   pencereyi kapattığını belirsiz bırakıyordu.
 - **Kârî bağlama App.vue'da**: kârî seçici artık Kur'an sayfasının
   dışından da (mini oynatıcıdan) açılabiliyor, `setReciter` izleyicisi
@@ -1297,6 +1321,12 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   akşamdan sonra bir gün ileri alınır. Tek kaynak `useHijriToday()` composable'ı;
   tarih gösteren her yer oradan beslenir (`shareSnapshot` hariç — o anlık
   görüntü aldığı için `aksamCutoff`'u doğrudan çağırır).
+- **Hicri ay künyesi ve TDV bağlantısı**: Takvim sayfasında (`HijriMonthCalendar.vue`)
+  hem seçili ay başlığının hem de ay gezinti şeridinin yanındaki bilgi butonuyla
+  `HijriMonthInfoSheet.vue` açılır. `src/data/hijriMonthInfo.js` dosyasından
+  ayın etimolojik kökeni, lügat manası, İslami önemi, önemli günleri ve
+  TDV İslam Ansiklopedisi doğrudan madde bağlantısı (`islamansiklopedisi.org.tr`)
+  sunulur.
 
 ## Geliştirme Notları
 - **Yükleme hızı SINIRLI tutulur.** Hattın yükleme tavanı ~2,5–3 MB/s;
