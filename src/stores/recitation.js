@@ -30,6 +30,8 @@ export const playing = ref(false)
 export const loading = ref(false)
 export const error = ref('')
 export const reciterId = ref('')
+/** Kıraat başka bir hatmin sayfa ilerlemesine yazılmasın. */
+export const playbackHatimId = ref(null)
 /** Çalan kayıt: sure ve ayet (0 = henüz bilinmiyor). */
 export const curSurah = ref(0)
 export const curVerse = ref(0)
@@ -74,7 +76,11 @@ function ensureEl() {
 }
 
 async function ensureTimings() {
-  if (!timings.value && reciterId.value) timings.value = await loadTimings(reciterId.value)
+  const id = reciterId.value
+  if (!timings.value && id) {
+    const loaded = await loadTimings(id)
+    if (reciterId.value === id) timings.value = loaded
+  }
   return timings.value
 }
 
@@ -84,7 +90,7 @@ export async function setReciter(id) {
   reciterId.value = id
   timings.value = null
   await ensureTimings()
-  if (!curSurah.value) return
+  if (reciterId.value !== id || !curSurah.value) return
   // Kayıt değişti: aynı ayetten devam et, ama kendiliğinden çalmasın.
   pause()
   const at = startOf(timings.value, curSurah.value, curVerse.value || 1)

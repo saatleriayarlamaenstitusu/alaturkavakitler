@@ -4,6 +4,7 @@ import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { getFont } from '@/data/shareFonts'
 import { authorById } from '@/data/kuranMeta'
+import { showsArabic } from '@/data/hatimReader'
 import { mealFontById } from '@/data/mealFonts'
 import { fetchVerse, eastern } from '@/utils/kuran'
 import { verseTajweed } from '@/utils/qpc'
@@ -34,12 +35,15 @@ import {
  */
 const props = defineProps({
   open: { type: Boolean, default: false },
+  reader: { type: Object, default: null },
 })
 const emit = defineEmits(['close', 'pick-reciter'])
 
-const settings = useSettingsStore()
-const arFamily = computed(() => getFont(settings.quranFont).family)
-const trFamily = computed(() => mealFontById(settings.quranMealFont).family)
+const globalSettings = useSettingsStore()
+const settings = computed(() => props.reader ?? globalSettings)
+const showArabic = computed(() => showsArabic(settings.value))
+const arFamily = computed(() => getFont(settings.value.quranFont).family)
+const trFamily = computed(() => mealFontById(settings.value.quranMealFont).family)
 const follows = computed(() => hasTimings(reciterId.value))
 
 const verse = ref(null)
@@ -52,8 +56,8 @@ const tajweed = ref('')
  * Okuma sayfasındaki yazı tipi seçimi BURAYA da uygulanıyor: font
  * yalnızca sayfada yüklüyse (ensureFont) popup'ta da aynı hat basılır.
  */
-onMounted(() => ensureFont(settings.quranFont))
-watch(() => settings.quranFont, (id) => ensureFont(id))
+onMounted(() => ensureFont(settings.value.quranFont))
+watch(() => settings.value.quranFont, (id) => ensureFont(id))
 
 /**
  * Okunan ayetin TECVİTLİ metni.
@@ -64,15 +68,15 @@ watch(() => settings.quranFont, (id) => ensureFont(id))
  * quran.com) ama akan görünümde de bu ikili var — burada da aynı
  * davranış, aynı yazı.
  */
-async function loadTajweed(s, v) {
-  if (!settings.quranTajweed) { tajweed.value = ''; return }
+async function loadTajweed(s, v, isCurrent) {
+  if (!showArabic.value || !settings.value.quranTajweed) { tajweed.value = ''; return }
   try {
     const html = await verseTajweed(s, v)
-    if (s === curSurah.value && v === (curVerse.value || 1)) tajweed.value = html
+    if (isCurrent()) tajweed.value = html
   } catch {
     // Tecvit gelmezse düz metin basılır; dinlemeyi engellemek için bir
     // sebep yok.
-    tajweed.value = ''
+    if (isCurrent()) tajweed.value = ''
   }
 }
 
@@ -83,21 +87,21 @@ async function loadTajweed(s, v) {
  * istek atmak, görünmeyen bir şey için ağ trafiği demek.
  */
 watch(
-  [() => props.open, curSurah, curVerse, () => settings.quranMeals, () => settings.quranTajweed],
-  async () => {
+  [() => props.open, curSurah, curVerse, () => settings.value.quranMeals, () => settings.value.quranTajweed, showArabic],
+  async (_current, _previous, onCleanup) => {
     if (!props.open || !curSurah.value) return
     const want = { s: curSurah.value, v: curVerse.value || 1 }
-    loadTajweed(want.s, want.v)
+    let current = true
+    onCleanup(() => { current = false })
+    loadTajweed(want.s, want.v, () => current)
     try {
       verseErr.value = ''
-      const got = await fetchVerse(want.s, want.v, settings.quranMeals)
-      // Geç gelen yanıt başka bir ayeti ezmesin: istek anındaki hedefle
-      // o anki hedef karşılaştırılır (yanıtın kendi alan adlarına
-      // güvenmeden).
-      if (want.s === curSurah.value && want.v === (curVerse.value || 1))
+      const got = await fetchVerse(want.s, want.v, settings.value.quranMeals)
+      // Aynı ayetin meal listesi de istek sürerken değişebilir.
+      if (current)
         verse.value = { ...got, no: want.v }
     } catch (e) {
-      verseErr.value = e.message ?? 'Ayet alınamadı'
+      if (current) verseErr.value = e.message ?? 'Ayet alınamadı'
     }
   },
   { immediate: true, deep: true },
@@ -105,7 +109,7 @@ watch(
 
 const meals = computed(() => {
   if (!verse.value) return []
-  return settings.quranMeals
+  return settings.value.quranMeals
     .map((id) => ({ id, name: authorById(id)?.name ?? '', text: verse.value.trs?.[id] ?? '' }))
     .filter((m) => m.text)
 })
@@ -182,6 +186,7 @@ const onSeek = (e) => seekTo(Number(e.target.value))
            okunanın ne olduğu da burada yazmalı. -->
       <section v-if="verse" class="verse">
         <p
+          v-if="showArabic"
           class="ar"
           dir="rtl"
           lang="ar"

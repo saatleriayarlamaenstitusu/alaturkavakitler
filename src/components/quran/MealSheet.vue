@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 import { AUTHORS } from '@/data/kuranMeta'
 import { MEAL_FONTS } from '@/data/mealFonts'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
@@ -25,10 +25,14 @@ const props = defineProps({
   /** Seçili meal kimlikleri. */
   value: { type: Array, default: () => [] },
   open: { type: Boolean, default: false },
+  canHideArabic: Boolean,
+  arabicHidden: Boolean,
   /** Meal yazı tipi kimliği (`data/mealFonts.js`). */
   font: { type: String, default: 'sans' },
 })
-const emit = defineEmits(['close', 'toggle', 'clear', 'font'])
+const emit = defineEmits(['close', 'toggle', 'clear', 'font', 'update:arabic-hidden'])
+
+const arabicNote = useId()
 
 const LANGS = { tr: 'Türkçe', en: 'İngilizce' }
 
@@ -65,8 +69,23 @@ const on = (id) => props.value.includes(id)
       </button>
     </div>
 
-    <p class="group">Mealler</p>
-    <button class="row row--off" :class="{ on: !value.length }" @click="emit('clear')">
+    <p class="group">Okuma içeriği</p>
+    <button
+      v-if="canHideArabic"
+      type="button"
+      class="row"
+      :class="{ on: arabicHidden }"
+      :aria-pressed="arabicHidden"
+      aria-label="Arapça kapalı"
+      :aria-describedby="arabicNote"
+      @click="emit('update:arabic-hidden', !arabicHidden)"
+    >
+      <span class="tick" aria-hidden="true">{{ arabicHidden ? '✓' : '' }}</span>
+      <span class="row-main">Arapça kapalı</span>
+      <span :id="arabicNote" class="row-note">{{ value.length ? 'yalnızca meal' : 'Diyanet meali açılır' }}</span>
+    </button>
+    <button type="button" class="row" :class="{ on: !value.length }" :aria-pressed="!value.length" @click="emit('clear')">
+      <span class="tick" aria-hidden="true">{{ !value.length ? '✓' : '' }}</span>
       <span class="row-main">Meal kapalı</span>
       <span class="row-note">yalnızca Arapça</span>
     </button>
@@ -150,6 +169,8 @@ const on = (id) => props.value.includes(id)
   color: var(--text);
   cursor: pointer;
 }
+
+.row:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: -2px; }
 
 .row:hover { background: color-mix(in srgb, var(--text) 7%, transparent); }
 

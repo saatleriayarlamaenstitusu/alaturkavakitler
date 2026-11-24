@@ -151,6 +151,17 @@ async function loadParts(env, surahId, authorId, waitUntil) {
   return { base, tr }
 }
 
+// Boş meal seçimi Arapça metin ve okunuş istediğimizi gösterir.
+async function loadRequestedParts(env, surahId, authors, waitUntil) {
+  if (!authors.length) {
+    const base = await kvGet(env, `ar:${surahId}:v2`)
+      ?? (await loadParts(env, surahId, 11, waitUntil)).base
+    return { base, loaded: [] }
+  }
+  const loaded = await Promise.all(authors.map((a) => loadParts(env, surahId, a, waitUntil)))
+  return { base: loaded[0].base, loaded }
+}
+
 export async function onRequestGet(context) {
   const { request, env, params, waitUntil } = context
 
@@ -165,11 +176,13 @@ export async function onRequestGet(context) {
   const cached = await cache.match(request)
   if (cached) return cached
 
-  const authorList = (url.searchParams.get('authors') ?? url.searchParams.get('author') ?? '11')
+  const authors = url.searchParams.get('authors')
+  const arOnly = authors === '' && (segments[0] === 'verse' || segments[0] === 'range')
+  const authorList = (authors ?? url.searchParams.get('author') ?? '11')
     .split(',')
     .map((n) => Number(n.trim()))
     .filter((n) => AUTHORS.has(n))
-  if (!authorList.length) return fail('invalid_author', 'Geçersiz meal seçimi')
+  if (!authorList.length && !arOnly) return fail('invalid_author', 'Geçersiz meal seçimi')
 
   const surahId = Number(segments[1])
   if (!Number.isInteger(surahId) || surahId < 1 || surahId > 114)
@@ -182,9 +195,7 @@ export async function onRequestGet(context) {
       if (!Number.isInteger(verseNo) || verseNo < 1)
         return fail('verse_not_found', 'Geçersiz ayet numarası', 404)
 
-      const loaded = await Promise.all(
-        authorList.map((a) => loadParts(env, surahId, a, waitUntil)))
-      const { base } = loaded[0]
+      const { base, loaded } = await loadRequestedParts(env, surahId, authorList, waitUntil)
       if (verseNo > base.surah.verses)
         return fail('verse_not_found', `Bu surede ${base.surah.verses} ayet var`, 404)
 
@@ -207,9 +218,7 @@ export async function onRequestGet(context) {
       if (to - from + 1 > MAX_RANGE)
         return fail('range_too_long', `En çok ${MAX_RANGE} ayet alınabilir`, 400)
 
-      const loaded = await Promise.all(
-        authorList.map((a) => loadParts(env, surahId, a, waitUntil)))
-      const { base } = loaded[0]
+      const { base, loaded } = await loadRequestedParts(env, surahId, authorList, waitUntil)
       if (to > base.surah.verses)
         return fail('verse_not_found', `Bu surede ${base.surah.verses} ayet var`, 404)
 

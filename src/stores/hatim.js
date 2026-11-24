@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+import { useSettingsStore } from './settings'
+import { snapshotReader } from '@/data/hatimReader'
 import { PAGE_COUNT } from '@/utils/mushaf'
 
 /**
@@ -53,26 +55,30 @@ function seed() {
   }
 }
 
-function load() {
+function load(settings) {
   try {
     const stored = localStorage.getItem(KEY)
     if (stored === null) {
       const first = seed()
-      return { list: [first], activeId: first.id, fresh: true }
+      return { list: [{ ...first, reader: snapshotReader(settings) }], activeId: first.id, fresh: true }
     }
     const raw = JSON.parse(stored || 'null')
     if (!raw || !Array.isArray(raw.list)) return { list: [], activeId: null }
     // `undone` sonradan eklendi; eski kayıtlarda yok ve her okuyucunun
     // tek tek kontrol etmesi gerekmesin diye burada kuruluyor.
-    const list = raw.list.map((h) => ({ ...h, undone: h.undone ?? {} }))
-    return { list, activeId: raw.activeId ?? list[0]?.id ?? null }
+    const list = raw.list.map((h) => ({
+      ...h, undone: h.undone ?? {}, reader: snapshotReader(h.reader, settings),
+    }))
+    const migrated = raw.list.some((h, i) => JSON.stringify(h.reader) !== JSON.stringify(list[i].reader))
+    return { list, activeId: raw.activeId ?? list[0]?.id ?? null, fresh: migrated }
   } catch {
     return { list: [], activeId: null }
   }
 }
 
 export const useHatimStore = defineStore('hatim', () => {
-  const saved = load()
+  const settings = useSettingsStore()
+  const saved = load(settings)
   const list = ref(saved.list)
   const activeId = ref(saved.activeId)
 
@@ -179,12 +185,13 @@ export const useHatimStore = defineStore('hatim', () => {
     return out
   }
 
-  function start(niyet, { dailyTarget = null } = {}) {
+  function start(niyet, { dailyTarget = null, reader } = {}) {
     const h = {
       id: `h${Date.now().toString(36)}`,
       niyet: String(niyet || '').trim() || 'Hatim',
       startedAt: today(),
       dailyTarget: dailyTarget ? Number(dailyTarget) : null,
+      reader: snapshotReader(reader, settings),
       progress: {},
       undone: {},
       finishedAt: null,
@@ -192,6 +199,14 @@ export const useHatimStore = defineStore('hatim', () => {
     list.value = [h, ...list.value]
     activeId.value = h.id
     return h
+  }
+
+  function edit(id, { niyet, reader }) {
+    const h = list.value.find((x) => x.id === id)
+    const name = niyet.trim()
+    if (!h || !name) return
+    h.niyet = name
+    h.reader = snapshotReader(reader, h.reader)
   }
 
   /** Bir sayfayı okundu/okunmadı yapar; dönüş değeri yeni durumdur. */
@@ -245,6 +260,6 @@ export const useHatimStore = defineStore('hatim', () => {
     list, activeId, active,
     readCount, ratio, byDay, undoneByDay, nextPage, isRead, readOn,
     allByDay, allUndoneByDay, totalPages, totalUndone,
-    start, togglePage, markUpTo, remove, setActive,
+    start, edit, togglePage, markUpTo, remove, setActive,
   }
 })

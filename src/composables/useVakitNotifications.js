@@ -1,5 +1,6 @@
 import { watch, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
+import { useVakitPushStore } from '@/stores/vakitPush'
 import { useSettingsStore } from '@/stores/settings'
 import { isoDate } from '@alaturkavakitler/core'
 import { NOTIFY_KEYS, NOTIFY_OFF, notifyText } from '@/data/vakitNotify'
@@ -7,10 +8,8 @@ import { NOTIFY_KEYS, NOTIFY_OFF, notifyText } from '@/data/vakitNotify'
 /**
  * Vakit hatırlatmaları — tarayıcı tarafında.
  *
- * Sunucu yok: bildirim sayfanın kendi zamanlayıcısından çıkıyor, yani
- * uygulama (ya da yüklü PWA) açıkken çalışır. Bu bilinçli bir sınır;
- * gerçek push için bir sunucu ve abonelik gerekir, masaüstü uygulaması
- * ise aynı işi pencere kapalıyken de yapar.
+ * Açık sayfa zamanlayıcısı yalnızca Web Push aboneliği olmayan cihazlarda
+ * kullanılır. İki yol aynı anda çalışırsa aynı hatırlatma iki kez gider.
  *
  * Tek bir `setTimeout` yerine KISA ARALIKLI bir yoklama var: arka plan
  * sekmesinde tarayıcı zamanlayıcıları kısıyor, cihaz uyuduğunda ise uzun
@@ -117,11 +116,12 @@ export function reminders(vakitObj, offsets) {
 export function useVakitNotifications() {
   const app = useAppStore()
   const settings = useSettingsStore()
+  const push = useVakitPushStore()
   let timer = 0
   let fired = loadFired()
 
   async function check() {
-    if (!settings.notificationsEnabled) return
+    if (!settings.notificationsEnabled || push.suppressLocal) return
     if (!supportsNotifications() || Notification.permission !== 'granted') return
 
     const now = Date.now()

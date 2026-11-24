@@ -107,8 +107,8 @@ kapakta okunmuyor.
   değil, "nerede kaldığını görürsün".
 - **Abartı sıfat yok**: "devrim", "en iyi", "muhteşem", "benzersiz".
 - **Olmayan şeyi söyleme.** Tepsi simgesi henüz yazılmadı, ses
-  dosyalarını biz barındırmıyoruz, web tarafı pencere kapalıyken
-  bildirmiyor.
+  dosyalarını biz barındırmıyoruz, web tarafında pencere kapalıyken
+  bildirim için Vakit Hatırlatması’nda arka plan seçeneğini açmak gerekiyor.
 - **Emoji yok.**
 
 ## Çözülmemiş: sen mi siz mi
@@ -124,9 +124,11 @@ dosyaya uygulanmalı.
 
 ## Yenilikler maddeleri
 
-Aynı kurallar `src/content/yenilikler.json` için de geçerli, bir fark
-dışında: orada ürün değil **değişiklik** anlatılıyor, yani cümleler
-"şunu yapabiliyorsunuz" diye kurulur, slogan aranmaz.
+Yenilikler için sakin ve saygılı bir “siz” dili kullanın. Önce okurun
+gününde neyin değiştiğini söyleyin. Okuduğu ayete dönmek, hatmine kaldığı
+yerden devam etmek ya da namaz vaktine hazırlanmak gibi. Düğme adını
+veya bir ayarı yalnızca yol gösterecekse yazın. Kullanıcının bilmesi
+gereken izin ve cihaz koşullarını belirtin.
 
 **Her değişiklik bir madde değildir.** Kullanıcının yaşadığı bir şey
 değişmediyse yenilikler sayfasında işi yok. İlk turda şunları yazmıştım

@@ -5,6 +5,7 @@ import { holyDaysOn } from '@alaturkavakitler/core'
 import { useHatimStore } from '@/stores/hatim'
 import { useHijriToday } from '@/composables/useHijriToday'
 import { DateTime } from 'luxon'
+import { publicHolidayOn } from '@/data/publicHolidays'
 import HijriMonthInfoSheet from './HijriMonthInfoSheet.vue'
 
 // Görüntülenen aya ait taban tarih (navigasyonla değişir)
@@ -33,6 +34,7 @@ const moonSrc = computed(() => `/Icons/moon/${Math.min(selected.value.day, 29)}.
 
 // Seçili günün dinî günü — başlıkta rozet olarak görünür.
 const selectedHoly = computed(() => holyDaysOn(selected.value.greg.toJSDate()))
+const selectedHoliday = computed(() => publicHolidayOn(selected.value.greg.month, selected.value.greg.day))
 
 // Seçili günde hangi hatimden kaç sayfa okunmuş. Takvim "o gün ne oldu"
 // sorusunun sorulduğu yer; dinî gün oradaysa okuma da orada olmalı.
@@ -124,11 +126,16 @@ const cells = computed(() => {
   }
   for (let d = 1; d <= daysInMonth; d++) {
     const isToday = isCurrentMonth.value && d === today.date
+    const greg = firstGreg.plus({ days: d - 1 })
+    const holiday = publicHolidayOn(greg.month, greg.day)
+    const observances = [...(holyDays.value[d] ?? []).map(h => h.name), holiday].filter(Boolean)
     list.push({
       empty: false,
       day: d,
-      gregDay: firstGreg.plus({ days: d - 1 }).day,
-      iso: firstGreg.plus({ days: d - 1 }).toISODate(),
+      gregDay: greg.day,
+      iso: greg.toISODate(),
+      holiday,
+      observances: observances.join(' · '),
       key: `d${d}`,
       state: isToday ? 'today' : isCurrentMonth.value && d < today.date ? 'past' : 'future',
     })
@@ -206,6 +213,10 @@ function onTouchEnd(e) {
         <span v-if="selectedHoly[0].note" class="hm-holy-note">{{ selectedHoly[0].note }}</span>
       </div>
 
+      <div v-if="selectedHoliday" class="hm-holiday">
+        <span class="hm-holiday-tag">{{ selectedHoliday }}</span>
+      </div>
+
       <!-- O gün hatimden okunanlar; okuma yoksa satır hiç çizilmez. -->
       <div v-if="selectedReading.length" class="hm-read">
         <span v-for="r in selectedReading" :key="r.id" class="hm-read-row">
@@ -259,7 +270,12 @@ function onTouchEnd(e) {
             cell.empty ? 'is-empty' : `is-${cell.state}`,
             { 'is-selected': !cell.empty && isSelected(cell), 'has-holy': !cell.empty && holyDays[cell.day] },
           ]"
-          :title="!cell.empty && holyDays[cell.day] ? holyDays[cell.day].map(h => h.name).join(' · ') : null"
+          :title="cell.observances || null"
+          :role="cell.empty ? undefined : 'button'"
+          :tabindex="cell.empty ? undefined : 0"
+          :aria-label="cell.empty ? undefined : [`${cell.day} ${info.monthName}`, cell.observances].filter(Boolean).join(' · ')"
+          @keydown.enter="onCellClick(cell, $event)"
+          @keydown.space.prevent="onCellClick(cell, $event)"
           @click="onCellClick(cell, $event)"
         >
           <template v-if="!cell.empty">
@@ -267,6 +283,7 @@ function onTouchEnd(e) {
             <span class="hm-greg">{{ cell.gregDay }}</span>
             <!-- Dinî gün işareti: hücre zaten dolu, nokta en az yer kaplayanı. -->
             <span v-if="holyDays[cell.day]" class="hm-dot" aria-hidden="true"></span>
+            <span v-if="cell.holiday" class="hm-holiday-mark" aria-hidden="true"></span>
             <!-- Okuma işareti: noktadan ayrı bir çizgi, ikisi aynı gün
                  düşebiliyor ve aynı biçim olurlarsa ayırt edilemezler. -->
             <span v-if="readDays[cell.iso]" class="hm-readmark" aria-hidden="true"></span>
@@ -359,6 +376,39 @@ function onTouchEnd(e) {
   font-size: 0.6875rem;
   letter-spacing: 0.04em;
   color: var(--text-muted);
+}
+
+.hm-holiday { margin-top: 0.5rem; }
+
+.hm-holiday-tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: rgb(104 143 177 / 0.16);
+  color: var(--text);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+/* Kare işaret, aynı güne denk gelebilen dinî gün noktasından ve
+   hatim çizgisinden konumu ve biçimiyle ayrılır. */
+.hm-holiday-mark {
+  position: absolute;
+  inset-block-start: 17%;
+  inset-inline-end: 17%;
+  width: 5px;
+  height: 5px;
+  border: 1px solid;
+  border-radius: 1px;
+  color: color-mix(in oklab, var(--bg) 68%, #688fb1);
+}
+
+.hm-cell.is-past:not(.has-holy) .hm-holiday-mark {
+  color: color-mix(in oklab, var(--text) 68%, #688fb1);
+}
+
+.hm-cell.is-today .hm-holiday-mark {
+  color: #fff;
 }
 
 /* Izgaradaki işaret: hücrenin altına küçük bir nokta. */

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useVakitPushStore } from '@/stores/vakitPush'
 import { useSettingsStore } from '@/stores/settings'
 import { COLOR_STYLES } from '@/data/colorStyles'
 import { NOTIFY_KEYS, NOTIFY_CHOICES, VAKIT_LABELS } from '@/data/vakitNotify'
@@ -17,6 +18,23 @@ useSeo({
 })
 
 const settings = useSettingsStore()
+const push = useVakitPushStore()
+const pushTestMessage = ref('')
+const testingPush = ref(false)
+
+async function testPush() {
+  testingPush.value = true
+  try {
+    await push.test()
+    pushTestMessage.value = 'Test bildirimi gönderildi.'
+  } catch (error) {
+    pushTestMessage.value = error.message === '429'
+      ? 'Yeni bir test için iki dakika bekleyin.'
+      : 'Test bildirimi gönderilemedi.'
+  } finally {
+    testingPush.value = false
+  }
+}
 
 const themeOptions = [
   { value: 'auto',  label: 'Sistem', icon: '⊙' },
@@ -41,9 +59,11 @@ const notifySupported = supportsNotifications()
 
 onMounted(() => {
   if (notifySupported) permission.value = Notification.permission
+  push.prepare()
 })
 
 async function toggleNotifications(on) {
+  pushTestMessage.value = ''
   if (!on) {
     settings.notificationsEnabled = false
     return
@@ -73,6 +93,7 @@ function toggleMeal(id) {
   if (want.has(id)) want.delete(id)
   else want.add(id)
   settings.quranMeals = AUTHORS.filter((a) => want.has(a.id)).map((a) => a.id)
+  if (!settings.quranMeals.length) settings.quranArabicHidden = false
 }
 
 const quranFontOptions = [
@@ -216,28 +237,49 @@ const firstPageOptions = [
         <p class="setting-desc">Vakit girmeden önce haber ver</p>
       </div>
 
-      <div class="theme-selector">
-        <button
-          v-for="opt in notifyOptions"
-          :key="String(opt.value)"
-          class="theme-btn"
-          :class="{ active: settings.notificationsEnabled === opt.value }"
-          :disabled="!notifySupported"
-          @click="toggleNotifications(opt.value)"
-        >
-          <span>{{ opt.label }}</span>
-        </button>
+      <div class="notify-controls">
+        <div class="theme-selector">
+          <button
+            v-for="opt in notifyOptions"
+            :key="String(opt.value)"
+            class="theme-btn"
+            :class="{ active: settings.notificationsEnabled === opt.value }"
+            :disabled="!notifySupported"
+            @click="toggleNotifications(opt.value)"
+          >
+            <span>{{ opt.label }}</span>
+          </button>
+        </div>
+
+        <div class="theme-selector">
+          <button v-if="push.state === 'active' && settings.notificationsEnabled" class="theme-btn" type="button"
+            :disabled="testingPush" @click="testPush">Test bildirimi gönder</button>
+          <button v-else-if="settings.notificationsEnabled && push.suppressLocal && push.state === 'error'"
+            class="theme-btn" type="button" @click="push.refresh()">Bildirim ayarlarını eşitle</button>
+          <button v-else class="theme-btn" type="button"
+            :disabled="!notifySupported || !push.supported || !settings.notificationsEnabled
+              || permission !== 'granted' || (!push.available && !push.preparationFailed) || push.state === 'pending'"
+            @click="push.available ? push.enable() : push.prepare()">Uygulama kapalıyken de bildir</button>
+        </div>
       </div>
 
-      <p v-if="!notifySupported" class="notify-note">
-        Bu tarayıcı bildirimleri desteklemiyor.
+      <p class="notify-note" role="status">
+        <template v-if="!notifySupported || !push.supported">
+          Bu tarayıcıda arka plan bildirimi kullanılamıyor. iPhone ve iPad’de siteyi ana ekrana ekleyip oradan açın.
+        </template>
+        <template v-else-if="permission === 'denied'">
+          Bildirim izni reddedilmiş. Tarayıcının site ayarlarından izin verip tekrar deneyin.
+        </template>
+        <template v-else-if="!settings.notificationsEnabled || permission !== 'granted'">Önce Vakit Hatırlatması için Açık’ı seçin ve bildirim iznini verin.</template>
+        <template v-else-if="push.state === 'active'">Bu cihazda uygulama kapalıyken de hatırlatma gönderilir.</template>
+        <template v-else-if="push.state === 'pending'">Bildirim ayarları eşitleniyor…</template>
+        <template v-else-if="push.state === 'error'">Arka plan bildirim ayarları eşitlenemedi.</template>
+        <template v-else-if="push.preparationFailed">Bildirim hizmetine ulaşılamadı. Düğmeye dokunup tekrar deneyin.</template>
+        <template v-else-if="!push.available">Arka plan bildirimi hazırlanıyor…</template>
+        <template v-else>Arka plan bildirimi açılana kadar hatırlatmalar uygulama açıkken çalışır.</template>
       </p>
-      <p v-else-if="permission === 'denied'" class="notify-note">
-        Bildirim izni reddedilmiş. Tarayıcının site ayarlarından izin verip tekrar deneyin.
-      </p>
-      <p v-else class="notify-note">
-        Hatırlatma uygulama açıkken verilir. Her zaman çalışması için uygulamayı ana ekrana ekleyin.
-      </p>
+
+      <p v-if="pushTestMessage" class="notify-note" role="status">{{ pushTestMessage }}</p>
 
       <div v-if="settings.notificationsEnabled" class="notify-list">
         <label v-for="key in NOTIFY_KEYS" :key="key" class="notify-row">
@@ -311,7 +353,7 @@ const firstPageOptions = [
       </div>
 
       <p class="notify-note">
-        Ayarlar, şehir, kaza sayaçları, hatimler ve görsel düzeni tarayıcıda
+        Ayarlar, şehir, kaza sayaçları, hatimler, kaydedilen ayetler ve görsel düzeni tarayıcıda
         duruyor; tarayıcı verisi temizlenirse geri getirecek bir sunucu yok.
         Yedek dosyası bu cihazda üretilir, hiçbir yere gönderilmez.
       </p>
@@ -470,6 +512,12 @@ const firstPageOptions = [
 }
 
 /* ── Vakit hatırlatması ── */
+.notify-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
 .notify-note {
   font-size: 0.72rem;
   line-height: 1.5;

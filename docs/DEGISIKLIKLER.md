@@ -29,6 +29,72 @@ Her madde dört satırdan ibarettir. Uzun anlatım buraya değil
 
 ---
 
+### 2026-11-24 — Meal menüsünde tutarlı seçim satırları
+**Ne:** Arapça kapalı ve Meal kapalı satırları listedeki meallerle aynı onay işaretini, satır vurgusunu ve klavye odağını kullanıyor.
+**Dosyalar:** src/components/quran/MealSheet.vue
+**Neden:** Arapça kapalı bir onay kutusu, Meal kapalı ayrı bir düğme olarak görünüyordu. 360 px Chromium testinde iki yeni düğme de 358 × 34,6 px ölçüldü ve başlıkları aynı hizada başladı.
+**Etkisi:** Seçim durumu klavyeyle değiştirilebilir ve `aria-pressed` üzerinden okunur.
+
+### 2026-11-24 — Yalnızca meal veya Arapça okuma
+**Ne:** Esnek ve Ayet ayet görünümlerinde Meal kapalı seçimi artık Arapça metni getiriyor. Arapça kapalı seçeneği mealleri tek başına gösteriyor ve hatme özel ayar olarak da saklanıyor.
+**Dosyalar:** functions/api/kuran/[[path]].js, vite.config.js, src/pages/QuranPage.vue, SettingsPage.vue, src/components/quran/MealSheet.vue, MushafView.vue, PlayerSheet.vue, HatimForm.vue, src/data/hatimReader.js, src/stores/settings.js, src/content/yenilikler.json, CLAUDE.md
+**Neden:** Boş meal listesi HTTP 400 dönüyordu. Yerel vekilde aynı önbellek yanıtını ikinci kez okumak da hata veriyordu. 360 px Chromium testinde iki görünüm, yenileme sonrası tercih ve son meal kapatılınca Arapçanın dönmesi doğrulandı.
+**Etkisi:** Ayet ve aralık isteklerindeki boş meal listesi artık geçerli. Ardışık geliştirme istekleri birbirinden bağımsız yanıt alıyor.
+
+### 2026-11-24 — Yenilikler sayfasının dili
+**Ne:** Yenilikler sayfasındaki 32 metin, okurun Kur’an, hatim, namaz ve takvimle ilgili günlük kullanımına göre yeniden yazıldı. Bugünkü dört başlığa hatim tercihleri, vakit bildirimi, kaydedilen ayetlerin yedeği ve masaüstü takvimindeki resmî tatiller işlendi.
+**Dosyalar:** src/content/yenilikler.json, brand/social/METIN.md
+**Neden:** Sayfada hitap biçimi değişiyor ve okurun kullanmadığı teknik ayrıntılar yer kaplıyordu.
+**Etkisi:** Yazı kimlikleri ve tarihleri korundu. Bundan sonraki yenilik metinleri için hitap ve kapsam kuralı üslup belgesine eklendi.
+
+### 2026-11-24 — Hatim başına okuma tercihleri
+**Ne:** Yeni hatimde Mushaf hatmi, Meal okuma veya Serbest okuma ayarları seçilebiliyor. Hatim adı ve ayarları karttan ya da okuyucudan düzenlenebiliyor. Okuma sırasında yapılan görünüm, meal, kârî, takip ve tam ekran değişiklikleri o hatme kaydediliyor.
+**Dosyalar:** src/components/quran/HatimForm.vue, HatimPanel.vue, MushafView.vue, ListenBar.vue, PlayerSheet.vue, src/data/hatimReader.js, src/stores/hatim.js, settings.js, recitation.js, src/pages/QuranPage.vue, src/App.vue, src/content/yenilikler.json, CLAUDE.md, ROADMAP.md
+**Neden:** Bir hatimdeki meal ve görünüm değişikliği genel ayarları etkiliyordu. 360 px Chromium testinde meal listesi [11] → [11, 14] → [14] olarak değişti ve yenilemeden sonra [14] kaldı. İki hatim birbirinin ayarını ve ilerlemesini değiştirmedi.
+**Etkisi:** Eski hatimler mevcut Serbest okuma tercihleriyle bir kez tamamlanır. Hatim tercihleri, mevcut hatim yedeğinin içinde taşınır.
+
+### 2026-11-24 — Bildirim düğmesinin satırı
+**Ne:** Arka plan bildirimi düğmesi Açık/Kapalı seçeneğinin altında ayrı satıra alındı. İzin gerekiyorsa Açık seçeneğinin ne yapacağı açıklanıyor.
+**Dosyalar:** src/pages/SettingsPage.vue
+**Neden:** İki kontrol aynı satıra diziliyordu. Canlıda 360 ve 1280 px genişlikte yeni satır aralığı 12 px ölçüldü.
+**Etkisi:** Pages dağıtımı dcb5d774.
+
+### 2026-11-24 — Arka plan bildirimi seçeneği görünür
+**Ne:** Arka plan bildirimi düğmesi Vakit Hatırlatması bölümünde baştan görünür. Ayar kapalıysa, izin eksikse veya tarayıcı hazır değilse nedeni altında gösterilir.
+**Dosyalar:** src/pages/SettingsPage.vue, src/stores/vakitPush.js, CLAUDE.md
+**Neden:** Düğme daha önce hatırlatma açılıp service worker hazır olunca görünüyordu. Kullanıcı ayarı açıkça bulabilmeli.
+**Etkisi:** Bildirim hizmeti geçici olarak erişilemezse aynı düğmeden hazırlık yeniden başlatılır.
+
+### 2026-11-24 — Kapalı web uygulamasında vakit hatırlatması
+**Ne:** Ayarlar’dan isteğe bağlı Web Push etkinleştirilebiliyor. Şehir ve süre değişiklikleri sunucuya eşitleniyor. Test bildirimi ve aboneliği kapatma akışı eklendi.
+**Dosyalar:** workers/vakit-push/, src/stores/vakitPush.js, src/composables/useVakitNotifications.js, src/pages/SettingsPage.vue, public/vakit-push-sw.js, vite.config.js, package.json, package-lock.json, src/data/privacy.js, src/content/yenilikler.json, CLAUDE.md, ROADMAP.md
+**Neden:** Açık sayfa zamanlayıcısı kapalı PWA’yı uyandıramıyor. Chromium taklidinde şehir, süre, çevrimdışı değişiklik ve iptal akışları doğrulandı. SQLite senaryosunda gün değişimi, gece yarısı öncesine düşen imsak ve eşzamanlı cron çağrısında tek gönderim doğrulandı. Canlı cron İstanbul kaydının bir sonraki yoklamasını D1’e yazdı.
+**Etkisi:** Cloudflare Worker ve D1 canlıda. Pages dağıtımı 856d3f35; mevcut canlı sürüme yalnızca Web Push değişiklikleri uygulandı. Fiziksel Android ve iPhone teslimat testi açık.
+
+### 2026-11-24 — Takvimde sabit miladi tatiller
+**Ne:** Türkiye’nin dinî olmayan sabit resmî tatilleri ay ızgarasında soluk mavi kareyle gösteriliyor. Seçili günün altında tatil adı, 28 Ekim’de ise başlangıç saati yazıyor.
+**Dosyalar:** src/data/publicHolidays.js, src/components/calendar/HijriMonthCalendar.vue, src/content/yenilikler.json, CLAUDE.md
+**Neden:** Resmî tatili dinî gün ve hatim işaretlerinden ayırmak için. 360 px Chromium testinde işaret 5 × 5 px, ızgara 320 px ve taşmasız. 23 Nisan 2023 hücresinde Ramazan Bayramı noktası ve resmî tatil karesi birlikte görüldü.
+**Etkisi:** Tatil işareti miladi tarihe bağlı. Verinin kaynağı 2429 sayılı Kanun’un 1. ve 2. maddeleri.
+
+### 2026-11-24 — Kopyalanan ayet metni
+**Ne:** Ayeti kopyala, panoya yalnızca ayetin Arapça metnini yazar.
+**Dosyalar:** src/components/quran/VerseActions.vue, src/content/yenilikler.json, CLAUDE.md
+**Neden:** Arapça metni tek başına yapıştırabilmek için.
+**Etkisi:** Okuma ve kayıt listesi aynı kopyalama düğmesini kullanır. Paylaşımda meal, künye ve bağlantı da yer alır.
+
+### 2026-11-24 — Ayet menüsü düğmenin yanında açılıyor
+**Ne:** Üç nokta ayetin üzerine gelince, dokununca veya klavyeyle odaklanınca belirir. İkonlu işlem paneli ayetin yanında açılır. Kaydedilen ayetler yer imiyle işaretlenir ve kayıt listesinde aynı menü bulunur.
+**Dosyalar:** src/components/quran/MushafView.vue, src/components/quran/VerseActions.vue, src/components/quran/SavedVerses.vue, src/content/yenilikler.json, CLAUDE.md
+**Neden:** Üç nokta her satırda sürekli görünüyordu. 360 px dokunmatik Chromium testinde yalnızca dokunulan satırın düğmesi göründü. Açılan panel 184 × 118 px ölçüldü.
+**Etkisi:** Yerel popover ve eski tarayıcı yolu aynı konum hesabını kullanır. Kayıt listesinden kopyalama, paylaşma ve kaydı kaldırma yapılabilir.
+
+### 2026-11-24 — Ayet işlemleri ve Kaydedilen Ayetler
+**Ne:** Ayet ayet görünümünde her ayetin yanındaki üç nokta menüsü kopyalama, paylaşma ve kaydetme seçeneklerini açıyor. Kaydedilen Ayetler, Hatimlerim'den sonra gelen üçüncü sekmede açılıyor.
+**Dosyalar:** src/pages/QuranPage.vue, src/components/quran/MushafView.vue, src/components/quran/VerseActions.vue, src/components/quran/SavedVerses.vue, src/stores/savedVerses.js, src/utils/backup.js, src/pages/SettingsPage.vue, src/content/yenilikler.json, CLAUDE.md, ROADMAP.md
+**Neden:** Gruplu meal aynı blokta dururken tek bir ayet üzerinde işlem yapılabilmesi gerekiyor. 360 px Chromium testinde yedi ayet için yedi menü ve 2–4 aralığı için tek meal satırı görüldü. Sekme şeridi 320 px genişlikte taşmadı.
+**Etkisi:** Kayıtlar tarayıcıda tutulur ve yedeğe dahil edilir. Liste yenilendiğinde ayetler için ağ isteği yapılmaz. Ayet bağlantısı serbest okumada ilgili ayeti açar.
+
 ### 2026-11-23 — Oynatıcı popup'ında font, boyut ve tecvit ayarları
 **Ne:** Oynatıcı ekranında (oynatıcıda "Oynatıcıyı aç" düğmesi) gösterilen okunan ayet artık okuma sayfasındaki ayarları kullanıyor: seçilen Arapça yazı tipi, yazı boyutu (70–180%) ve tecvit işaretlemesi. Ayrıca iki tecvit kuralı (`idgham_ghunnah`, `qalaqah`) artık renkleniyor — önce hiç renklenmiyordu.
 **Dosyalar:** src/components/quran/PlayerSheet.vue, src/utils/qpc.js, src/assets/css/tajweed.css (yeni), src/main.js, src/components/quran/MushafView.vue, CLAUDE.md

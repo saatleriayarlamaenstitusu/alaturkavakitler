@@ -73,9 +73,8 @@
   - [x] Vakit başına "Kapalı" ve "Tam vakitte" seçenekleri (-1 / 0)
   - [x] Tarayıcı izni ayarlardan istenir; izin verilmediyse anahtar açılmaz
   - [x] Masaüstü (GNOME) uygulamasında aynı ayar — `notify-offsets` GSettings anahtarı
-  - [ ] Gerçek push (pencere kapalıyken web tarafında bildirim) — sunucu + abonelik gerekir;
-        şu an tarayıcı hatırlatması yalnızca uygulama açıkken çalışıyor, masaüstü uygulaması
-        ise pencere kapalıyken de bildiriyor
+  - [x] Web Push aboneliği, Cloudflare Worker + D1 zamanlayıcı, şehir ve süre eşitleme.
+  - [ ] Kapalı PWA’da Android ve iPhone gerçek cihaz testi.
 - [x] İlk açılış sayfası ayarı
 - [x] Tüm ayarlar localStorage'a
 
@@ -832,6 +831,8 @@ uyan bir dizim elde edilir (QPC'den farklı olarak harf biçimi de Türk hattı)
   görselleştirmesi bize ait olacak.
   - [ ] Yeni hatim başlatma: niyet metni, başlangıç tarihi, hedef (isteğe bağlı
         bitiş tarihi ya da günlük sayfa/cüz hedefi)
+  - [x] Hatim adı ve okuma ayarlarını düzenleme; Mushaf hatmi, Meal okuma ve
+        Serbest okuma ayarlarıyla başlama. Okuyucu tercihleri hatim başına saklanır.
   - [ ] Birden fazla hatim aynı anda sürebilir; biri "etkin" olarak işaretlenir
   - [ ] İlerleme girişi: okunan sayfa/cüz aralığı işaretlenir (son okunan yerden
         devam eden tek dokunuşluk bir "buraya kadar okudum" yolu olmalı)
@@ -922,13 +923,12 @@ Uygulama mobile-first; geniş ekranlarda içerik gereksiz yayılıyor.
       yıllar Umm al-Qura'dan tamamlanıyor. Kütüphaneye taşınırken hedef,
       tabloyu her yıl elle güncellemek yerine Diyanet'in kullandığı hesabî
       ölçütü (kavuşum + görünürlük) doğrudan hesaplamak olmalı.
-- [ ] **Ayet notları ve kaydedilen ayetler** — bir ayete not düşmek ve
-      ayeti bir listeye kaydetmek (yer imi). Veri tarayıcıda durur, yani
-      yedeğe de girmesi gerekir (`src/utils/backup.js` anahtar listesi).
-      Arayüz: ayete uzun basmak bir eylem sayfası açar (dinle / kaydet /
-      not). **Mobil uygulama yapılırsa** burası onunla birlikte
-      düşünülmeli: not alıp ona geri dönmek bildirim ve çevrimdışı
-      senkron isteyen bir iş, web tarafında yarım kalır.
+- [x] **Kaydedilen ayetler** — Ayet ayet görünümünde üç nokta menüsüyle
+      kaydetme, kopyalama ve paylaşma. Kayıtlar üçüncü sekmede açılır
+      ve tarayıcı yedeğine girer.
+- [ ] **Ayet notları** — bir ayete not düşme ve sonra o nota dönme.
+      Mobil uygulama yapılırsa bildirim ve çevrimdışı senkronla birlikte
+      düşünülmeli.
 - [ ] Hicri tablo kapsamı 2036'da bitiyor; Diyanet yeni yılları yayımladıkça
       `src/data/hijriMonths.js` içindeki satırları doğrula.
 

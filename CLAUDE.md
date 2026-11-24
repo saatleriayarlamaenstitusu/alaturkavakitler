@@ -668,8 +668,19 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
 
 - Rota `/kuran`, alt gezinmenin BEŞİNCİ birincil girişi (ikon
   `public/Icons/Nav/quran.svg`, diğer dördüyle aynı dil: beyaz dolgu,
-  kontur yok, CSS filtresiyle boyanıyor). Sayfa iki sekme taşıyor:
-  **Oku** ve **Hatim**; **Dinle** üçüncü olarak gelecek.
+  kontur yok, CSS filtresiyle boyanıyor). Üstte **Serbest okuma**,
+  **Hatimlerim** ve **Kaydedilen Ayetler** sekmeleri bulunur.
+- **Ayet ayet** görünümünde üç nokta imleç ayetin üzerine geldiğinde,
+  dokunmatik ekranda ayete dokunulduğunda veya düğme klavyeyle odaklandığında
+  görünür. İkonlu işlem paneli düğmenin yanında açılır ve ekranın altında
+  yer kalmazsa üste geçer. Kaydedilen ayetler yer imiyle işaretlenir; kayıt
+  listesindeki aynı menü kopyalama, paylaşma ve kaydı kaldırmayı sunar.
+  Kopyalama yalnızca seçilen ayetin Arapça metnini panoya yazar. Paylaşım
+  ayetin Arapça metnini, açık meallerini, künyesini ve serbest okumadaki
+  `?a=sure:ayet` bağlantısını içerir. Tarayıcı paylaşımı kullanılamadığında metin ve bağlantı
+  panoya kopyalanır. **Kaydedilen Ayetler** (`?b=kaydedilenler`), ayet ve
+  meal metinlerini tarayıcıdaki kayıttan okur. Böylece çevrimdışıyken
+  erişilebilir ve meal seçimi değiştiğinde kayıtlı metin korunur.
 - **Sayfa birimi mushaf sayfasıdır** (1–604). Dizin `src/data/mushafPages.js`:
   her satır `[sure, ilk ayet, ayet sayısı]`. `scripts/export-mushaf-pages.js`
   üretir ve üretirken 604 sayfanın hepsinde "ayetler gerçekten ardışık mı"
@@ -749,6 +760,11 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   Bilinmeyen bir `quranView` değeri mushafa düşer.
   Değişen yalnızca dizim: sayfa birimi, hatim işaretlemesi, kaydırma ve
   adres çubuğu üç görünümde de aynı.
+- **Esnek ve Ayet ayet görünümlerinde** meal menüsünden Arapça metin
+  gizlenebilir. Açık meal yoksa bu seçim Diyanet İşleri’ni açar. Son
+  meal kapatıldığında Arapça yeniden gösterilir. Tercih, etkin okuyucu
+  profilinde tutulur. Ayet ve aralık uçlarında açıkça boş `authors=`
+  Arapça ve okunuş isteğidir. Bilinmeyen mütercim kimliği hatası sürer.
 - **Dizim verisi DEPODADIR, ağdan gelmez** (`src/data/mushaf/juz-NN.json`,
   `scripts/export-mushaf-lines.js`). Değişmeyen bir tablo için her sayfa
   açılışında ağa çıkmak tek bir sağlayıcıya bağlı kalmak ve çevrimdışı
@@ -957,6 +973,15 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   sayfa okundu sayılır. Önce tek okuyucu vardı ve "Okudum" düğmesi
   görünmeyen bir "etkin hatme" yazıyordu — hangi hatmi okuduğun ekranda
   hiçbir yerde yazmıyordu, ilk kullanışta sorulan soru bu oldu.
+- **Hatim adı ve okuyucu tercihleri hatim kaydındadır.** `hatim.reader`
+  tam ekranı, görünümü, mushaf hattını, Arapça yazı tipi ve boyutunu,
+  tecviti, meal listesini ve yazı tipini, kârîyi ve takibi taşır.
+  Eski hatimler bir kez Serbest okuma tercihlerinden doldurulur.
+  `HatimForm` yeni hatme hazır okuma ayarı seçtirir ve karttan ya da
+  okuyucudaki hatim adına dokunarak düzenlenir. Okuyucu doğrudan hatim
+  profilini kullanır çünkü genel ayarlara yazıp sonra geri almak
+  serbest okumaya ve eşzamanlı ayet isteklerine yanlış değer sızdırabilir.
+  Bir hatimden diğerine giriş, önceki sayfayı yeni hatme okundu yazmaz.
 - **İşaretleme sayfa çevrilince olur**, düğmeyle değil: sayfayı çevirmek
   zaten onu bitirdiğini söylüyor, araya bir iş daha koymaya gerek yok.
   Ayrılınan sayfa işaretlenir (iki yönde de), yanlışlıkla sayılan sayfa
@@ -1281,9 +1306,9 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
 
 - Uygulamanın bütün hafızası tarayıcıdadır ve geri getirecek bir sunucu
   yoktur: tarayıcı verisini temizlemek ayarları, şehri, kaza sayaçlarını,
-  hatimleri ve görsel düzenini siler. Bu yüzden dışa aktarma bir özellik
+  hatimleri, kaydedilen ayetleri ve görsel düzenini siler. Bu yüzden dışa aktarma bir özellik
   değil, zorunluluk (`src/utils/backup.js`, ayarlarda "Yedek" bloğu).
-- Yedeğe giren: `city`, `kazaCounts`, `hatimler`, `shareEditor` ve bütün
+- Yedeğe giren: `city`, `kazaCounts`, `hatimler`, `kayitliAyetler`, `shareEditor` ve bütün
   `settings_*`. **Girmeyen**: `vakitler`, `kuranVerses`, `vakitNotifyFired`
   — üçü de yeniden üretilebilir, yedeği şişirmekten başka işe yaramazlar.
 - Dosya tarayıcıda üretilir (`Blob` + `URL.createObjectURL`), hiçbir yere
@@ -1316,11 +1341,29 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   Android Chrome `new Notification()` çağrısını reddediyor.
 - İzin verilmediyse anahtar AÇILMAZ — açık görünüp hiç bildirim gelmemesi,
   kapalı durmasından daha yanıltıcı.
-- **Sınır:** web tarafı yalnızca uygulama açıkken bildirir (sunucu ve
-  abonelik gerektiren gerçek push yok). Pencere kapalıyken bildiren
-  masaüstü uygulamasıdır; oradaki ayar aynı anahtarları taşır
-  (`notify-offsets`, `a{si}`) ve bildirim store'un saniyelik tikinden
-  çıkar — ayrı bir zamanlayıcı yok.
+- **Web Push** isteğe bağlıdır. Desteklenen cihazlarda Ayarlar’daki
+  “Uygulama kapalıyken de bildir” düğmesi tarayıcı aboneliği oluşturur.
+  Düğme kapalı ayarda da görünür ve neden kullanılamadığı altında yazılır.
+  `src/stores/vakitPush.js` il ve süre değişikliklerini sırayla gönderir.
+  Çevrimdışı değişiklik bağlantı gelince yeniden gönderilir. Push aboneliği
+  olan cihazda sekme zamanlayıcısı susar, böylece aynı uyarı iki kez üretilmez.
+- **Dağıtım:** `workers/vakit-push/wrangler.jsonc`, yalnızca
+  `alaturkavakitler.com/api/vakit-push/*` yolunu ayrı Cloudflare Worker’a
+  yönlendirir. Worker 1 dakikalık UTC cron tetikleyicisi ve `DB` D1 bağını
+  kullanır. VAPID anahtar çifti Worker secrets olarak tutulur. Özel anahtar
+  repoya ve Pages derlemesine girmez. Yeniden dağıtırken mevcut anahtar
+  çiftini koru, aksi halde tarayıcı abonelikleri geçersiz olur.
+- **Zamanlama:** D1’de abonelik, il, süre ayarları ve bir sonraki yoklama
+  saklanır. Worker zamanı gelen kayıtları dizinden alır, güncel miladi
+  tabloyu okur ve aynı hatırlatmayı iki cron çağrısının göndermesini
+  koşullu D1 güncellemesiyle önler. İl/süre güncellemesi eski zamanlamayı
+  geçersiz kılar. Bildirim aracı 404/410 döndürürse kayıt silinir.
+  Beş dakikayı geçen uyarılar atlanır. D1 şeması
+  `workers/vakit-push/migrations` altındadır.
+- **Service worker:** Workbox üretimi ve önbellekler korunur.
+  `public/vakit-push-sw.js` üretilen service worker’a `importScripts`
+  ile yüklenir ve gelen push’u gösterir. Geliştirme sunucusu service
+  worker’ı kaldırdığı için akış üretim derlemesinde denenir.
 
 ## Hicri Takvim
 
@@ -1339,6 +1382,11 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   akşamdan sonra bir gün ileri alınır. Tek kaynak `useHijriToday()` composable'ı;
   tarih gösteren her yer oradan beslenir (`shareSnapshot` hariç — o anlık
   görüntü aldığı için `aksamCutoff`'u doğrudan çağırır).
+- **Türkiye'nin sabit miladi tatilleri** (`src/data/publicHolidays.js`)
+  ay ızgarasındaki miladi tarihe göre işaretlenir. Akşam ezanıyla hicri
+  gün değişince tatilin miladi günü değişmez. Dinî gün noktası ve resmî
+  tatil karesi aynı hücrede birlikte gösterilebilir. 28 Ekim için seçili
+  gün etiketinde tatilin saat 13.00’te başladığı yazılır.
 - **Hicri ay künyesi ve TDV bağlantısı**: Takvim sayfasında (`HijriMonthCalendar.vue`)
   hem seçili ay başlığının hem de ay gezinti şeridinin yanındaki bilgi butonuyla
   `HijriMonthInfoSheet.vue` açılır. `src/data/hijriMonthInfo.js` dosyasından

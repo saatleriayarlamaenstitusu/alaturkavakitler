@@ -18,7 +18,7 @@
  */
 
 /** Son esaslı güncelleme — metin değiştikçe elle güncellenir. */
-export const PRIVACY_UPDATED = '21 Kasım 2026'
+export const PRIVACY_UPDATED = '24 Kasım 2026'
 
 const CONTACT = {
   h: 'İletişim',
@@ -43,7 +43,7 @@ export const PRIVACY = {
     lead: 'Alaturka Vakitler web uygulaması (alaturkavakitler.com)',
     other: { label: 'Yeni Sekme eklentisinin politikası', path: '/gizlilik/yeni-sekme' },
     intro: [
-      'Kısa hâli: hesap yok, giriş yok, reklam yok. Verdiğin hiçbir bilgi bize gelmiyor — çünkü gelecek bir yer yok. Ayarların, şehrin, kaza sayaçların, hatimlerin ve görsel düzenin tarayıcının kendi deposunda (localStorage) duruyor.',
+      'Hesap, giriş ve reklam yok. Ayarların, şehrin, kaza sayaçların, hatimlerin ve görsel düzenin tarayıcıda durur. Arka plan bildirimlerini açarsan, bildirim aboneliği ve hatırlatma ayarları ayrıca sunucuda tutulur.',
       'Uzun hâli aşağıda: hangi isteğin nereye gittiği, ne içerdiği ve neyin cihazdan hiç çıkmadığı.',
     ],
     sections: [
@@ -51,8 +51,8 @@ export const PRIVACY = {
         h: 'Cihazında kalanlar',
         p: ['Şunlar yalnızca tarayıcında saklanır ve hiçbir sunucuya gönderilmez:'],
         list: [
-          'Ayarlar: saat tercihi, tema ve renk stili, meal seçimi, yazı tipi, bildirim süreleri.',
-          'Seçtiğin şehir ve indirilen namaz vakti tablosu.',
+          'Ayarlar: saat tercihi, tema ve renk stili, meal seçimi ve yazı tipi.',
+          'İndirilen namaz vakti tablosu. Şehir ve hatırlatma sürelerinin bildirim için nasıl kullanıldığı aşağıda açıklanıyor.',
           'Kaza sayaçların, hatim kayıtların ve okuduğun sayfalar.',
           'Görsel oluşturucudaki düzenin ve yüklediğin fotoğraflar.',
           'Yedek dosyası: tarayıcıda üretilir, indirdiğin yere iner, hiçbir yere gönderilmez.',
@@ -82,7 +82,8 @@ export const PRIVACY = {
       {
         h: 'Bildirimler',
         p: [
-          'Vakit hatırlatmaları tamamen cihazda üretilir. Push sunucusu, abonelik ve bildirim kaydı yoktur; bu yüzden uygulama açık değilken web tarafında bildirim gelmez.',
+          'Arka plan bildirimini açarsan Cloudflare’de tarayıcının oluşturduğu bildirim adresi ve şifreleme anahtarları, rastgele cihaz kimliği, seçili il ve vakit başına hatırlatma süresi saklanır. Bu bilgiler hatırlatmayı zamanlamak ve tarayıcının bildirim hizmetine göndermek için kullanılır. Konum koordinatların gönderilmez.',
+          'Ayarlar’dan kapattığında tarayıcı aboneliği iptal edilir ve sunucu kaydı bağlantı kurulduğunda silinir. Geçersiz abonelikler gönderim sırasında, bir yıl boyunca yenilenmeyen kayıtlar ise otomatik olarak kaldırılır.',
         ],
       },
       {

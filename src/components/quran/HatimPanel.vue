@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useHatimStore } from '@/stores/hatim'
 import { PAGE_COUNT, juzOfPage, surahOfPage } from '@/utils/mushaf'
+import HatimForm from './HatimForm.vue'
 import HatimRing from './HatimRing.vue'
 import HatimCalendar from './HatimCalendar.vue'
 
@@ -21,21 +22,27 @@ import HatimCalendar from './HatimCalendar.vue'
 const emit = defineEmits(['read'])
 const hatim = useHatimStore()
 
-const niyet = ref('')
 const opening = ref(false)
+const editing = ref(null)
 /** Açık satır: başlangıçta en son okunan (etkin) hatim. */
 const open = ref(hatim.activeId)
 
-function create() {
-  const text = niyet.value.trim()
-  if (!text) return
-  const h = hatim.start(text)
-  niyet.value = ''
+function create({ niyet, reader }) {
+  const h = hatim.start(niyet, { reader })
   opening.value = false
   emit('read', h.id, 1)
 }
 
-const toggle = (id) => { open.value = open.value === id ? null : id }
+function save(id, draft) {
+  hatim.edit(id, draft)
+  editing.value = null
+}
+
+function toggle(id) {
+  editing.value = null
+  confirmId.value = null
+  open.value = open.value === id ? null : id
+}
 
 const undoneCount = (h) => Object.keys(h.undone ?? {}).length
 
@@ -83,23 +90,7 @@ const totals = computed(() => ({
 
     <section class="new">
       <button v-if="!opening" class="new-btn" @click="opening = true">+ Yeni hatim</button>
-      <form v-else class="new-form" @submit.prevent="create">
-        <label class="field">
-          <span class="field-label">Niyet</span>
-          <input
-            v-model="niyet"
-            class="input"
-            type="text"
-            maxlength="80"
-            placeholder="Kimin için, neye niyetle"
-            autofocus
-          />
-        </label>
-        <div class="form-actions">
-          <button type="submit" class="primary" :disabled="!niyet.trim()">Başlat</button>
-          <button type="button" class="ghost" @click="opening = false; niyet = ''">Vazgeç</button>
-        </div>
-      </form>
+      <HatimForm v-else @submit="create" @cancel="opening = false" />
     </section>
 
     <section v-if="hatim.list.length" class="list">
@@ -134,15 +125,24 @@ const totals = computed(() => ({
           </div>
 
           <div v-if="open === h.id" class="card-body">
-            <HatimCalendar :by-day="hatim.byDay(h)" :undone-by-day="hatim.undoneByDay(h)" />
+            <HatimForm
+              v-if="editing === h.id"
+              :hatim="h"
+              @submit="save(h.id, $event)"
+              @cancel="editing = null"
+            />
+            <template v-else>
+              <HatimCalendar :by-day="hatim.byDay(h)" :undone-by-day="hatim.undoneByDay(h)" />
 
-            <button class="resume" @click="emit('read', h.id, hatim.nextPage(h))">
-              {{ hatim.readCount(h) ? 'Kaldığın yerden oku' : 'Okumaya başla' }}
-              <span class="resume-page">
-                s. {{ hatim.nextPage(h) }} · {{ surahOfPage(hatim.nextPage(h))?.name }}
-                · {{ juzOfPage(hatim.nextPage(h)) }}. cüz
-              </span>
-            </button>
+              <button class="resume" @click="emit('read', h.id, hatim.nextPage(h))">
+                {{ hatim.readCount(h) ? 'Kaldığın yerden oku' : 'Okumaya başla' }}
+                <span class="resume-page">
+                  s. {{ hatim.nextPage(h) }} · {{ surahOfPage(hatim.nextPage(h))?.name }}
+                  · {{ juzOfPage(hatim.nextPage(h)) }}. cüz
+                </span>
+              </button>
+              <button type="button" class="ghost edit" @click="editing = h.id">Hatmi düzenle</button>
+            </template>
           </div>
         </li>
       </ul>
@@ -191,7 +191,7 @@ const totals = computed(() => ({
   color: var(--text-muted);
 }
 
-.new-btn, .primary, .ghost {
+.new-btn, .ghost {
   font: inherit;
   font-size: 0.8rem;
   padding: 0.5rem 0.9rem;
@@ -204,38 +204,7 @@ const totals = computed(() => ({
 
 .new-btn:hover, .ghost:hover { color: var(--text); border-color: var(--text); }
 
-.primary {
-  background: var(--accent-ui);
-  border-color: var(--accent-ui);
-  color: #fff;
-}
-
-.primary:disabled { opacity: 0.4; cursor: default; }
-
-.new-form { display: flex; flex-direction: column; gap: 0.75rem; }
-.field { display: flex; flex-direction: column; gap: 0.35rem; }
-
-.field-label {
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.input {
-  font: inherit;
-  font-size: 0.95rem;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text);
-  width: 100%;
-  max-width: 26rem;
-}
-
-.input:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 1px; }
-.form-actions { display: flex; gap: 0.5rem; }
+.edit { align-self: flex-start; margin-top: 0.45rem; }
 
 /* Satırlar birbirine çok yakındı ve hangi niyetin hangi tarihe ait
    olduğu karışıyordu: kartlar arasına boşluk kondu ve ayırıcı çizgi

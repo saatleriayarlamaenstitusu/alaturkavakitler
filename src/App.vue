@@ -2,6 +2,7 @@
 import { computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import { useHatimStore } from '@/stores/hatim'
 import { useSettingsStore } from '@/stores/settings'
 import { useVakitNotifications } from '@/composables/useVakitNotifications'
 import { useWakeLock } from '@/composables/useWakeLock'
@@ -35,7 +36,12 @@ watch(() => settings.quranReciter, (id) => player.setReciter(id), { immediate: t
 
 // Takip açıkken ve kıraat sürerken ekran kararmasın: ayet kendiliğinden
 // kayıyor, ekrana bakılıyor ama dokunulmuyor.
-useWakeLock(computed(() => player.playing.value && settings.quranAutoScroll))
+const hatim = useHatimStore()
+useWakeLock(computed(() => {
+  if (!player.playing.value) return false
+  const reader = hatim.list.find((h) => h.id === player.playbackHatimId.value)?.reader
+  return reader?.quranAutoScroll ?? settings.quranAutoScroll
+}))
 
 let systemMediaQuery = null
 

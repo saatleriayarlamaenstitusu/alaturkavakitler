@@ -1,12 +1,12 @@
 <script setup>
 import { computed } from 'vue'
 import { surahOfPage, versesOfPage } from '@/utils/mushaf'
-import { useSettingsStore } from '@/stores/settings'
+import { reciterById } from '@/data/reciters'
 import { surahById } from '@/data/kuranMeta'
 import { hasTimings } from '@/utils/recitation'
 import {
   playing, loading, error, reciter, curSurah, curVerse,
-  reciterId, playVerse, resume, pause, stop,
+  reciterId, playbackHatimId, resume, pause, stop,
 } from '@/stores/recitation'
 
 /**
@@ -25,6 +25,8 @@ import {
  */
 const props = defineProps({
   page: { type: Number, required: true },
+  reader: { type: Object, required: true },
+  hatimId: { type: String, default: null },
   /**
    * Sayfada işaretli ayet (`{ surah, verse }`) — gitme kutusundan,
    * seçiciden ya da hızlı erişimden gelen hedef. Kıraatin nereden
@@ -34,9 +36,7 @@ const props = defineProps({
    */
   start: { type: Object, default: null },
 })
-const emit = defineEmits(['pick-reciter', 'expand'])
-
-const settings = useSettingsStore()
+const emit = defineEmits(['pick-reciter', 'expand', 'play', 'update:reader'])
 
 /**
  * Nereden başlanacak: işaretli ayet varsa oradan, yoksa sayfanın
@@ -50,15 +50,18 @@ const target = computed(() => {
 })
 
 /** Şeritte yazan sure: çalan varsa o, yoksa başlanacak olan. */
-const shownSurah = computed(() => curSurah.value || target.value.surah)
+const shownSurah = computed(() => current.value ? curSurah.value : target.value.surah)
 const surahName = computed(() => surahById(shownSurah.value)?.name ?? '')
-const follows = computed(() => hasTimings(reciterId.value))
+const current = computed(() => Boolean(curVerse.value) && playbackHatimId.value === props.hatimId)
+const isPlaying = computed(() => current.value && playing.value)
+const shownReciter = computed(() => current.value ? reciter.value : reciterById(props.reader.quranReciter))
+const follows = computed(() => hasTimings(shownReciter.value?.id))
 
 function onPlay() {
-  if (playing.value) return pause()
+  if (isPlaying.value) return pause()
   // Aynı surede duraklatılmışsa kaldığı yerden; değilse hedeften.
-  if (curSurah.value === target.value.surah && curVerse.value) return resume()
-  playVerse(target.value.surah, target.value.verse)
+  if (current.value && reciterId.value === props.reader.quranReciter && curSurah.value === target.value.surah) return resume()
+  emit('play', target.value)
 }
 </script>
 
@@ -67,15 +70,15 @@ function onPlay() {
     <button
       class="play"
       :disabled="loading"
-      :aria-label="playing ? 'Duraklat' : 'Dinle'"
+      :aria-label="isPlaying ? 'Duraklat' : 'Dinle'"
       @click="onPlay"
     >
-      {{ playing ? '❙❙' : '▶' }}
+      {{ isPlaying ? '❙❙' : '▶' }}
     </button>
 
     <div class="info">
       <button class="who" @click="emit('pick-reciter')">
-        {{ reciter?.name ?? 'Kârî seç' }}
+        {{ shownReciter?.name ?? 'Kârî seç' }}
         <span class="caret">▾</span>
       </button>
       <span class="what">
@@ -90,10 +93,10 @@ function onPlay() {
          bir karar ve etkisi hemen aynı ekranda görülüyor. -->
     <button
       class="follow"
-      :class="{ on: settings.quranAutoScroll }"
-      :aria-pressed="settings.quranAutoScroll"
+      :class="{ on: reader.quranAutoScroll }"
+      :aria-pressed="reader.quranAutoScroll"
       title="Okunan ayete kaydır"
-      @click="settings.quranAutoScroll = !settings.quranAutoScroll"
+      @click="emit('update:reader', 'quranAutoScroll', !reader.quranAutoScroll)"
     >
       <span class="follow-dot" aria-hidden="true" />
       Takip

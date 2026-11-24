@@ -7,11 +7,14 @@ import { useSeo, seoBreadcrumb } from '@/composables/useSeo'
 import { ensureFont } from '@/composables/useShareFonts'
 import { getFont } from '@/data/shareFonts'
 import { clampPage, juzOfPage, surahOfPage, pageOfSurah, pageOfJuz, pageOfVerse } from '@/utils/mushaf'
-import { AUTHORS } from '@/data/kuranMeta'
+import { AUTHORS, DEFAULT_AUTHOR } from '@/data/kuranMeta'
 import { mealFontById } from '@/data/mealFonts'
 import { QURAN_SHORTCUTS } from '@/data/quranShortcuts'
 import GoTo from '@/components/quran/GoTo.vue'
 import MushafView from '@/components/quran/MushafView.vue'
+import SavedVerses from '@/components/quran/SavedVerses.vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
+import HatimForm from '@/components/quran/HatimForm.vue'
 import HatimPanel from '@/components/quran/HatimPanel.vue'
 import PickerSheet from '@/components/quran/PickerSheet.vue'
 import MealSheet from '@/components/quran/MealSheet.vue'
@@ -23,10 +26,7 @@ import ReciterSheet from '@/components/quran/ReciterSheet.vue'
 import PlayerSheet from '@/components/quran/PlayerSheet.vue'
 
 /**
- * Kuran sayfası — iki sekme: Oku ve Hatim.
- *
- * Dinle üçüncü sekme olacak (kıraat kesitleri + ayet ayet kayıtlar);
- * sekme çubuğu o yüzden iki öğe için fazla gelse de şimdiden şerit.
+ * Kur’an sayfası — serbest okuma, hatimler ve kaydedilen ayetler.
  *
  * Sayfa numarası adres çubuğunda (`?s=12`): okuduğun yeri paylaşabilmek
  * ve geri tuşunun sayfalar arasında çalışması için.
@@ -40,7 +40,7 @@ useSeo({
 
 const route = useRoute()
 const router = useRouter()
-const settings = useSettingsStore()
+const globalSettings = useSettingsStore()
 const hatim = useHatimStore()
 
 /**
@@ -63,8 +63,13 @@ const TABS = [
     label: 'Hatimlerim',
     icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 3.2a6.8 6.8 0 1 1 0 13.6 6.8 6.8 0 0 1 0-13.6zm0 3.3a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
   },
+  {
+    id: 'kaydedilenler',
+    label: 'Kaydedilen Ayetler',
+    icon: 'M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z',
+  },
 ]
-const tab = ref(route.query.b === 'hatim' ? 'hatim' : 'oku')
+const tab = ref(TABS.find((t) => t.id === route.query.b)?.id ?? 'oku')
 
 /**
  * İki okuyucu var ve bu bilinçli.
@@ -78,9 +83,21 @@ const tab = ref(route.query.b === 'hatim' ? 'hatim' : 'oku')
 // Okunan hatim ADRESTE durur (`?h=`): sayfayı yenileyince okuduğun yerden
 // düşmemek için. Kayıtta olmayan bir kimlik gelirse yok sayılır.
 const known = (id) => (hatim.list.some((h) => h.id === id) ? id : null)
-const reading = ref(known(route.query.h ?? null))
+const reading = ref(tab.value === 'hatim' ? known(route.query.h ?? null) : null)
 
 const readingHatim = computed(() => hatim.list.find((h) => h.id === reading.value) ?? null)
+// Okuyucu doğrudan etkin profil üzerinde çalışır. Global değerlere geçici
+// kopyalama yapmak, değişikliklerin serbest okumaya sızmasına yol açardı.
+const settings = computed(() => readingHatim.value?.reader ?? globalSettings)
+const editHatim = ref(false)
+const updateReader = (key, value) => { settings.value[key] = value }
+
+function saveHatim(draft) {
+  const previousReciter = settings.value.quranReciter
+  hatim.edit(reading.value, draft)
+  if (previousReciter !== settings.value.quranReciter) selectReciter(settings.value.quranReciter)
+  editHatim.value = false
+}
 
 /**
  * Adresteki ayet (`?a=2:255`).
@@ -107,7 +124,7 @@ function parseAyah(q) {
  * Fâtiha'yı gösteriyordu.
  */
 const startAyah = parseAyah(route.query.a)
-  ?? (player.active.value
+  ?? (player.active.value && (!reading.value || player.playbackHatimId.value === reading.value)
     ? { surah: player.curSurah.value, verse: player.curVerse.value || 1 }
     : null)
 
@@ -119,9 +136,9 @@ const page = ref(clampPage(
   ?? (readingHatim.value ? hatim.nextPage(readingHatim.value) : 1)))
 
 // Arapça yazı tipi ayardan gelir; yalnızca o aile indirilir.
-const fontFamily = computed(() => getFont(settings.quranFont).family)
-onMounted(() => ensureFont(settings.quranFont))
-watch(() => settings.quranFont, (id) => ensureFont(id))
+const fontFamily = computed(() => getFont(settings.value.quranFont).family)
+onMounted(() => ensureFont(settings.value.quranFont))
+watch(() => settings.value.quranFont, (id) => ensureFont(id))
 
 
 const read = computed(() => hatim.isRead(readingHatim.value, page.value))
@@ -138,7 +155,11 @@ const read = computed(() => hatim.isRead(readingHatim.value, page.value))
  * yine okunmuş yapacaktı, ayrıca "okudum ama geri döndüm" diye bir
  * durumu ayırmak kullanıcının aklında olmayan bir ayrım.
  */
-watch(page, (now, before) => {
+watch([page, reading], ([now, id], [before, previousId]) => {
+  if (id !== previousId) {
+    skipMark.clear()
+    return
+  }
   if (tab.value !== 'hatim' || !readingHatim.value) return
   if (before == null || before === now) return
   // "Okunmadı" denmiş sayfanın BİR KERELİK muafiyeti var: o sayfadan
@@ -177,14 +198,17 @@ function toggle() {
 function openHatim(id, p) {
   reading.value = id
   hatim.setActive(id)
-  page.value = clampPage(p)
+  goTo(clampPage(p), null)
 }
 
-const closeReader = () => { reading.value = null }
+const closeReader = () => {
+  reading.value = null
+  editHatim.value = false
+}
 
 // Sekme değişince okuyucudan çıkılır: Oku serbest okumadır, hatim rozeti
 // ve "hatme dön" oraya sızmamalı.
-watch(tab, () => { reading.value = null })
+watch(tab, closeReader)
 
 /**
  * Seçili mealler.
@@ -192,7 +216,7 @@ watch(tab, () => { reading.value = null })
  * Seçim çoklu olduğu için tek bir ad yetmiyor: biri seçiliyse adı,
  * fazlası seçiliyse kaç tane. Hiç yoksa meal kapalı.
  */
-const mealPicked = computed(() => settings.quranMeals.map((id) => AUTHORS.find((a) => a.id === id)).filter(Boolean))
+const mealPicked = computed(() => settings.value.quranMeals.map((id) => AUTHORS.find((a) => a.id === id)).filter(Boolean))
 /**
  * Meal düğmesinin ipucu metni. Düğmede artık yazı yok; hangi mealin
  * açık olduğu burada ve alt sayfadaki listede duruyor.
@@ -206,14 +230,26 @@ const mealTitle = computed(() => {
 
 /** Satıra dokunmak meali açar/kapatır; sıra AUTHORS sırasında kalır. */
 function toggleMeal(id) {
-  const want = new Set(settings.quranMeals)
+  const want = new Set(settings.value.quranMeals)
   if (want.has(id)) want.delete(id)
   else want.add(id)
-  settings.quranMeals = AUTHORS.filter((a) => want.has(a.id)).map((a) => a.id)
+  if (!want.size) clearMeals()
+  else settings.value.quranMeals = AUTHORS.filter((a) => want.has(a.id)).map((a) => a.id)
+}
+
+function clearMeals() {
+  settings.value.quranMeals = []
+  // İki metin aynı anda gizlenirse okuma sayfası boş kalır.
+  settings.value.quranArabicHidden = false
+}
+
+function setArabicHidden(hidden) {
+  if (hidden && !mealPicked.value.length) settings.value.quranMeals = [DEFAULT_AUTHOR]
+  settings.value.quranArabicHidden = hidden
 }
 
 /** Meal yazı tipi: seçilen aile yalnızca gerektiğinde indirilir. */
-const mealFont = computed(() => mealFontById(settings.quranMealFont))
+const mealFont = computed(() => mealFontById(settings.value.quranMealFont))
 watch(() => mealFont.value.font, (f) => { if (f) ensureFont(f) }, { immediate: true })
 
 
@@ -235,14 +271,30 @@ const reciterPick = ref(false)
 /** Oynatıcı ekranı (sürgü + okunan ayet ve mealleri) açık mı. */
 const playerOpen = ref(false)
 
-/* Kârî bağlama App.vue'da: seçici Kur'an sayfasının dışından da
-   (mini oynatıcıdan) açılabiliyor. */
+// Mevcut kıraat gezinirken sürer. Başka bir hatimde dinlemeye
+// başlanınca o hatmin kârîsi ve sayfa takibi devreye girer.
+function selectReciter(id) {
+  settings.value.quranReciter = id
+  if (!player.active.value || player.playbackHatimId.value === reading.value) player.setReciter(id)
+}
+
+async function startPlayback(verse, toggle = false) {
+  const id = reading.value
+  const reciter = settings.value.quranReciter
+  const sameContext = player.playbackHatimId.value === id && player.reciterId.value === reciter
+  if (player.playbackHatimId.value !== id && player.playing.value) player.pause()
+  player.playbackHatimId.value = id
+  await player.setReciter(reciter)
+  if (reading.value !== id || player.reciterId.value !== reciter) return
+  if (toggle && sameContext) await player.requestVerse(verse.surah, verse.verse)
+  else await player.playVerse(verse.surah, verse.verse)
+}
 
 /**
  * Ayete çift dokunmak o ayeti seslendirir; çalıyorsa durdurur.
  * Karar oynatıcıya ait — hangi ayetin çaldığını yalnızca o biliyor.
  */
-const onAyahTap = (v) => player.requestVerse(v.surah, v.verse)
+const onAyahTap = (v) => startPlayback(v, true)
 
 /** Kulaklık düğmesi: şeridi açar; kapatırken kıraati de bırakır. */
 function toggleBar() {
@@ -258,6 +310,7 @@ function toggleBar() {
  * onu geri sürüklemesin diye.
  */
 watch([player.curSurah, player.curVerse], ([s, v]) => {
+  if (reading.value && player.playbackHatimId.value !== reading.value) return
   if (!s || !v) {
     if (!player.playing.value) focus.value = null
     return
@@ -275,6 +328,7 @@ watch([player.curSurah, player.curVerse], ([s, v]) => {
  * istek: ses Kehf 19'u okurken ekran 293. sayfada kalıyordu.
  */
 watch(player.seekSeq, () => {
+  if (reading.value && player.playbackHatimId.value !== reading.value) return
   const s = player.curSurah.value
   const v = player.curVerse.value
   if (!s || !v) return
@@ -295,11 +349,18 @@ const fontPick = ref(false)
  * biniyordu — mobilde logo ve şehir seçici mushafın başlığının üstünde
  * görünüyordu.
  */
-const immersive = ref(false)
+const freeImmersive = ref(false)
+const immersive = computed({
+  get: () => readingHatim.value ? settings.value.immersive : tab.value === 'oku' && freeImmersive.value,
+  set: (on) => {
+    if (readingHatim.value) settings.value.immersive = on
+    else freeImmersive.value = on
+  },
+})
 
 watch(immersive, (on) => {
   document.documentElement.toggleAttribute('data-immersive', on)
-})
+}, { immediate: true })
 // Sayfadan çıkarken imi bırakma: gezinme bir daha hiç görünmezdi.
 onUnmounted(() => document.documentElement.removeAttribute('data-immersive'))
 
@@ -337,12 +398,17 @@ watch([page, tab, reading, focusVerse], ([p, t, h, f]) => {
     query: {
       ...route.query,
       s: String(p),
-      b: t === 'hatim' ? 'hatim' : undefined,
+      b: t === 'oku' ? undefined : t,
       h: h ?? undefined,
       a: f ? `${f.surah}:${f.verse}` : undefined,
     },
   })
 })
+
+function openSavedVerse(verse) {
+  tab.value = 'oku'
+  goTo(pageOfVerse(verse.surah, verse.verse), verse)
+}
 
 function goTo(p, verse) {
   page.value = p
@@ -368,6 +434,7 @@ function goShortcut(sc) {
           :key="t.id"
           class="tab"
           :class="{ on: tab === t.id }"
+          :aria-current="tab === t.id ? 'page' : undefined"
           @click="tab = t.id"
         >
           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
@@ -383,6 +450,9 @@ function goShortcut(sc) {
 
       <MushafView
         :page="page"
+        :reader="settings"
+        @update:reader="updateReader"
+        @edit-hatim="editHatim = true"
         :hatim-name="readingHatim?.niyet ?? ''"
         :focus-verse="focusVerse"
         :read="read"
@@ -463,6 +533,10 @@ function goShortcut(sc) {
           v-if="player.barOpen.value"
           :page="page"
           :start="focusVerse"
+          :reader="settings"
+          @update:reader="updateReader"
+          :hatim-id="reading"
+          @play="startPlayback"
           @pick-reciter="reciterPick = true"
           @expand="playerOpen = true"
         />
@@ -470,13 +544,14 @@ function goShortcut(sc) {
       </MushafView>
     </template>
 
-    <HatimPanel v-else @read="openHatim" />
+    <HatimPanel v-else-if="tab === 'hatim'" @read="openHatim" />
+    <SavedVerses v-else @open="openSavedVerse" />
 
     <ReciterSheet
       :open="reciterPick"
       :value="settings.quranReciter"
       @close="reciterPick = false"
-      @select="settings.quranReciter = $event"
+      @select="selectReciter"
     />
 
     <FontSheet
@@ -496,17 +571,28 @@ function goShortcut(sc) {
       :open="mealPick"
       :value="settings.quranMeals"
       :font="settings.quranMealFont"
+      :can-hide-arabic="settings.quranView === 'esnek' || settings.quranView === 'ayet'"
+      :arabic-hidden="settings.quranArabicHidden && mealPicked.length > 0"
+      @update:arabic-hidden="setArabicHidden"
       @close="mealPick = false"
       @toggle="toggleMeal"
-      @clear="settings.quranMeals = []"
+      @clear="clearMeals"
       @font="settings.quranMealFont = $event"
     />
 
     <PlayerSheet
       :open="playerOpen"
+      :reader="settings"
       @close="playerOpen = false"
       @pick-reciter="playerOpen = false; reciterPick = true"
     />
+
+    <BottomSheet :open="editHatim && !!readingHatim" label="Hatmi düzenle" @close="editHatim = false" @keydown.esc.stop="editHatim = false">
+      <template #head>Hatmi düzenle</template>
+      <div v-if="editHatim && readingHatim" class="hatim-edit">
+        <HatimForm :hatim="readingHatim" @submit="saveHatim" @cancel="editHatim = false" />
+      </div>
+    </BottomSheet>
 
     <!-- Hızlı erişim kısayolları seçicinin İÇİNDE: ⋯ kutusunda hat ve
          yazı boyu ayarlarının yanında alakasız duruyorlardı. Oysa
@@ -526,6 +612,7 @@ function goShortcut(sc) {
 
 <style scoped>
 .quran-page { padding-bottom: 2rem; }
+.hatim-edit { padding: 0.45rem 0.8rem 0.85rem; }
 
 /* Tam ekran okuma: sayfa kabuğun dışına çıkar ve ekranı kaplar.
    Gezinme çubuğunun üstünü örter — App.vue'ya dokunmadan, çünkü bu
@@ -582,7 +669,7 @@ function goShortcut(sc) {
   margin-bottom: 0.75rem;
 }
 
-.tabs { display: inline-flex; gap: 0.4rem; }
+.tabs { display: inline-flex; flex-wrap: wrap; gap: 0.4rem; }
 
 .tab {
   display: inline-flex;

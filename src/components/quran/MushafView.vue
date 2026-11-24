@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
-import { useSettingsStore } from '@/stores/settings'
+import { QURAN_VIEWS, showsArabic } from '@/data/hatimReader'
 import { rangesOfPage, versesOfPage, juzOfPage, surahOfPage, clampPage, diyanetPage, PAGE_COUNT } from '@/utils/mushaf'
 import { fetchRange, eastern } from '@/utils/kuran'
 import { authorById } from '@/data/kuranMeta'
@@ -12,6 +12,7 @@ import { createDoubleTap } from '@/utils/doubleTap'
 import GestureHint from '@/components/ui/GestureHint.vue'
 import { centerInScroller } from '@/utils/scrollCenter'
 import { playing as reciting } from '@/stores/recitation'
+import VerseActions from '@/components/quran/VerseActions.vue'
 import SurahHeader from '@/components/quran/SurahHeader.vue'
 
 /**
@@ -30,6 +31,7 @@ import SurahHeader from '@/components/quran/SurahHeader.vue'
  */
 const props = defineProps({
   page: { type: Number, required: true },
+  reader: { type: Object, required: true },
   /** Hatim okuyucusundayken o hatmin adı; serbest okumada null. */
   hatimName: { type: String, default: '' },
   /** Hatim okuyucusunda bu sayfa okundu mu. */
@@ -52,22 +54,22 @@ const props = defineProps({
    */
   jump: { type: Number, default: 0 },
 })
-const emit = defineEmits(['update:page', 'toggle-read', 'info', 'font', 'listen', 'ayah', 'update:immersive', 'pick'])
-
-const settings = useSettingsStore()
+const emit = defineEmits(['update:page', 'toggle-read', 'info', 'font', 'listen', 'ayah', 'update:immersive', 'pick', 'edit-hatim', 'update:reader'])
 
 const state = ref({ loading: false, error: '', groups: [] })
 /** Ayet anahtarına göre tecvitli metin; boşsa düz metin basılır. */
 const tajweed = ref({})
 
+let tajweedRequest = 0
 async function loadTajweed(page) {
-  if (mushaf.value || !settings.quranTajweed) { tajweed.value = {}; return }
+  const request = ++tajweedRequest
+  if (mushaf.value || !showArabic.value || !props.reader.quranTajweed) { tajweed.value = {}; return }
   try {
     const map = await pageTajweed(page)
-    if (page === props.page) tajweed.value = map
+    if (request === tajweedRequest) tajweed.value = map
   } catch {
     // Tecvit gelmezse metin düz basılır; okumayı engellemeye değmez.
-    if (page === props.page) tajweed.value = {}
+    if (request === tajweedRequest) tajweed.value = {}
   }
 }
 
@@ -85,9 +87,10 @@ const diyanet = computed(() => diyanetPage(props.page))
  * liste "meal kapalı" demektir.
  */
 const meals = computed(() =>
-  settings.quranMeals.map((id) => authorById(id)).filter(Boolean))
+  props.reader.quranMeals.map((id) => authorById(id)).filter(Boolean))
 const hasMeal = computed(() => meals.value.length > 0)
-const mealFamily = computed(() => mealFontById(settings.quranMealFont).family)
+const showArabic = computed(() => showsArabic(props.reader))
+const mealFamily = computed(() => mealFontById(props.reader.quranMealFont).family)
 
 /**
  * Oto kaydırma: okunan ayeti ekranın ortasında tut.
@@ -123,13 +126,14 @@ async function centerFocus(tries = 16) {
     if (props.focusVerse && `${props.focusVerse.surah}:${props.focusVerse.verse}` !== key) return
     const el = (f.verse === 1 && root.value?.querySelector(`[data-sh="${f.surah}"]`))
       || root.value?.querySelector(`[data-v="${key}"]`)
+      || root.value?.querySelector('.meal-row.focus, .vb.focus')
     if (el) { centerInScroller(el); return }
     await new Promise((r) => setTimeout(r, 120))
   }
 }
 
 watch(() => props.focusVerse, (f) => {
-  if (!f || !settings.quranAutoScroll || !reciting.value) return
+  if (!f || !props.reader.quranAutoScroll || !reciting.value) return
   centerFocus(3)
 })
 
@@ -188,17 +192,24 @@ const VIEW_ICONS = {
   ayet: 'M3.5 3.8h17v7h-17zM3.5 13.2h17v7h-17z',
 }
 
-const VIEWS = ['mushaf', 'esnek', 'ayet']
 const view = computed(() =>
-  (VIEWS.includes(settings.quranView) ? settings.quranView : 'mushaf'))
+  (QURAN_VIEWS.some(({ id }) => id === props.reader.quranView) ? props.reader.quranView : 'mushaf'))
 const mushaf = computed(() => view.value === 'mushaf')
 const flowing = computed(() => view.value === 'esnek')
+const activeAyah = ref('')
 const byVerse = computed(() => view.value === 'ayet')
+watch([() => props.page, byVerse], () => { activeAyah.value = '' })
+
+function revealActions(surah, verse, event) {
+  if (event.pointerType === 'touch' || event.pointerType === 'pen' || matchMedia('(hover: none)').matches) {
+    activeAyah.value = `${surah}:${verse}`
+  }
+}
 // Kayıtta artık sunulmayan bir hat durabilir (V4 kaldırıldı):
 // listeyi değil, listenin çözdüğü kimliği ölçüt al.
-const scriptId = computed(() => scriptById(settings.quranScript).id)
-const fontLabel = computed(() => quranFontById(settings.quranFont).label)
-const setView = (id) => { settings.quranView = id }
+const scriptId = computed(() => scriptById(props.reader.quranScript).id)
+const fontLabel = computed(() => quranFontById(props.reader.quranFont).label)
+const setView = (id) => emit('update:reader', 'quranView', id)
 
 /**
  * Satır dizimi — hem "ayet ayet" görünümünün blokları hem meal listesi.
@@ -265,12 +276,16 @@ const SIZE_MIN = 70
 const SIZE_MAX = 180
 const SIZE_STEP = 10
 const sizeable = (d) => {
-  const next = settings.quranFontSize + d * SIZE_STEP
+  const next = props.reader.quranFontSize + d * SIZE_STEP
   return next >= SIZE_MIN && next <= SIZE_MAX
 }
-const resize = (d) => { if (sizeable(d)) settings.quranFontSize += d * SIZE_STEP }
+function resize(d) {
+  if (sizeable(d)) emit('update:reader', 'quranFontSize', props.reader.quranFontSize + d * SIZE_STEP)
+}
 
+let textRequest = 0
 async function load(page) {
+  const request = ++textRequest
   const want = rangesOfPage(page)
   if (!want.length) return
   // Mushaf görünümünde metin sayfanın kendi fontundan gelir; meal de
@@ -286,6 +301,7 @@ async function load(page) {
     const ids = meals.value.map((a) => a.id)
     const parts = await Promise.all(
       want.map((g) => fetchRange(g.surah, g.from, g.to, ids)))
+    if (request !== textRequest) return
     const groups = parts.map((res, i) => {
       const g = want[i]
       const verses = res.ar.map((ar, n) => ({
@@ -299,18 +315,18 @@ async function load(page) {
       }))
       return { surah: g.surah, name: g.surahName, from: g.from, verses, rows: rowsOf(verses) }
     })
-    // Sayfa değişmiş olabilir; geç gelen yanıt ekrandakini bozmasın.
-    if (page === props.page) state.value = { loading: false, error: '', groups }
+    // Sayfa veya mealler değişmiş olabilir; eski yanıt son seçimi ezmesin.
+    state.value = { loading: false, error: '', groups }
   } catch (e) {
-    if (page === props.page)
+    if (request === textRequest)
       state.value = { loading: false, error: e.message ?? 'Ayetler alınamadı', groups: [] }
   }
 }
 
-watch(() => props.page, (p) => { load(p); loadTajweed(p) }, { immediate: true })
-watch(() => [settings.quranMeals, settings.quranView], () => load(props.page), { deep: true })
-watch(() => [settings.quranTajweed, settings.quranView, props.page],
-  () => loadTajweed(props.page))
+watch([() => props.page, () => props.reader.quranMeals, () => props.reader.quranView],
+  ([page]) => load(page), { deep: true, immediate: true })
+watch([() => props.page, () => props.reader.quranTajweed, mushaf, showArabic],
+  ([page]) => loadTajweed(page), { immediate: true })
 
 const go = (delta) => emit('update:page', clampPage(props.page + delta))
 
@@ -364,13 +380,15 @@ function onUp(e) {
   <div
     ref="root"
     class="mushaf"
-    :style="{ '--quran-scale': settings.quranFontSize / 100, '--meal-font': mealFamily }"
+    :style="{ '--quran-scale': reader.quranFontSize / 100, '--meal-font': mealFamily }"
   >
     <!-- Hatim okuyucusunda hangi hatimde olduğun her an yazılı durur:
          işaretleme ona yazıyor, belirsiz kalmamalı. -->
     <p v-if="hatimName" class="in-hatim">
       <span class="in-hatim-label">Hatim</span>
-      <span class="in-hatim-name">{{ hatimName }}</span>
+      <button type="button" class="in-hatim-name" :aria-label="`Hatmi düzenle: ${hatimName}`" @click="emit('edit-hatim')">
+        {{ hatimName }} <span class="in-hatim-edit" aria-hidden="true">✎</span>
+      </button>
       <button class="in-hatim-state" :class="{ on: read }" @click="emit('toggle-read')">
         {{ read ? '✓ okundu' : 'okunmadı' }}
       </button>
@@ -464,7 +482,7 @@ function onUp(e) {
           class="script"
           :class="{ on: scriptId === sc.id }"
           :title="sc.note"
-          @click="settings.quranScript = sc.id"
+          @click="emit('update:reader', 'quranScript', sc.id)"
         >{{ sc.label }}</button>
       </nav>
 
@@ -483,10 +501,10 @@ function onUp(e) {
              bir damladan farklı olarak "birden çok renk" diyor. -->
         <button
           class="script"
-          :class="{ on: settings.quranTajweed }"
-          :aria-pressed="settings.quranTajweed"
+          :class="{ on: reader.quranTajweed }"
+          :aria-pressed="reader.quranTajweed"
           title="Renkli tecvit"
-          @click="settings.quranTajweed = !settings.quranTajweed"
+          @click="emit('update:reader', 'quranTajweed', !reader.quranTajweed)"
         >
           <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" fill-rule="evenodd" aria-hidden="true">
             <path d="M12 2.8c-5.3 0-9.5 3.8-9.5 8.7s4.2 8.7 9.5 8.7c.95 0 1.7-.75 1.7-1.7 0-.44-.17-.83-.44-1.13-.26-.29-.43-.67-.43-1.07 0-.95.76-1.7 1.7-1.7h2c2.95 0 5.3-2.36 5.3-5.3 0-4.2-4.2-6.5-9.8-6.5zM7.1 12.5a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9zm-.2-5a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9zm4.4-2.2a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9zm4.9 1.6a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9z" />
@@ -494,7 +512,7 @@ function onUp(e) {
           Tecvit
         </button>
         <button class="size-btn" :disabled="!sizeable(-1)" aria-label="Küçült" @click="resize(-1)">A−</button>
-        <span class="size-val">{{ settings.quranFontSize }}%</span>
+        <span class="size-val">{{ reader.quranFontSize }}%</span>
         <button class="size-btn" :disabled="!sizeable(1)" aria-label="Büyüt" @click="resize(1)">A+</button>
       </div>
     </div>
@@ -548,7 +566,7 @@ function onUp(e) {
           @play="emit('ayah', { surah: $event, verse: 1 })"
         />
 
-        <p v-if="flowing" class="ar" dir="rtl" lang="ar">
+        <p v-if="flowing && showArabic" class="ar" dir="rtl" lang="ar">
           <template v-for="v in g.verses" :key="v.no">
             <span
               v-if="tajweed[`${g.surah}:${v.no}`]"
@@ -581,28 +599,38 @@ function onUp(e) {
                       && focusVerse.verse >= r.from && focusVerse.verse <= r.to }"
             :data-v="`${g.surah}:${r.from}`"
           >
-            <p class="ar vb-ar" dir="rtl" lang="ar">
-              <template v-for="v in r.verses" :key="v.no">
-                <span
-                  v-if="tajweed[`${g.surah}:${v.no}`]"
-                  class="ar-verse"
-                  :data-v="`${g.surah}:${v.no}`"
-                  v-html="tajweed[`${g.surah}:${v.no}`]"
-                  @pointerup="onVerseTap(g.surah, v.no)"
-                />
-                <span
-                  v-else
-                  class="ar-verse"
-                  :data-v="`${g.surah}:${v.no}`"
-                  @pointerup="onVerseTap(g.surah, v.no)"
-                >{{ v.ar }}</span>
-                <span class="ar-no">{{ eastern(v.no) }}</span>
-              </template>
-            </p>
+            <!-- Gruplu meal tek kalır, işlemin hedefi her zaman tek bir ayettir. -->
+            <template v-if="showArabic">
+              <div
+                v-for="v in r.verses"
+                :key="`${page}:${v.no}`"
+                class="vb-line"
+                :class="{ active: activeAyah === `${g.surah}:${v.no}` }"
+              >
+                <VerseActions :ayah="{ ...v, surah: g.surah, verse: v.no, name: g.name }" />
+                <p class="ar vb-ar" dir="rtl" lang="ar" @click="revealActions(g.surah, v.no, $event)">
+                  <span
+                    v-if="tajweed[`${g.surah}:${v.no}`]"
+                    class="ar-verse"
+                    :data-v="`${g.surah}:${v.no}`"
+                    v-html="tajweed[`${g.surah}:${v.no}`]"
+                    @pointerup="onVerseTap(g.surah, v.no)"
+                  />
+                  <span
+                    v-else
+                    class="ar-verse"
+                    :data-v="`${g.surah}:${v.no}`"
+                    @pointerup="onVerseTap(g.surah, v.no)"
+                  >{{ v.ar }}</span>
+                  <span class="ar-no">{{ eastern(v.no) }}</span>
+                </p>
+              </div>
+            </template>
             <!-- Karşılıklar: tek meal seçiliyse mütercim adı yazmaz
                  (zaten tepedeki düğmede duruyor); birden fazlaysa
                  hangisinin kim olduğu satırın kendisinde olmalı. -->
-            <div v-if="r.texts.length" class="vb-trs">
+            <div v-if="r.texts.length" class="vb-trs"
+              @pointerup="!showArabic && onVerseTap(g.surah, r.from)">
               <p v-for="t in r.texts" :key="t.id" class="vb-tr">
                 <span class="vb-no">{{ r.label }}</span>
                 <span class="vb-body">
@@ -619,6 +647,7 @@ function onUp(e) {
             v-for="r in g.rows"
             :key="r.from"
             class="meal-row"
+            @pointerup="!showArabic && onVerseTap(g.surah, r.from)"
             :class="{ focus: focusVerse && focusVerse.surah === g.surah
                       && focusVerse.verse >= r.from && focusVerse.verse <= r.to }"
           >
@@ -1014,6 +1043,23 @@ function onUp(e) {
   border-radius: 6px;
 }
 
+.vb-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.35rem;
+}
+.vb-line :deep(.verse-more) { opacity: 0; pointer-events: none; }
+.vb-line.active :deep(.verse-more),
+.vb-line :deep(.verse-more:focus-visible),
+.vb-line :deep(.verse-more[aria-expanded="true"]) {
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (hover: hover) {
+  .vb-line:hover :deep(.verse-more) { opacity: 1; pointer-events: auto; }
+}
+
 /* Blok içindeki Arapça ortalanmaz: tek ayet iki yana yaslanınca
    kelimeler arası uçuyor. */
 .vb-ar {
@@ -1081,12 +1127,21 @@ function onUp(e) {
 }
 
 .in-hatim-name {
+  padding: 0.15rem 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.in-hatim-edit { color: var(--text-muted); }
 
 .in-hatim-state {
   flex: 0 0 auto;

@@ -1,170 +1,200 @@
 [
   {
+    "id": "yalnizca-meal-okuma",
+    "title": "Yalnızca meal okuyabilirsiniz",
+    "date": "2026-11-24",
+    "body": "Bir ayetin anlamına odaklanmak istediğinizde Esnek ya da Ayet ayet görünümünde meal menüsünü açıp Arapça kapalı seçeneğini işaretleyebilirsiniz. Açık meal yoksa Diyanet İşleri meali açılır. Yalnızca Arapça okumak için aynı menüden Meal kapalı’yı seçebilirsiniz."
+  },
+  {
+    "id": "hatme-ozel-okuma-ayarlari",
+    "title": "Her hatme kendi okuma düzeni",
+    "date": "2026-11-24",
+    "body": "Bir hatmi mushaf düzeninde, bir başkasını meal eşliğinde okuyabilirsiniz. Yeni bir hatme başlarken Mushaf hatmi, Meal okuma ya da Serbest okuma ayarlarım seçeneklerinden birini seçin. Hatmin adını ve tercihlerini sonradan Hatmi düzenle bölümünden değiştirebilirsiniz.\n\nOkurken eklediğiniz ya da çıkardığınız mealler, seçtiğiniz kârî ve tam ekran tercihiniz o hatimde saklanır. Yeniden açtığınızda kaldığınız yerle birlikte okuma düzeniniz de hazır olur."
+  },
+  {
+    "id": "arka-plan-vakit-hatirlatmalari",
+    "title": "Uygulama kapalıyken de vakitten haberdar olun",
+    "date": "2026-11-24",
+    "body": "Günün telaşesi içinde namaz vaktinden önce haber almak isterseniz Ayarlar’da Vakit Hatırlatması’nı açın. Ardından Uygulama kapalıyken de bildir seçeneğini açabilir, Test bildirimi gönder düğmesiyle telefonunuzda deneyebilirsiniz.\n\nŞehir veya hatırlatma süresi değiştiğinde, uygulama internete bağlanınca yeni tercihiniz geçerli olur. iPhone ve iPad’de siteyi ana ekrana ekleyip oradan açmanız gerekir."
+  },
+  {
+    "id": "takvim-resmi-tatiller",
+    "title": "Resmî tatilleri takvimde görün",
+    "date": "2026-11-24",
+    "body": "Kandil ve bayram günlerine bakarken Türkiye’deki resmî tatilleri de aynı takvimde görebilirsiniz. 23 Nisan, 30 Ağustos ve 29 Ekim gibi günler soluk mavi kareyle işaretli. Bir güne dokunduğunuzda tatilin adı açılır. Cumhuriyet Bayramı tatilinin 28 Ekim’de saat 13.00’te başladığı da belirtilir.\n\nAynı işaretleri Linux masaüstü uygulamasının Miladi ve Hicri takvimlerinde de görebilirsiniz."
+  },
+  {
+    "id": "kaydedilen-ayetler",
+    "title": "Yeniden okumak istediğiniz ayetler",
+    "date": "2026-11-24",
+    "body": "Okurken tekrar dönmek istediğiniz bir ayet olursa, Ayet ayet görünümünde ayete dokunun veya imleci üzerinde tutun. Üç nokta menüsünden ayeti kaydedebilir, paylaşabilir ya da Arapça metnini kopyalayabilirsiniz.\n\nYer imiyle işaretlenen ayetler, Hatimlerim’in yanındaki Kaydedilen Ayetler bölümünde birikir. Ayarlar’dan aldığınız yedeğe de dahil olurlar."
+  },
+  {
     "id": "yeni-sekme-eklentisi",
-    "title": "Chrome yeni sekme eklentisi",
+    "title": "Yeni sekmede namaz vakitleri ve günün ayeti",
     "date": "2026-11-22",
-    "body": "Her yeni sekmede alaturka saati, sonraki vakte kalan süreyi, hicri takvimi ve günün ayetini görüyorsunuz. Hava durumu da orada.\n\nEkranı siz kuruyorsunuz: widget'ları tutup sütunlar arasında taşıyor, istemediğinizi kapatıyorsunuz. Arka plana hazır görsellerden birini ya da kendi fotoğrafınızı koyuyor, karartmasını ve bulanıklığını kendiniz ayarlıyorsunuz.\n\nSık girdiğiniz siteleri kendi gruplarınızda topluyorsunuz — başlığını, ikonunu ve bağlantılarını siz seçiyorsunuz. Aklınızda kalanı yazacağınız kısa bir not kutusu da var.\n\nVakitler ve hicri takvim siteyle aynı yerden geliyor: aynı gün, aynı dakika. Hesap açmanız gerekmiyor, ayarlarınız yalnızca kendi tarayıcınızda duruyor.\n\n[Chrome Web Store'dan kurun](https://chromewebstore.google.com/detail/hknlkhdhepllicappjmgcliepnlljdcf/) — Edge, Brave, Vivaldi, Arc, Opera ve Yandex'te de çalışıyor."
+    "body": "Tarayıcıda yeni bir sekme açtığınızda alaturka saati, sonraki namaz vaktine ne kadar kaldığını, hicri tarihi ve günün ayetini görebilirsiniz. Hava durumuna da aynı yerden bakabilirsiniz.\n\nDilerseniz sık uğradığınız siteleri bir araya getirin, küçük notlar alın ya da arka plana kendi fotoğrafınızı koyun. Her bölümü yerinden taşıyabilir, kullanmadıklarınızı kaldırabilirsiniz. Hesap açmanız gerekmez.\n\n[Chrome Web Store’da Alaturka Vakitler](https://chromewebstore.google.com/detail/hknlkhdhepllicappjmgcliepnlljdcf/)\n\nEklentiyi Edge, Brave, Vivaldi, Arc, Opera ve Yandex’te de kullanabilirsiniz."
   },
   {
     "id": "hareket-ipuclari",
-    "title": "Ayete iki kez dokunun",
+    "title": "Ayetin tilavetine okuduğunuz yerden başlayın",
     "date": "2026-11-22",
-    "body": "Bir ayete iki kez dokunduğunuzda kıraat oradan başlıyor. Bir vakte basılı tuttuğunuzda kaza sayacı açılıyor. İkisi de baştan beri vardı ama ekranda bunu söyleyen hiçbir şey yoktu; ilk kez girenlere artık hareketin kendisi gösteriliyor.\n\nGörsel oluşturucuda yatay bir fotoğrafı yana kaydırıp istediğiniz yeri kadraja alabiliyorsunuz."
+    "body": "Okuduğunuz ayeti dinlemek için üzerine iki kez dokunabilirsiniz. Bir namaz vaktine basılı tuttuğunuzda da o vaktin kaza sayacı açılır. İlk kullanımda bu iki hareketi hatırlatan kısa bir ipucu görürsünüz.\n\nGörsel Oluştur’da yatay bir fotoğraf kullandığınızda, fotoğrafı yana kaydırıp dilediğiniz yeri kadraja alabilirsiniz."
   },
   {
     "id": "coklu-meal-ve-oynatici",
-    "title": "İki meali yan yana okuma",
+    "title": "Bir ayeti birden fazla mealden okuyun",
     "date": "2026-11-21",
-    "body": "Kur'an sayfasında birden fazla meali aynı anda açabiliyorsunuz: ayetin altında iki mütercimin karşılığı alt alta duruyor, karşılaştırmak için sayfa değiştirmeniz gerekmiyor. Mealin yazı tipini de seçiyorsunuz — uygulamanın kendi yazısı, bir serif ya da daktilo harfi.\n\nKıraat şeridinden açılan ekranda okunan ayetin metnini ve mealini görüyor, sürgüyle istediğiniz yere gidiyorsunuz.\n\nTakip açıkken ekran da kararmıyor; mukabelede ekrana bakılıyor ama dokunulmuyor.\n\nSayfanın üstü sadeleşti: hat, yazı boyu ve tecvit ayarları ⋯ düğmesinin arkasına girdi, mushafa daha çok yer kaldı. Sure adının kendisi artık bir düğme — dokununca sure, sayfa ve cüz seçicisi açılıyor."
+    "body": "Bir ayetin farklı meallerini karşılaştırmak istediğinizde birkaç mütercimi birden seçebilirsiniz. Mealler ayetin altında yer alır. Okumayı kolaylaştırmak için mealin yazı tipini de değiştirebilirsiniz.\n\nTilavet sırasında oynatıcıyı açınca okunan ayeti ve mealini görür, dinlemek istediğiniz yere geçebilirsiniz. Takip açıkken ekran aydınlık kalır. Hat, yazı boyutu ve tecvit ayarları üç nokta menüsünde. Bir sureye, sayfaya veya cüze geçmek için sure adına dokunmanız yeterli."
   },
   {
     "id": "ayet-ayet-ve-surekli-kiraat",
-    "title": "Ayet ayet okuma, kesilmeyen kıraat",
+    "title": "Ayeti mealiyle okuyun, tilaveti kaldığınız yerden dinleyin",
     "date": "2026-11-20",
-    "body": "Kur'an sayfasına üçüncü bir görünüm eklendi: **Ayet ayet**. Ayetin hemen altında meali duruyor, sonra bir sonraki ayet — karşılaştırarak okurken aşağıdaki listeye göz kaydırmak gerekmiyor. Mushaf ve Esnek görünümler olduğu gibi duruyor, üçü de tepedeki aynı düğmeden seçiliyor.\n\n**Kıraat artık sayfayla birlikte durmuyor.** Dinlerken vakitlere ya da takvime geçerseniz okuma sürüyor; sayfanın altında küçük bir oynatıcı çıkıyor: ne okunduğu, hangi ayet ve hangi kârî yazıyor, oradan duraklatabiliyor, bir dokunuşla okunan yere dönebiliyorsunuz.\n\nTelefonun **bildirim alanında ve kilit ekranında** da düzgün bir künye var artık: sure, ayet ve kârî adı. İleri ve geri düğmeleri parçayı değil **ayeti** değiştiriyor.\n\nSure künyesindeki **oynat düğmesiyle** sureyi başından dinleyebilirsiniz. Bir de sure seçince (örneğin Kehf) okuma artık sayfanın başındaki önceki sureden değil, **surenin kendi ilk ayetinden** başlıyor.\n\nDinleme şeridine bir de **Takip** anahtarı eklendi: açıkken okunan ayet kendiliğinden ekranın ortasına geliyor, sayfayı elle kaydırmanız gerekmiyor. Kapatırsanız sayfa yerinde kalır."
+    "body": "Ayet ayet görünümünde her ayetin hemen altında meali yer alır. Ayeti okuduktan sonra anlamına bakmak istediğinizde aynı yerde kalabilirsiniz. Mushaf ve Esnek görünümler de Kur’an sayfasındaki seçenekler arasında.\n\nTilavet dinlerken Takvim’e ya da Vakitler’e geçtiğinizde tilavet sürer. Ekranın altındaki oynatıcıdan duraklatabilir ya da okunan ayete dönebilirsiniz. Telefonun kilit ekranından sureyi, ayeti ve kârîyi görebilir, bir önceki veya sonraki ayete geçebilirsiniz.\n\nSure başlığındaki oynat düğmesi tilaveti surenin başından açar. Mukabele gibi ayetleri sırayla izlemek istediğinizde Takip’i açabilirsiniz. Okunan ayet kendiliğinden ekrana gelir."
   },
   {
     "id": "kiraat-dinleme",
-    "title": "Kıraat dinleme",
+    "title": "Kur’an sayfasında tilavet",
     "date": "2026-11-20",
-    "body": "Kur'an sayfasına **dinleme** geldi. Ayrı bir bölüm değil: okuduğunuz sayfanın üstünde bir şerit açılıyor ve **okunan ayet mushafta vurgulanıyor**. Kıraat sayfanın sonuna gelince sayfa kendiliğinden çevriliyor — gözünüz mushaftan ayrılmadan mukabele takip edebiliyorsunuz.\n\n**Bir ayete iki kez dokunun, oradan okumaya başlasın.** Okunan ayete tekrar iki kez dokunmak durdurur. Aynı sayfadaki başka bir surenin ayetine dokunmak da çalışıyor.\n\nSure başından başlandığında **besmele de okunuyor** — kârînin kendi sesinden, aynı kayıttan.\n\nYedi kârî arasından seçim yapılabiliyor: Abdülbasit Abdüssamed (murattal ve mücevved), Mahmud Halil el-Hüsarî, Suud eş-Şüreym, Mahmud Ali el-Benna, Ekrem el-Alakmî ve Hadi Turé. Seçim listesinde her kârînin **okuyuş temposu** üç kademeli olarak gösteriliyor (Fâtiha'yı kaç saniyede okuduğundan ölçülmüş) ve ayet takibinin o kârîde çalışıp çalışmadığı yazıyor.\n\nDinlediğiniz yer adres satırında duruyor, yani bağlantıyı paylaşmak okunan ayeti paylaşmak oluyor."
+    "body": "Okurken tilaveti de dinlemek isterseniz Kur’an sayfasında Dinle’yi açın. Okunan ayet işaretlenir, sayfa tamamlanınca bir sonraki sayfaya geçilir. Ayet takibini destekleyen kârîleri seçim ekranında görebilirsiniz.\n\nBelirli bir ayetten başlamak için o ayete iki kez dokunun. Aynı hareketle duraklatabilirsiniz. Sure başından başlarsanız besmeleyi de seçtiğiniz kârîden dinlersiniz. Dinlediğiniz ayetin bağlantısını paylaşabilirsiniz."
   },
   {
     "id": "kuran-sayfasi",
-    "title": "Kur'an-ı Kerim sayfası",
+    "title": "Mushaf ve meal bir arada",
     "date": "2026-11-19",
-    "body": "Alt menüye **Kur'an-ı Kerim** eklendi: mushaf, meal ve hatim takibi bir arada.\n\n**Mushaf görünümü** basılı sayfanın kendisidir — 604 sayfanın her biri 15 satır, satır sonları mushafın kırdığı yerlerde, sayfanın kendi yazı tipiyle. Sure başlarında basılı nüshadaki süsleme duruyor; altında surenin Türkçe adı, adının anlamı, Mekkî mi Medenî mi olduğu ve ayet sayısı yazıyor. Yanındaki **i** düğmesi iniş sırasını, besmele durumunu ve TDV İslam Ansiklopedisi'ndeki maddesinin bağlantısını açıyor.\n\n**Esnek görünüm** ayetleri akıtır ve yazı boyu ayarlanabilir; küçük ekranda ya da meal eşliğinde okumak için. İki görünüm arasında tepedeki tek düğmeyle geçiliyor. İki hat seçeneği var: 1421H ve 1405H Medine baskıları.\n\nSayfalar **sağdan sola** çevriliyor — parmakla kaydırmak da mushafın yönünde çalışıyor.\n\nGitmek istediğiniz yeri tek kutuya yazabilirsiniz — **bakara 255**, **2:255**, **yasin**, **s42**, **c5** — ne yazdığınızı kendisi anlıyor ve aradığınız ayeti sayfasında vurguluyor. Yazmak istemiyorsanız **Seç** düğmesi sure, sayfa ve cüz listelerini açıyor; bulunduğunuz yer işaretli geliyor. Serbest okumada Yasin, Tebâreke, Amme, Kehf, Ayetel Kürsi gibi en çok dönülen yerler için kısayol şeridi var.\n\nMeal dokuz çeviriden seçiliyor (Diyanet İşleri ön tanımlı), dili satırın yanında yazıyor. Yalnızca Arapça okumak isteyenler meali kapatabiliyor."
+    "body": "Alt menüdeki Kur’an bölümünden mushafı açabilir, meal okuyabilir veya hatminize devam edebilirsiniz. Mushaf görünümü basılı nüshanın sayfa düzenini korur. Yazıyı büyütmek istediğinizde Esnek görünümü seçebilirsiniz. Sayfalar mushafın yönünde, sağdan sola çevrilir.\n\nAradığınız yeri sure adı, ayet numarası, sayfa veya cüzle bulabilirsiniz. Örneğin “Bakara 255” yazarsanız ayet kendi sayfasında işaretlenir. Sure başlığındaki bilgi düğmesinden surenin adı, inişi ve Diyanet Vakfı İslâm Ansiklopedisi’ndeki maddesine ulaşabilirsiniz."
   },
   {
     "id": "hatim-takibi",
-    "title": "Hatim takibi",
+    "title": "Hatminizde kaldığınız yer",
     "date": "2026-11-19",
-    "body": "Kur'an sayfasının **Hatim** bölümü, hangi sayfayı hangi gün okuduğunuzu tutuyor.\n\nBir niyetle hatim başlatılıyor ve aynı anda birden fazla hatim sürebiliyor. İşaretleme için ayrı bir düğmeye basmak gerekmiyor: **sayfayı çevirmek o sayfayı okundu sayıyor.** Yanlışlıkla sayılan sayfa, tepedeki rozete dokunarak geri alınıyor. Kaldığınız yer hatırlanıyor, sayfayı yenilediğinizde okuduğunuz yerden devam ediyorsunuz.\n\nİlerleme otuz dilimli bir halkada görünüyor — yüzde değil, kaçıncı cüzde olduğunuz. Altındaki günlük şerit hangi gün kaç sayfa okuduğunuzu hafta hafta gösteriyor; en üstte de bütün hatimlerin toplamı duruyor. Takvim sayfasında bir güne dokununca o gün hangi hatimden kaç sayfa okunduğu yazıyor.\n\nİlk açılışta \"Ümmet için\" hatmi hazır geliyor."
+    "body": "Bir niyetle hatme başladığınızda hangi gün kaç sayfa okuduğunuzu görebilir, bir sonraki okumada kaldığınız yerden devam edebilirsiniz. Aynı anda birden fazla hatim sürdürebilirsiniz. İlk açılışta Ümmet için hatmi hazır gelir.\n\nBir sayfayı çevirdiğinizde o sayfa okunmuş sayılır. Yanlışlıkla çevirdiyseniz üstteki okundu işaretine dokunup geri alabilirsiniz. Hatimlerim’de ilerlemenizi ve günlük okumalarınızı, Takvim’de ise seçtiğiniz gün hangi hatimden ne kadar okuduğunuzu görebilirsiniz."
   },
   {
     "id": "yedekleme",
-    "title": "Yedek alma ve geri yükleme",
+    "title": "Hatim ve kaza kayıtlarınızı yedekleyin",
     "date": "2026-11-19",
-    "body": "Uygulamanın bütün hafızası tarayıcınızda duruyor ve geri getirecek bir sunucu yok: tarayıcı verisini temizlemek ayarları, şehri, kaza sayaçlarını, hatimleri ve görsel düzeninizi siler. Artık **Ayarlar → Yedek** bölümünden hepsini tek dosyaya indirebilir, sonra geri yükleyebilirsiniz.\n\nDosya tarayıcınızda üretiliyor, hiçbir yere gönderilmiyor. Geri yükleme iki adımlı: önce dosyanın içinde ne olduğu söyleniyor, onayladıktan sonra yazılıyor — yanlış dosyayla geri dönüşü olmayan bir iş yapılmasın diye."
+    "body": "Tarayıcı değiştirirken veya cihazınızı yenilerken hatimlerinizi, kaza kayıtlarınızı ve diğer ayarlarınızı yanınızda götürebilirsiniz. Ayarlar’ın Yedek bölümünden dosyanızı indirin. Geri yüklerken dosyanın içeriği önce gösterilir, onayınızdan sonra kayıtlar yüklenir. Dosya cihazınızda hazırlanır."
   },
   {
     "id": "vakit-hatirlatmasi",
-    "title": "Vakit hatırlatması",
+    "title": "Namaz vaktine hazırlanmak için hatırlatma",
     "date": "2026-11-19",
-    "body": "Vakit **girmeden önce** bildirim gelmesi eklendi. Ezanla birlikte gelen haber çoğu zaman geç kalıyor; hatırlatma artık öncesinde veriliyor.\n\nHer vakit için ne kadar önce haber almak istediğiniz ayrı ayrı seçilebiliyor. Ön tanımlı süreler: imsaktan bir saat, güneşten 20, öğleden 30, ikindiden 20, akşamdan 30, yatsıdan 15 dakika önce. İstediğiniz vakti tamamen kapatabilir ya da tam vaktinde bildirim isteyebilirsiniz.\n\nAyarlar sayfasından açılıyor; tarayıcı bir kez izin istiyor. Hatırlatma uygulama açıkken verilir — her zaman çalışması için uygulamayı ana ekrana ekleyin.\n\nAynı ayar Linux masaüstü uygulamasında da var; orada pencere kapalıyken de bildiriyor."
+    "body": "Her namaz vakti için ne kadar önce haber almak istediğinizi Ayarlar’dan seçebilirsiniz. Dilerseniz tam vaktinde hatırlatma alabilir ya da bir vakti kapatabilirsiniz. Tarayıcınız ilk açışta bildirim izni ister.\n\nUygulama kapalıyken de hatırlatma almak için Ayarlar’daki aynı adlı seçeneği ayrıca açın. Vakit başına hatırlatma ayarı Linux masaüstü uygulamasında da var."
   },
   {
     "id": "ayet-widgeti",
-    "title": "Ayet parçası",
+    "title": "Paylaşmak istediğiniz ayet için bir görsel",
     "date": "2026-11-19",
-    "body": "Görsel Oluştur bölümüne **ayet** parçası eklendi.\n\nSure ve ayet seçiliyor, istenirse bir aralık veriliyor (Bakara 255–257 gibi). Arapça metin, okunuşu ve meal ayrı ayrı açılıp kapatılabiliyor; dokuz meal arasından birden fazlası aynı anda seçilebiliyor — Diyanet, Elmalılı (ikisi de), Hasan Basri Çantay, İbni Kesir, Muhammed Esed ve İngilizce için Pickthall, Arberry, Yusuf Ali.\n\nBirden çok ayette üç düzen var: hepsi tek paragraf, her ayet kendi satırında, ya da her ayetin Arapçası ve meali birlikte art arda.\n\nArapçanın ve Latin metnin hizası ayrı ayrı verilebiliyor — biri sağa, diğeri sola yaslanabilir. Meal sahibinin adı metnin altında ya da üstünde durur, boyutu ayarlanır; kaynak satırının oranı da öyle.\n\nAltı hazır görünüm var: Klasik, Celî, Nastalik, Kûfî, Editöryel ve Modern."
+    "body": "Görsel Oluştur’da bir ayeti veya ayet aralığını seçip paylaşılacak bir görsel hazırlayabilirsiniz. Arapça metin, okunuş ve mealden dilediklerinizi ekleyin. Birden fazla meal seçmeniz de mümkün.\n\nAyetleri ayrı satırlara yerleştirebilir veya her ayeti kendi mealiyle birlikte verebilirsiniz. Hazır yazı düzenlerinden birini seçip metnin ve kaynak satırının yerini ayarlayabilirsiniz."
   },
   {
     "id": "linux-masaustu-uygulamasi",
-    "title": "Linux masaüstü uygulaması",
+    "title": "Alaturka Vakitler Linux masaüstünde",
     "date": "2026-11-17",
-    "body": "Alaturka Vakitler artık Linux'ta **ayrı bir masaüstü uygulaması** olarak da var. Tarayıcıda açılan sitenin küçültülmüş hâli değil; GTK4 ve libadwaita ile yazılmış, sistemin kendi arayüzüne ait bir pencere.\n\nÜç sayfası var: alaturka saat ve sonraki vakte kalan süre, günün altı vakti, aylık takvim (miladi ve hicri, dinî günlerle). Vakit rengi uygulamanın tamamına siniyor, açık ve koyu temayı sistemden alıyor.\n\nAsıl farkı bildirimlerde: tarayıcı yalnızca sekmesi açıkken hatırlatabiliyor, masaüstü uygulaması pencere kapalıyken de bildiriyor. Her vakit için kaç dakika önce haber alacağın ayrı ayrı seçiliyor.\n\nVakit, hicri takvim ve dinî gün hesapları siteyle aynı yerden geliyor: ikisi de aynı çekirdek paketi kullanıyor, yani bir tarih düzeltmesi iki uygulamada birden düzeliyor.\n\nKaynak kodu ve kurulum adımları GitHub'da: github.com/saatleriayarlamaenstitusu/alaturka-desktop — Debian, Ubuntu ve Mint için **.deb**, diğer dağıtımlar için **Flatpak** paketi hazırlanıyor."
+    "body": "Bilgisayarda çalışırken namaz vakitlerine, alaturka saate ve hicri takvime masaüstü uygulamasından bakabilirsiniz. Miladi takvim ile dinî günler de aynı uygulamada yer alır. Her vakit için ne kadar önce haber almak istediğinizi seçebilirsiniz. Hatırlatmalar pencere kapalıyken de gelir.\n\n[Linux için kurulum ve indirme bilgileri](https://github.com/saatleriayarlamaenstitusu/alaturka-desktop)"
   },
   {
     "id": "masaustu-duzeni",
-    "title": "Masaüstü için yeni düzen",
+    "title": "Geniş ekranda saat ve vakitler",
     "date": "2026-11-11",
-    "body": "Site **geniş ekranlar** için baştan düzenlendi.\n\nAna sayfada saat ve günün tarihi solda, kalan süre ile vakit listesi sağda duruyor. Vakitler sayfasında günün zaman şeridi sayfanın altında boydan boya uzanıyor. Saat sayfasında kadran solda, okunan saat sağda.\n\nSaatler, vakit listesi ve tarih blokları geniş ekranda büyüdü; küçük ekranda her şey olduğu gibi kaldı.\n\nGörsel Oluştur bölümünde ayarlar alt sayfadan çıkıp yanda uzun bir sütuna taşındı, tasarım alanı diğer tarafta tam boy duruyor."
+    "body": "Bilgisayardan baktığınızda ana sayfada saat ve tarih, kalan süre ve namaz vakitleriyle yan yana duruyor. Vakitler sayfasındaki günlük şerit ekranın genişliğini kullanıyor.\n\nGörsel Oluştur’da da tasarım ve ayarlar yan yana. Böylece bir ayarı değiştirirken görselin tamamını açık tutabilirsiniz."
   },
   {
     "id": "gorsel-katmani-ve-karistirma",
-    "title": "Kendi görseliniz ve karıştırma",
+    "title": "Görselinize kendi fotoğrafınızı ekleyin",
     "date": "2026-10-19",
-    "body": "Görsel Oluştur bölümüne **görsel katmanı** eklendi: kendi fotoğrafınızı ya da bir dokuyu tuvale katman olarak koyabiliyorsunuz.\n\nHer katmana ayrıca bir **karıştırma** biçimi verilebiliyor — çarp, ekran, fark ve diğerleri. Doku bindirmek, yazıyı zeminle kaynaştırmak ya da ters renk etkisi vermek böyle yapılıyor.\n\nSeçtiğiniz karıştırma indirdiğiniz görselde de aynen duruyor."
+    "body": "Kandil veya bayram için hazırladığınız bir görsele kendi fotoğrafınızı ya da bir doku ekleyebilirsiniz. Görsel Oluştur’daki karıştırma seçenekleriyle eklediğiniz fotoğrafın veya dokunun arka planla nasıl birleşeceğini ayarlayabilirsiniz. İndirdiğiniz görselde seçtiğiniz görünüm korunur."
   },
   {
     "id": "cuma-hatirlatmasi",
-    "title": "Cuma hatırlatması",
+    "title": "Cuma namazına kalan süre",
     "date": "2026-10-09",
-    "body": "Cuma günleri sayacın altında yeşil bir **Cuma** rozeti çıkıyor.\n\nRozet imsakta beliriyor, ikindi girince kalkıyor. Güneş ile öğle arasında sayaç da \"vaktin çıkmasına\" yerine cuma namazına kalan süreyi okuyor."
+    "body": "Cuma günleri vakit sayacının altında Cuma işareti görünür. Cuma namazına hazırlanırken, güneş ile öğle arasındaki geri sayımdan namaza ne kadar kaldığını görebilirsiniz. İşaret imsaktan ikindiye kadar görünür."
   },
   {
     "id": "dini-gunler",
-    "title": "Dinî günler takvimde",
+    "title": "Kandiller, arefeler ve bayramlar takvimde",
     "date": "2026-10-08",
-    "body": "Kandiller, bayramlar, arefe günleri ve Aşure takvime girdi.\n\nTakvim sayfasında bu günler ızgarada küçük bir noktayla işaretleniyor; güne dokunduğunuzda adıyla birlikte görünüyor. Görsel Oluştur'daki tarih parçası da o güne denk gelen günü kendiliğinden yazıyor, dilerseniz değiştirebiliyorsunuz.\n\nGünler sabit bir listeden okunmuyor, hicri takvimden hesaplanıyor. Kandiller adı geçen günün bir önceki akşamında başladığı için o güne işaretleniyor — Diyanet'in yayımladığı tarihlerle aynı."
+    "body": "Ramazan ve Kurban bayramlarını, kandilleri, arefe günlerini ve Aşure gününü Hicri Takvim’de görebilirsiniz. Noktayla işaretli bir güne dokunduğunuzda günün adı açılır. Kandiller takvimde başladıkları akşamın gününde gösterilir.\n\nGörsel Oluştur’da tarih eklediğinizde, tarihe denk gelen dinî günün adı da gelir. Dilerseniz bu yazıyı değiştirebilirsiniz."
   },
   {
     "id": "hazir-gorunumler",
-    "title": "Hazır görünümler",
+    "title": "Görseliniz için hazır yazı düzenleri",
     "date": "2026-10-08",
-    "body": "Görsel Oluştur'da her parçanın ayarlarının üstünde **hazır görünümler** şeridi var.\n\nBirine dokununca yazı tipi, kalınlık, ölçü ve hizalama birlikte değişiyor. Yazdığınız metne, tarihe ya da seçtiğiniz ibareye dokunmuyor — yalnızca biçim. Sonradan bir ayarı elle değiştirirseniz işaret kalkıyor, çünkü görünüm artık o hazır görünüm değil."
+    "body": "Bir ayet, tarih ya da tebrik görseli hazırlarken yazı biçimini tek tek ayarlamak zorunda kalmadan başlayabilirsiniz. Hazır görünümlerden birini seçtiğinizde yazı tipi, boyutu ve hizası birlikte değişir. Seçtiğiniz ayet ya da yazdığınız ibare olduğu gibi kalır."
   },
   {
     "id": "kaza-sayaci",
-    "title": "Kaza sayacı",
+    "title": "Kaza namazı kaydınız elinizin altında",
     "date": "2026-10-07",
-    "body": "Vakit listesinde herhangi bir vakte **basılı tuttuğunuzda** kaza bandı açılıyor.\n\nHer vakit için ayrı ayrı artırıp azaltabiliyorsunuz. Band kapalıyken de borcu olan vakitlerin üstünde küçük bir sayı duruyor. Sayılar cihazınızda saklanıyor, bir yere gönderilmiyor."
+    "body": "Vakitler sayfasında bir namaz vaktine basılı tuttuğunuzda o vaktin kaza sayacı açılır. Kaza namazlarınızı vakit vakit kaydedebilir, kıldıkça sayıyı düşürebilirsiniz. Sayaç kapalıyken kalan sayı vaktin yanında görünür. Kayıtlar cihazınızda saklanır."
   },
   {
     "id": "kible-pusulasi",
-    "title": "Kıble pusulası",
+    "title": "Bulunduğunuz yerden kıbleyi bulun",
     "date": "2026-10-06",
-    "body": "Vakit geri sayımının yanına **kıble pusulası** eklendi.\n\nKadran sade duruyor, üzerine basılı tuttuğunuzda açı ve yön bilgisi çıkıyor. Kısa bir dokunuş canlı pusulayı devreye alıyor: telefonu çevirdikçe iğne gerçek kıbleyi göstermeye başlıyor.\n\nKıbleye döndüğünüzde kadran yeşile dönüyor ve bir kez nabız atıyor, böylece ekrana bakmadan da hizalandığınızı anlayabiliyorsunuz.\n\nYön, seçili ilin merkezine göre hesaplanıyor. İsterseniz tek dokunuşla cihazınızın konumunu kullanabilirsiniz; o zaman il içindeki sapma da ortadan kalkıyor.\n\nCihazınızda pusula yoksa ya da tarayıcı sensörü engelliyorsa kadran kuzey yukarıda sabit kalıyor; açı değerini herhangi bir pusulayla kullanabilirsiniz."
+    "body": "Yolculukta ya da yabancı bir yerde namaza durmadan önce vakit sayacının yanındaki kıble pusulasına bakabilirsiniz. Dokununca telefonun pusulası devreye girer. Kıbleye döndüğünüzde kadran yeşile döner. Yönün derecesini görmek için pusulaya basılı tutabilirsiniz.\n\nYön, seçili ilin merkezine göre gösterilir. Dilerseniz bulunduğunuz konumu kullanabilirsiniz. Telefonunuz canlı pusulayı desteklemiyorsa ekrandaki dereceyi bir pusulayla kullanabilirsiniz."
   },
   {
     "id": "hicri-takvim-duzeltmesi",
-    "title": "Hicri tarih artık Diyanet ile aynı",
+    "title": "Hicri tarihi akşam ezanıyla değiştirin",
     "date": "2026-10-05",
-    "body": "Hicri tarih hesabı baştan yazıldı.\n\nÖnceki hesap aritmetik bir takvime dayanıyordu ve Diyanet'in kullandığı hesabî takvimden kayıyordu. Sapma sabit de değildi: 2026'nın on iki ay başlangıcından dokuzu tutmuyordu, Ramazan'da fark iki güne çıkıyordu.\n\nArtık ay başlangıçları Diyanet'in yayımladığı listeden alınıyor. Gösterilen tarih Diyanet takvimiyle birebir aynı.\n\nBir de **hicri günün ne zaman başlayacağı** ayarlardan seçilebiliyor. Hicri gün güneş batımıyla başladığı için \"Akşam ezanı\" seçeneğinde tarih akşam ezanıyla birlikte dönüyor; \"Gece yarısı\" seçeneğinde eskisi gibi kalıyor."
+    "body": "Hicri ayların başlangıçları, Diyanet’in yayımladığı tarihler dikkate alınarak güncellendi.\n\nAyarlar’da Hicri gün başlangıcı için Akşam ezanı’nı seçerseniz akşam vakti girdiğinde bir sonraki hicri gün görünür. Tarihin gece yarısında değişmesini tercih ederseniz Gece yarısı seçeneğini kullanabilirsiniz."
   },
   {
     "id": "gorsel-olustur-zemin-ve-duzen",
-    "title": "Zemin rengi, geri al ve satır sonları",
+    "title": "Renk ve satır düzeniyle görselinizi hazırlayın",
     "date": "2026-10-04",
-    "body": "Görsel Oluştur bölümüne birkaç iyileştirme geldi.\n\n**Zemin özelleştirilebiliyor.** Fotoğraf seçmediğinizde gelen vakit gradyanı artık tek seçenek değil: düz renk, iki renkli gradyan ya da mesh seçebilir, renkleri ve yayılmayı kendiniz ayarlayabilirsiniz. Renk olarak \"vakit rengi\"ni bırakırsanız görsel vakitle birlikte renk değiştirmeye devam eder.\n\n**Geri al düğmesi** eklendi. Yanlışlıkla bir parçayı silerseniz ya da bir ayarı bozarsanız üst çubuktan geri alabilirsiniz.\n\n**Enter artık yeni satır açıyor.** Metin alanlarında satır sonu girebiliyorsunuz ve girdiğiniz satır görselde de aynı şekilde çıkıyor. Arapça metin yazarken imlecin kayması sorunu da düzeltildi.\n\nAyar panelindeki bölüm başlıkları sadeleşti, aralarına boşluk geldi."
+    "body": "Görsel Oluştur’da arka plana düz bir renk veya yumuşak bir renk geçişi verebilirsiniz. Dilerseniz zeminin günün vaktine göre renk değiştirmesini de seçebilirsiniz.\n\nDua, ayet ya da tebrik metnini yazarken yeni satıra geçebilirsiniz. Arapça yazıda imlecin kayması düzeltildi. Bir parçayı yanlışlıkla silerseniz Geri al düğmesiyle geri getirebilirsiniz."
   },
   {
     "id": "gorsel-olustur-aylik-takvim",
-    "title": "Aylık takvim parçası",
+    "title": "Bir ayın takvimini görsel olarak hazırlayın",
     "date": "2026-09-26",
-    "body": "Görsel Oluştur bölümüne **aylık takvim** eklendi. Ayın tamamını bir görsele koyabiliyorsunuz.\n\nTakvim hicri ya da miladi olabilir. İkisini birden de gösterebilirsiniz: her günün altında diğer takvimdeki karşılığı küçük puntoyla yer alır. Ay ve yıl istediğiniz gibi değiştirilebilir, ileri geri gezinirken yıl kendiliğinden döner.\n\nAy başlığının, gün adlarının ve gün sayılarının yazı tipi, kalınlığı ve boyutu ayrı ayrı seçilebiliyor.\n\nGünlerin arkasına daire ya da kare bir zemin ekleyebilir, hafta sonlarını farklı renkte gösterebilir, bugünü vurgulayabilirsiniz.\n\nIzgara düzeninin yanında bir de **tek satır** seçeneği var: ayın tamamı yan yana tek bir şerit halinde diziliyor.\n\nBu bölümdeki ayarlar çoğaldığı için panel de yeniden düzenlendi. Ayarlar artık başlıklar altında gruplanıyor ve kullanmadığınız grupları kapatabiliyorsunuz."
+    "body": "Görsel Oluştur’da seçtiğiniz ayı hicri veya miladi takvimle hazırlayabilirsiniz. Her günün altında diğer takvimdeki karşılığını da gösterebilirsiniz.\n\nGünleri haftalara bölerek ya da tek sıra hâlinde dizebilir, bugünü ve hafta sonlarını ayrı renkle belirtebilirsiniz. Ay başlığının, gün adlarının ve sayıların yazısı ayrı ayrı ayarlanabilir."
   },
   {
     "id": "gorsel-olustur-yazi-tipi-secici",
-    "title": "Yetmiş yazı tipi, sekmeli seçici",
+    "title": "Ayet ve tebrik görselleri için daha çok yazı seçeneği",
     "date": "2026-09-23",
-    "body": "Görsel Oluştur bölümündeki yazı tipi sayısı yetmişe çıktı.\n\nSeçici artık beş sekmeye ayrıldı: **Sans**, **Serif**, **Display**, **El yazısı** ve **Arapça**. Her yazı tipi listede kendi görünümüyle yazılı olduğundan seçmeden önce nasıl duracağını görebiliyorsunuz.\n\nArapça sekmesinde on altı hat var; nesih, rika, kufi ve talik üsluplarının yanına Rakkas, Badeen ve Oi gibi iri başlık hatları da eklendi.\n\nLatin taraf ise Cormorant Garamond ve EB Garamond gibi klasik seriflerden Bebas Neue ve Alfa Slab One gibi başlık yazılarına, Caveat ve Pinyon Script gibi el yazılarına kadar uzanıyor.\n\nYazı tipleri yalnızca ilgili sekmeyi açtığınızda indiriliyor, bu yüzden liste uzamasına rağmen sayfa aynı hızda açılıyor."
+    "body": "Görsel Oluştur’da bir ayet, dua veya tebrik metnine uygun yazıyı seçmeden önce nasıl durduğunu listeden görebilirsiniz. Arapça bölümünde nesih, rik‘a, kûfî ve talik gibi hatlar var. Türkçe metin için de klasik, sade veya el yazısı görünümlerinden birini seçebilirsiniz."
   },
   {
     "id": "gorsel-olustur-hizalama",
-    "title": "Hizalama yardımı ve renk seçimi",
+    "title": "Fotoğrafla uyumlu renkler ve kolay hizalama",
     "date": "2026-09-18",
-    "body": "Görselde bir parçayı taşırken artık hizalama yardımı devrede. Parça tuvalin ortasına, kenarlarına ya da diğer parçaların hizasına yaklaştığında kendiliğinden oturuyor ve o hizada ince bir kılavuz çizgi beliriyor. İstemezseniz parça ayarlarındaki **Hizala** düğmesinden kapatabilirsiniz.\n\nRenk seçimi genişletildi. Hazır renklerin yanında, arka plan fotoğrafınızdan çıkarılan renkler de listeleniyor — böylece yazı rengini fotoğrafla uyumlu seçmek kolaylaşıyor.\n\nAyrıca kendi renginizi ekleyebilirsiniz. Eklediğiniz renkler listede kalır ve sonraki görsellerinizde de kullanılabilir.\n\nSon düzenlemeniz otomatik olarak saklanıyor; sayfayı kapatıp geri döndüğünüzde kaldığınız yerden devam edebilirsiniz. Baştan başlamak isterseniz üstteki **Sıfırla** düğmesi var."
+    "body": "Bir yazıyı veya tarihi yerleştirirken, görselin ortasına ya da başka bir parçanın hizasına geldiğinizde ince bir çizgi belirir. Dilerseniz Hizala seçeneğini kapatabilirsiniz.\n\nArka plan fotoğrafınızın renklerinden birini yazıya verebilir veya kendi renginizi seçip sonraki görseller için saklayabilirsiniz. Sayfaya döndüğünüzde son düzeniniz açılır. Yeniden başlamak için Sıfırla’ya dokunabilirsiniz."
   },
   {
     "id": "gorsel-olustur-yazi-tipleri",
-    "title": "Arapça ve Osmanlıca metinler, yazı tipi seçimi",
+    "title": "Besmele, salavat ve tebrikler için hazır ibareler",
     "date": "2026-09-18",
-    "body": "Görsel Oluştur bölümüne hazır **Arapça ibareler** eklendi: besmele, hamdele, tevhid, salavat, selamün aleyküm, cuma ve bayram tebrikleri gibi on dokuz metin. Altlarında okunuşları da yer alıyor ve hepsi harekeli ya da harekesiz gösterilebiliyor.\n\nYanına ayrı bir **Osmanlıca** bölümü geldi. Burada eski yazıyla hazırlanmış Türkçe ifadeler var: mübarek olsun, hayırlı cumalar, kandiliniz mübarek olsun, selâm ü duâ gibi.\n\nListede olmayan bir şey yazmak isterseniz metni doğrudan kendiniz de girebilirsiniz.\n\nYazı tipi seçimi de eklendi. Her metin parçası için ayrı bir yazı tipi, kalınlık, italik ve harf aralığı seçebilirsiniz. Arapça hatlar arasında nesih, rika, kufi ve talik üslupları bulunuyor.\n\nSaat parçasında büyük saatin, başlığın ve alt yazının boyutları ayrı ayrı ayarlanabiliyor; rakamlar Latin ya da Arapça yazılabiliyor."
+    "body": "Görsel Oluştur’da besmele, hamdele, salavat ve tevhid gibi ibareleri, cuma ve bayram tebriklerini kullanabilirsiniz. Arapça ibarelerin okunuşunu ekleyebilir, metni harekeli ya da harekesiz gösterebilirsiniz. Eski yazıyla hazırlanmış Türkçe tebrikler Osmanlıca bölümünde.\n\nDilerseniz kendi metninizi ekleyip hat, yazı boyutu ve aralığını seçin. Saatli görsellerde rakamları Latin ya da Arap rakamlarıyla yazabilirsiniz."
   },
   {
     "id": "gorsel-olustur",
-    "title": "Görsel Oluştur geldi",
+    "title": "Vakitleri ve hicri tarihi görsel olarak paylaşın",
     "date": "2026-09-18",
-    "body": "Alaturka saatinizi, namaz vakitlerini ve hicri tarihi paylaşabileceğiniz bir görsele dönüştüren yeni bir bölüm eklendi. Sağ üstteki menüden **Görsel Oluştur**'a girerek kullanabilirsiniz.\n\nStory, kare ve dikey post olmak üzere üç boy arasından seçim yapabilir; hazırladığınız görseli telefonunuza indirebilir ya da doğrudan paylaşabilirsiniz.\n\nTuvale eklenebilen parçalar: alaturka saat (dijital ve analog), o anki ve sonraki vakit, hicri ve miladi tarih, serbest yazı, hazır Arapça ibareler ve Alaturka Vakitler logosu.\n\nHer parçayı parmağınızla sürükleyip taşıyabilir, iki parmakla büyütüp döndürebilirsiniz. Üzerindeki her değer elle değiştirilebilir — saati, tarihi ya da vakit adını dilediğiniz gibi yazabilirsiniz. Boş bıraktığınız satır görselde görünmez.\n\nArka plan olarak vakte göre değişen rengi kullanabilir ya da kendi fotoğrafınızı yükleyebilirsiniz. Yüklediğiniz fotoğrafı iki parmakla yakınlaştırıp kaydırarak istediğiniz kadrajı seçebilir, bulanıklık ve karartma ekleyebilirsiniz.\n\nAyrıca tasarıma yön veren ince çizgilerden oluşan bir ızgara ve film dokusu (gren) da ekleyebilirsiniz."
+    "body": "Günün vaktini, hicri tarihi veya alaturka saati paylaşmak istediğinizde menüden Görsel Oluştur’u açın. Kare ya da dikey bir boy seçip dilediğiniz yazıyı, vakti veya tarihi ekleyebilirsiniz.\n\nKendi fotoğrafınızı arka plana koyabilir, metinleri sürükleyerek yerleştirebilirsiniz. Hazırladığınız görseli telefonunuza indirebilir ya da doğrudan paylaşabilirsiniz."
   },
   {
     "id": "takvim-sayfasi",
-    "title": "Takvim ve Saat sayfaları",
+    "title": "Hicri ay ve alaturka saat için ayrı sayfalar",
     "date": "2026-07-02",
-    "body": "**Takvim** sayfası tamamlandı. Hicri ayın tamamını bir arada görüyor, her günün altında miladi karşılığını okuyabiliyorsunuz. Bir güne dokunduğunuzda o günün hicri ve miladi tarihi ile haftanın günü üstte beliriyor, yanında da o geceye ait ay fazı çiziliyor.\n\nAylar arasında sağa sola kaydırarak geçebilirsiniz. Boş bir alana dokunmak sizi bugüne geri getirir.\n\n**Saat** sayfası da yenilendi. Ortada alaturka vakti gösteren bir analog kadran var — akrep içinde bulunduğunuz vaktin renginde. Altında büyük rakamlarla alaturka saat, onun altında normal saat, en altta da hicri ve miladi tarih yer alıyor."
+    "body": "Takvim sayfasında hicri ayı bir arada görebilir, her günün miladi karşılığını okuyabilirsiniz. Bir güne dokunduğunuzda iki tarih ve o gecenin ay evresi görünür. Yana kaydırarak ay değiştirebilir, boş bir yere dokunarak bugüne dönebilirsiniz.\n\nSaat sayfasında alaturka saati kadrandan veya rakamla okuyabilirsiniz. Günlük saat, hicri tarih ve miladi tarih de aynı sayfada yer alır."
   },
   {
     "id": "ayarlar-bolumu",
-    "title": "Ayarlar bölümü eklendi",
+    "title": "Uygulama açıldığında dilediğiniz sayfa",
     "date": "2026-07-01",
-    "body": "Sağ üstteki menüye **Ayarlar** eklendi. Uygulamayı kendinize göre düzenleyebilirsiniz.\n\n**Tema:** Açık, koyu ya da sistem. Sistem seçiliyken telefonunuzun tercihini izler; akşam karanlık moda geçen bir telefonda uygulama da kendiliğinden koyulaşır.\n\n**Renk stili:** Beş ayrı stil var — Klasik, Pastel, Canlı, Mesh ve Mono. Her biri vakit renklerini ve arka planı baştan sona değiştiriyor. Canlı stilinde ekranın tamamı vaktin rengine bürünüyor, Mono ise renk yerine gri tonlarıyla çalışıyor.\n\n**Ana sayfa saati:** Alaturka saat ana sayfada nokta matrisli LED görünümüyle ya da düz rakamlarla gösterilebilir.\n\n**Açılış sayfası:** Uygulamayı her açtığınızda doğrudan Saat, Vakitler ya da Takvim sayfasının gelmesini sağlayabilirsiniz."
+    "body": "Namaz vakitlerine daha sık bakıyorsanız açılışta doğrudan Vakitler sayfasının gelmesini seçebilirsiniz. Saat ve Takvim de açılış seçenekleri arasında.\n\nAyarlar’dan açık veya koyu temayı, vakit renklerinin görünümünü ve ana sayfadaki alaturka saatin yazılışını kendinize göre düzenleyebilirsiniz."
   },
   {
     "id": "yeni-surum",
-    "title": "Uygulama baştan yazıldı",
+    "title": "Namaz vakitleri ve alaturka saat yenilendi",
     "date": "2026-06-28",
-    "body": "Alaturka Vakitler baştan yazıldı. Sayfalar daha hızlı açılıyor, geçişler daha akıcı ve uygulama telefonunuzun ana ekranına eklendiğinde çevrimdışıyken de çalışıyor.\n\nVakit bilgileri cihazınızda saklandığı için internet bağlantınız yokken de son indirilen vakitleri görebiliyorsunuz.\n\nGörünüm de yenilendi: yalın bir ızgara, geniş boşluklar ve tipografiye dayanan **Swiss** tarzı bir düzen. Ekrandaki renk içinde bulunduğunuz vakte göre değişiyor — imsakta mavi, öğlede sarı, ikindide turuncu, yatsıda lacivert."
+    "body": "Alaturka saate ve namaz vakitlerine daha sade bir ekrandan bakabilirsiniz. Günün vakti değiştikçe ekranın rengi de değişir.\n\nTelefonunuzun ana ekranına eklediğinizde, önceden indirilmiş vakitleri internet bağlantınız yokken de açabilirsiniz."
   }
 ]

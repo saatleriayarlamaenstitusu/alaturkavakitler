@@ -2,7 +2,7 @@
  * Yedek alma ve geri yükleme.
  *
  * Uygulamanın bütün hafızası tarayıcıda: ayarlar, şehir, kaza sayaçları,
- * hatimler, görsel oluşturucudaki düzen. Tarayıcı verisini temizlemek ya
+ * hatimler, kaydedilen ayetler, görsel oluşturucudaki düzen. Tarayıcı verisini temizlemek ya
  * da başka bir cihaza geçmek bunların hepsini siler ve geri getirecek bir
  * sunucu yok — bu yüzden dışa aktarma bir özellik değil, bir zorunluluk.
  *
@@ -16,6 +16,7 @@ const KEYS = [
   'city',        // seçili şehir
   'kazaCounts',  // kaza sayaçları
   'hatimler',    // hatimler ve ilerlemeleri
+  'kayitliAyetler', // kaydedilen ayetler ve mealleri
   'shareEditor', // görsel oluşturucudaki son düzen
 ]
 

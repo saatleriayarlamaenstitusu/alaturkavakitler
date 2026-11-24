@@ -1,0 +1,19 @@
+{
+  "name": "alaturka-vakit-push",
+  "main": "index.js",
+  "compatibility_date": "2026-11-24",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "alaturkavakitler.com/api/vakit-push/*", "zone_name": "alaturkavakitler.com" }],
+  "triggers": { "crons": ["* * * * *"] },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "alaturka-vakit-push",
+    "database_id": "c6257ef3-27f3-425d-84c2-fe95884274be"
+  }],
+  "ratelimits": [{
+    "name": "API_LIMIT",
+    "namespace_id": "8101",
+    "simple": { "limit": 30, "period": 60 }
+  }]
+}

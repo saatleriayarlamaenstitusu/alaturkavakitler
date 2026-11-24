@@ -50,15 +50,12 @@ function devKuranProxy(env) {
     apply: 'serve',
     configureServer(server) {
       const store = new Map()
-      if (!globalThis.caches) {
-        globalThis.caches = {
-          default: {
-            match: async (req) => store.get(typeof req === 'string' ? req : req.url),
-            put: async (req, res) => {
-              store.set(typeof req === 'string' ? req : req.url, res.clone())
-            },
-          },
-        }
+      globalThis.caches = {
+        default: {
+          // Cache API her eşleşmede okunabilir yeni bir Response verir.
+          match: async (req) => store.get(typeof req === 'string' ? req : req.url)?.clone(),
+          put: async (req, res) => store.set(typeof req === 'string' ? req : req.url, res.clone()),
+        },
       }
 
       server.middlewares.use('/api/kuran', async (req, res) => {
@@ -108,6 +105,8 @@ export default defineConfig(({ mode }) => {
       includeAssets: ['favicon.png', 'Icons/**/*', 'img/**/*'],
       manifest: false, // public/manifest.json kullan
       workbox: {
+        importScripts: ['/vakit-push-sw.js'],
+        navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {

@@ -39,8 +39,8 @@ export const useSettingsStore = defineStore('settings', () => {
   const darkMode = ref(load('darkMode', 'light'))
   const colorStyle = ref(load('colorStyle', 'mesh'))
   const homeClock = ref(load('homeClock', 'led')) // 'led' | 'normal'
-  // Kuran gösterimi: okuma sayfası, hatim ve ileride kıraat kesitleri
-  // aynı tercihi okur — ayet nasıl görünsün sorusu bir kez sorulur.
+  // Serbest okuma tercihleri, hatimlere başlangıç ayarı olarak kopyalanabilir.
+  // Bir hatmi açınca o hatmin kendi ayarları kullanılır.
   // 0 = meal kapalı, yalnızca Arapça metin.
   // Meal ARTIK ÇOKLU: birden fazla mütercim yan yana okunabiliyor.
   // Karşılaştırmalı okuma bu sayfanın en çok istenen işi ve tek seçimle
@@ -52,6 +52,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // Meal yazı tipi: Arapça metnin hattı seçilebilirken karşılığının
   // yazısı sabit kalıyordu. Üç küme — sans (taban), serif (Baskervville)
   // ve monospace; ailelerin kendisi `src/data/mealFonts.js`'te.
+  const quranArabicHidden = ref(load('quranArabicHidden', false))
   const quranMealFont = ref(load('quranMealFont', 'sans'))
   const quranFont = ref(load('quranFont', 'lateef'))
   // Görünüm: 'mushaf' basılı sayfanın satır satır dizimi, 'esnek' akan
@@ -73,7 +74,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // damgaları bizde (ayet takibi ilk açılışta çalışıyor).
   const quranReciter = ref(load('quranReciter', 'toure'))
 
-  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, quranMeals, quranMealFont, quranFont, quranView, quranAutoScroll, quranScript, quranFontSize, quranTajweed, quranReciter, darkMode, colorStyle, homeClock }
+  const all = { primaryClock, secondaryClock, clockStyle, analogDesign, hijriOffset, vakitSource, firstPage, themePerVakit, notificationsEnabled, notifyOffsets, quranMeals, quranMealFont, quranFont, quranView, quranAutoScroll, quranScript, quranFontSize, quranTajweed, quranReciter, darkMode, colorStyle, homeClock, quranArabicHidden }
 
   // `deep`: ayarların çoğu düz değer ama `notifyOffsets` bir obje —
   // içindeki tek bir vakit değişince de kaydedilmeli.
