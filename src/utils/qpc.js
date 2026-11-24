@@ -269,13 +269,24 @@ export async function pageLines(page, scriptId) {
  * ise renk etiketli veriyor, akan metinde kullanılabiliyor.
  */
 const TAJWEED_KEY = 'qpcTajweed'
+/** Tek ayet tecviti (oynatıcı popup'ı) — ayfa göre ayrı tutulur. */
+const TAJWEED_VERSE_KEY = 'qpcTajweedVerse'
 
-/** Tanınan tecvit sınıfları. Listede olmayan sınıf renklenmez. */
+/**
+ * Tanınan tecvit sınıfları. Listede olmayan sınıf renklenmez.
+ *
+ * İsimler API'nin GÖNDERDİĞİ yazımla yazıldı: ölçüldü (by_page 255 ve
+ * by_key 2:255) `qalaqah` ve `idgham_ghunnah` geliyor. Önce liste
+ * `qalqalah` ve `idgham_with_ghunnah` yazıyordu — bu iki kural API'den
+ * GELMEDİĞİ için hiç renklenmiyordu (metin çıktı, renksiz). Eski
+ * yazımlar da listede bırakıldı: API yazımı değişirse yine tutulsun.
+ */
 export const TAJWEED_RULES = [
   'ham_wasl', 'madda_normal', 'madda_permissible', 'madda_necessary',
-  'madda_obligatory', 'qalqalah', 'ikhafa', 'ikhafa_shafawi',
-  'idgham_shafawi', 'idgham_with_ghunnah', 'idgham_wo_ghunnah',
+  'madda_obligatory', 'qalaqah', 'ikhafa', 'ikhafa_shafawi',
+  'idgham_shafawi', 'idgham_ghunnah', 'idgham_wo_ghunnah',
   'idgham_mimi', 'iqlab', 'ghunnah', 'slnt', 'laam_shamsiyah',
+  'qalqalah', 'idgham_with_ghunnah',
 ]
 
 /**
@@ -308,6 +319,34 @@ export function safeTajweed(html) {
     return out
   }
   return walk(doc.body.firstChild)
+}
+
+/**
+ * Tek ayetin tecvitli metni.
+ *
+ * Sayfa yolu (`verses/by_page`) bütün sayfayı getiriyordu; oynatıcı
+ * popup'ında TEK ayet gerekiyor ve o ayet hangi sayfada olduğu belli
+ * değil (kıraat sure bazında ilerliyor, sayfa değil). Aynı alanı
+ * `verses/by_key` tek ayet için veriyor — ölçüldü: aynı işaretleme
+ * biçimi (`<tajweed class=…>`).
+ */
+export async function verseTajweed(surah, verse) {
+  const key = `${surah}:${verse}`
+  const cache = (() => {
+    try { return JSON.parse(localStorage.getItem(TAJWEED_VERSE_KEY) || '{}') } catch { return {} }
+  })()
+  if (cache[key]) return cache[key]
+
+  const res = await fetch(`${API}/verses/by_key/${key}?fields=text_uthmani_tajweed`)
+  if (!res.ok) throw new Error(`Tecvitli metin alınamadı (HTTP ${res.status})`)
+  const data = await res.json()
+  const html = safeTajweed(data?.verse?.text_uthmani_tajweed ?? '')
+
+  cache[key] = html
+  const keys = Object.keys(cache)
+  if (keys.length > 120) for (const k of keys.slice(0, keys.length - 120)) delete cache[k]
+  try { localStorage.setItem(TAJWEED_VERSE_KEY, JSON.stringify(cache)) } catch { /* kota */ }
+  return html
 }
 
 /** Sayfadaki ayetlerin tecvitli metni: `{ '2:255': '<span …>' }`. */

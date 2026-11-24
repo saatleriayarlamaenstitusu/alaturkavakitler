@@ -29,6 +29,12 @@ Her madde dört satırdan ibarettir. Uzun anlatım buraya değil
 
 ---
 
+### 2026-11-23 — Oynatıcı popup'ında font, boyut ve tecvit ayarları
+**Ne:** Oynatıcı ekranında (oynatıcıda "Oynatıcıyı aç" düğmesi) gösterilen okunan ayet artık okuma sayfasındaki ayarları kullanıyor: seçilen Arapça yazı tipi, yazı boyutu (70–180%) ve tecvit işaretlemesi. Ayrıca iki tecvit kuralı (`idgham_ghunnah`, `qalaqah`) artık renkleniyor — önce hiç renklenmiyordu.
+**Dosyalar:** src/components/quran/PlayerSheet.vue, src/utils/qpc.js, src/assets/css/tajweed.css (yeni), src/main.js, src/components/quran/MushafView.vue, CLAUDE.md
+**Neden:** Popup'taki ayet sabit 1.5rem ve DÜZ metin basıyordu (ölçüldü: popup `.ar` = 25.6px, ölçek yok, `.tj` parçası 0); kullanıcının seçtiği font yalnızca akan metinde geçerliydi. Ölçülen yeni hâl: ölçek 1.4 → 33.6px, font "Amiri, serif", 7 renkli tecvit parçası. İkinci bulgu: API `idgham_ghunnah` ve `qalaqah` gönderiyor (by_page 255 ve by_key 2:255 ölçüldü), uygulamanın listesi `idgham_with_ghunnah`/`qalqalah` diyordu — o iki kural API'den gelmediği için hep renksiz kalıyordu; sayfa 255'te 7 `qalaqah` ve 2 `idgham_ghunnah` parçası artık renkli.
+**Etkisi:** Tek ayetin tecviti `utils/qpc`de `verseTajweed` ile geliyor (`verses/by_key`; sayfa yolu `by_page` idi, oynatıcıda sayfa bilinmiyor). Tecvit renkleri global (`assets/css/tajweed.css`) oldu; MushafView'daki kopyası silindi.
+
 ### 2026-11-23 — Kur'an araç şeridinde ikon düğmeleri
 **Ne:** Tam ekran düğmesinin ince yazı glifi yerine kalın bir SVG ikon geldi; meal düğmesi yalnızca ikona indi (mütercim adı ve TR/EN rozeti şeritten kalktı).
 **Dosyalar:** src/pages/QuranPage.vue, CLAUDE.md

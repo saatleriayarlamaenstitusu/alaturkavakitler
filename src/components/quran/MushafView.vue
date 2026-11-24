@@ -1133,48 +1133,6 @@ function onUp(e) {
 
 
 
-/* Tecvit renkleri.
-   Sınıflar quran.com'un işaretlemesinden geliyor; tanınmayan sınıf
-   renklenmiyor (bkz. utils/qpc `safeTajweed`). Renkler SABİT, palete
-   bağlı değil: tecvit kuralının rengi okurun öğrendiği bir koddur,
-   temaya göre değişirse anlamını kaybeder. Koyu zeminde okunurluk için
-   açık tonlar seçildi; açık modda bir tık koyulaşıyorlar. */
-.ar :deep(.tj-ghunnah),
-.ar :deep(.tj-idgham_with_ghunnah),
-.ar :deep(.tj-idgham_mimi),
-.ar :deep(.tj-idgham_shafawi) { color: #88c9ff; }
-
-.ar :deep(.tj-ikhafa),
-.ar :deep(.tj-ikhafa_shafawi) { color: #ff9ad1; }
-
-.ar :deep(.tj-iqlab) { color: #9ee37d; }
-
-.ar :deep(.tj-qalqalah) { color: #ffd166; }
-
-.ar :deep(.tj-madda_normal) { color: #f7a072; }
-.ar :deep(.tj-madda_permissible) { color: #e0b0ff; }
-.ar :deep(.tj-madda_necessary),
-.ar :deep(.tj-madda_obligatory) { color: #ff6b6b; }
-
-.ar :deep(.tj-ham_wasl),
-.ar :deep(.tj-laam_shamsiyah),
-.ar :deep(.tj-slnt) { color: var(--text-muted); }
-
-:root[data-theme="light"] .ar :deep(.tj-ghunnah),
-:root[data-theme="light"] .ar :deep(.tj-idgham_with_ghunnah),
-:root[data-theme="light"] .ar :deep(.tj-idgham_mimi),
-:root[data-theme="light"] .ar :deep(.tj-idgham_shafawi) { color: #1a73c7; }
-
-:root[data-theme="light"] .ar :deep(.tj-ikhafa),
-:root[data-theme="light"] .ar :deep(.tj-ikhafa_shafawi) { color: #c2186f; }
-
-:root[data-theme="light"] .ar :deep(.tj-iqlab) { color: #2e7d32; }
-:root[data-theme="light"] .ar :deep(.tj-qalqalah) { color: #a86a00; }
-:root[data-theme="light"] .ar :deep(.tj-madda_normal) { color: #c1521d; }
-:root[data-theme="light"] .ar :deep(.tj-madda_permissible) { color: #7b3fb8; }
-:root[data-theme="light"] .ar :deep(.tj-madda_necessary),
-:root[data-theme="light"] .ar :deep(.tj-madda_obligatory) { color: #c62828; }
-
 .script.on { border-color: var(--accent-ui); color: var(--text); }
 
 @media (min-width: 900px) {

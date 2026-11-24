@@ -6,6 +6,9 @@ import { clickOutside } from './directives/clickOutside'
 import { initAnalytics, trackPageView } from './analytics'
 import './assets/css/base.css'
 import './assets/css/typography.css'
+// Tecvit renkleri global: akan metin ve oynatıcı popup'ı aynı kuralları
+// paylaşıyor (bkz. assets/css/tajweed.css).
+import './assets/css/tajweed.css'
 // Masaüstü düzeni — yalnızca 900px üstünde konuşur, mobile dokunmaz.
 import './assets/css/desktop.css'
 

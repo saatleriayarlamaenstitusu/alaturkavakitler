@@ -1,0 +1,56 @@
+/* Tecvit renkleri — GLOBAL.
+ *
+ * Sınıflar quran.com'un işaretlemesinden geliyor; tanınmayan sınıf
+ * renklenmiyor (bkz. utils/qpc `safeTajweed`). Renkler SABİT, palete
+ * bağlı değil: tecvit kuralının rengi okurun öğrendiği bir koddur,
+ * temaya göre değişirse anlamını kaybeder. Koyu zeminde okunurluk için
+ * açık tonlar seçildi; açık modda bir tık koyulaşıyorlar.
+ *
+ * Neden global: aynı renkler iki yerde birden gerekiyor — akan metin
+ * (MushafView) ve oynatıcı popup'ındaki tek ayet (PlayerSheet). Scoped
+ * yazıldığında ikinci yere kopya yazmak gerekiyordu; kural renkleri
+ * bir yerde toplanınca ikisi de aynı kaynaktan besleniyor.
+ */
+
+.tj-ghunnah,
+.tj-idgham_with_ghunnah,
+.tj-idgham_ghunnah,
+.tj-idgham_mimi,
+.tj-idgham_shafawi { color: #88c9ff; }
+
+.tj-ikhafa,
+.tj-ikhafa_shafawi { color: #ff9ad1; }
+
+.tj-iqlab { color: #9ee37d; }
+
+/* API'nin yazımı `qalaqah`; eski yazım `qalqalah` da tutuluyor. */
+.tj-qalaqah,
+.tj-qalqalah { color: #ffd166; }
+
+.tj-madda_normal { color: #f7a072; }
+.tj-madda_permissible { color: #e0b0ff; }
+.tj-madda_necessary,
+.tj-madda_obligatory { color: #ff6b6b; }
+
+.tj-ham_wasl,
+.tj-laam_shamsiyah,
+.tj-slnt { color: var(--text-muted); }
+
+:root[data-theme="light"] .tj-ghunnah,
+:root[data-theme="light"] .tj-idgham_with_ghunnah,
+:root[data-theme="light"] .tj-idgham_ghunnah,
+:root[data-theme="light"] .tj-idgham_mimi,
+:root[data-theme="light"] .tj-idgham_shafawi { color: #1a73c7; }
+
+:root[data-theme="light"] .tj-ikhafa,
+:root[data-theme="light"] .tj-ikhafa_shafawi { color: #c2186f; }
+
+:root[data-theme="light"] .tj-iqlab { color: #2e7d32; }
+
+:root[data-theme="light"] .tj-qalaqah,
+:root[data-theme="light"] .tj-qalqalah { color: #a86a00; }
+
+:root[data-theme="light"] .tj-madda_normal { color: #c1521d; }
+:root[data-theme="light"] .tj-madda_permissible { color: #7b3fb8; }
+:root[data-theme="light"] .tj-madda_necessary,
+:root[data-theme="light"] .tj-madda_obligatory { color: #c62828; }

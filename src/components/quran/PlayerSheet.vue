@@ -1,11 +1,13 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { getFont } from '@/data/shareFonts'
 import { authorById } from '@/data/kuranMeta'
 import { mealFontById } from '@/data/mealFonts'
 import { fetchVerse, eastern } from '@/utils/kuran'
+import { verseTajweed } from '@/utils/qpc'
+import { ensureFont } from '@/composables/useShareFonts'
 import { hasTimings } from '@/utils/recitation'
 import {
   playing, loading, error, reciter, reciterId, surahName,
@@ -42,6 +44,37 @@ const follows = computed(() => hasTimings(reciterId.value))
 
 const verse = ref(null)
 const verseErr = ref('')
+const tajweed = ref('')
+
+/**
+ * Okunan ayetin Arapça yazı tipi.
+ *
+ * Okuma sayfasındaki yazı tipi seçimi BURAYA da uygulanıyor: font
+ * yalnızca sayfada yüklüyse (ensureFont) popup'ta da aynı hat basılır.
+ */
+onMounted(() => ensureFont(settings.quranFont))
+watch(() => settings.quranFont, (id) => ensureFont(id))
+
+/**
+ * Okunan ayetin TECVİTLİ metni.
+ *
+ * Akan metinde de aynı şey yapılıyor (MushafView `loadTajweed`): tecvit
+ * açıksa metin quran.com'un işaretlemesiyle gelir, kapalıysa düz metin
+ * basılır. İki metin AYNI kaynaktan değil (biri bizim vekilimiz, öteki
+ * quran.com) ama akan görünümde de bu ikili var — burada da aynı
+ * davranış, aynı yazı.
+ */
+async function loadTajweed(s, v) {
+  if (!settings.quranTajweed) { tajweed.value = ''; return }
+  try {
+    const html = await verseTajweed(s, v)
+    if (s === curSurah.value && v === (curVerse.value || 1)) tajweed.value = html
+  } catch {
+    // Tecvit gelmezse düz metin basılır; dinlemeyi engellemek için bir
+    // sebep yok.
+    tajweed.value = ''
+  }
+}
 
 /**
  * Okunan ayetin metni ve mealleri.
@@ -49,21 +82,26 @@ const verseErr = ref('')
  * Yalnızca sayfa AÇIKKEN istenir: kapalıyken her ayet değişiminde
  * istek atmak, görünmeyen bir şey için ağ trafiği demek.
  */
-watch([() => props.open, curSurah, curVerse, () => settings.quranMeals], async () => {
-  if (!props.open || !curSurah.value) return
-  const want = { s: curSurah.value, v: curVerse.value || 1 }
-  try {
-    verseErr.value = ''
-    const got = await fetchVerse(want.s, want.v, settings.quranMeals)
-    // Geç gelen yanıt başka bir ayeti ezmesin: istek anındaki hedefle
-    // o anki hedef karşılaştırılır (yanıtın kendi alan adlarına
-    // güvenmeden).
-    if (want.s === curSurah.value && want.v === (curVerse.value || 1))
-      verse.value = { ...got, no: want.v }
-  } catch (e) {
-    verseErr.value = e.message ?? 'Ayet alınamadı'
-  }
-}, { immediate: true, deep: true })
+watch(
+  [() => props.open, curSurah, curVerse, () => settings.quranMeals, () => settings.quranTajweed],
+  async () => {
+    if (!props.open || !curSurah.value) return
+    const want = { s: curSurah.value, v: curVerse.value || 1 }
+    loadTajweed(want.s, want.v)
+    try {
+      verseErr.value = ''
+      const got = await fetchVerse(want.s, want.v, settings.quranMeals)
+      // Geç gelen yanıt başka bir ayeti ezmesin: istek anındaki hedefle
+      // o anki hedef karşılaştırılır (yanıtın kendi alan adlarına
+      // güvenmeden).
+      if (want.s === curSurah.value && want.v === (curVerse.value || 1))
+        verse.value = { ...got, no: want.v }
+    } catch (e) {
+      verseErr.value = e.message ?? 'Ayet alınamadı'
+    }
+  },
+  { immediate: true, deep: true },
+)
 
 const meals = computed(() => {
   if (!verse.value) return []
@@ -143,8 +181,14 @@ const onSeek = (e) => seekTo(Number(e.target.value))
       <!-- Okunan ayet ve karşılığı. Dinlerken mushafa bakmıyorsan
            okunanın ne olduğu da burada yazmalı. -->
       <section v-if="verse" class="verse">
-        <p class="ar" dir="rtl" lang="ar" :style="{ fontFamily: arFamily }">
-          {{ verse.ar }}
+        <p
+          class="ar"
+          dir="rtl"
+          lang="ar"
+          :style="{ fontFamily: arFamily, '--quran-scale': settings.quranFontSize / 100 }"
+        >
+          <span v-if="tajweed" class="ar-text" v-html="tajweed" />
+          <template v-else>{{ verse.ar }}</template>
           <span class="ar-no">{{ eastern(verse.no) }}</span>
         </p>
         <p
@@ -289,9 +333,12 @@ const onSeek = (e) => seekTo(Number(e.target.value))
   gap: 0.7rem;
 }
 
+/* Yazı boyutu okuma sayfasındaki AYNI ayardan geliyor: akan metinde
+   `--quran-scale` 1.6rem tabanını ölçekliyor, burada 1.5rem tabanı
+   ölçekleniyor. Ölçek yüzde (70–180), punto değil. */
 .ar {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: calc(1.5rem * var(--quran-scale, 1));
   line-height: 2.2;
   text-align: right;
   color: var(--text);

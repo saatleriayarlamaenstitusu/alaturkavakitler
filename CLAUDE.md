@@ -1139,6 +1139,24 @@ VITE_AUDIO_MIRROR_BASE=https://cdn.alaturkavakitler.com/ses     # boşsa yedek y
   olmaz: köşedeki çarpı sayfayı kapatır, kıraati durdurmak yazıyla
   ("Kıraati durdur") — iki çarpı yan yana hangisinin sesi hangisinin
   pencereyi kapattığını belirsiz bırakıyordu.
+- **Oynatıcı ekranı okuma sayfasının AYNI yazı ayarlarını kullanır**:
+  okunan ayet, seçilen Arapça fontta, yazı boyutu ölçeğiyle (70–180%)
+  ve tecvit işaretlemesiyle basılır. Önce popup'taki ayet sabit 1.5rem
+  ve DÜZ metin basıyordu (ölçüldü: popup `.ar` = 25.6px, ölçek yok,
+  `.tj` parçası 0) — kullanıcının seçtiği font yalnızca akan metinde
+  geçerliydi. Ölçülen yeni hâl: açık ölçek 1.4 → 33.6px, font
+  "Amiri, serif", 7 renkli tecvit parçası. Tek ayetin tecviti
+  `utils/qpc`de `verseTajweed` ile geliyor (`verses/by_key`; sayfa
+  yolu `by_page` idi ama oynatıcıda sayfa bilinmiyor — kıraat sure
+  bazında ilerliyor). Font `ensureFont` ile yükleniyor.
+- **Tecvit sınıf adları API'nin GÖNDERDİĞİ yazımla**: `idgham_ghunnah`
+  ve `qalaqah` (ölçüldü: `by_page` 255 ve `by_key` 2:255 yanıtları).
+  Eski liste `idgham_with_ghunnah` / `qalqalah` diyordu — bu iki kural
+  API'den GELMİYORDU ve bu yüzden HİÇ renklenmiyordu (metin çıkıyordu,
+  renksiz). Ölçülen fark: sayfa 255'te 7 `qalaqah` + 2
+  `idgham_ghunnah` parçası artık renkleniyor. Renkler artık GLOBAL
+  (`assets/css/tajweed.css`): aynı blok MushafView'da ve PlayerSheet'te
+  iki kez gerekliydi, kopyalanmış hali silindi.
 - **Kârî bağlama App.vue'da**: kârî seçici artık Kur'an sayfasının
   dışından da (mini oynatıcıdan) açılabiliyor, `setReciter` izleyicisi
   sayfada kalsaydı orada yapılan seçim oynatıcıya hiç ulaşmazdı.
